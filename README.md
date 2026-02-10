@@ -87,8 +87,7 @@ docker-compose up -d --build
 *   **策略参数 (`strategies.setting`)**：
     *   `max_positions`: 策略允许持有的最大合约数量（风控限制）。
     *   `strike_level`: 期权选合约时的虚值档位（OTM Level），例如 `4` 表示虚值四档。
-    *   `macd_fast`/`macd_slow`/`macd_signal`: MACD 指标参数。
-    *   `ema_fast`/`ema_slow`: EMA 均线参数。
+    *   其他指标参数请根据策略需求自行添加。
 
 *   **运行时参数 (`runtime`)**：
     *   `trading_periods`: **交易时段**。守护进程会根据此时段自动启动或停止交易子进程。请根据实际交易所时间调整（例如包含夜盘时段）。

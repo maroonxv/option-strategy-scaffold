@@ -4,11 +4,6 @@ strategies:
       max_positions: 5                 # 策略允许持有的最大合约数量（风控限制）
       position_ratio: 0.1              # 单次开仓使用的资金比例（相对于账户总权益）
       strike_level: 4                  # 期权选合约时的虚值档位（OTM Level），例如 4 表示虚值 4 档
-      macd_fast: 12                    # MACD 指标参数：快线周期
-      macd_slow: 26                    # MACD 指标参数：慢线周期
-      macd_signal: 9                   # MACD 指标参数：信号线周期
-      ema_fast: 5                      # EMA 均线参数：快线周期（用于辅助趋势判断）
-      ema_slow: 20                     # EMA 均线参数：慢线周期（用于辅助趋势判断）
       bar_window: 1                    # K线合成窗口大小。1 表示不合成，直接使用 1 分钟线；15 表示合成 15 分钟线
       bar_interval: "MINUTE"           # K线合成的基础周期单位，可选 "MINUTE", "HOUR", "DAILY"
 

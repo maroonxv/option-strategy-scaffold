@@ -7,9 +7,6 @@ from pathlib import Path
 
 from ...domain.aggregate.target_instrument_aggregate import InstrumentManager
 from ...domain.aggregate.position_aggregate import PositionAggregate
-from ...domain.value_object.macd_value import MACDValue
-from ...domain.value_object.dullness_state import DullnessState
-from ...domain.value_object.divergence_state import DivergenceState
 
 
 class StrategyMonitor:
@@ -249,7 +246,6 @@ class StrategyMonitor:
                 dates: List[str] = []
                 ohlc: List[List[Any]] = []
                 volumes: List[Any] = []
-                td_marks: List[Dict[str, Any]] = []
                 tail_df = None
 
                 if bars_df is not None and not getattr(bars_df, "empty", True):
@@ -274,38 +270,9 @@ class StrategyMonitor:
                         ])
                         volumes.append(row.get("volume", 0))
 
-                        td_c = row.get("td_count", 0)
-                        if td_c and abs(td_c) in [9, 13]:
-                            is_buy = td_c > 0
-                            td_marks.append({
-                                "coord": [dt_str, low if is_buy else high],
-                                "value": int(abs(td_c)),
-                                "position": "bottom" if is_buy else "top",
-                                "type": "buy" if is_buy else "sell"
-                            })
+                # 指标数据和状态由具体策略实现决定，此处仅记录基础 OHLCV
+                status = {}
 
-                if tail_df is not None:
-                    macd_data = {
-                        "diff": [float(x) for x in tail_df.get("dif", []).tolist()] if "dif" in tail_df.columns else [],
-                        "dea": [float(x) for x in tail_df.get("dea", []).tolist()] if "dea" in tail_df.columns else [],
-                        "hist": [float(x) for x in tail_df.get("macd", []).tolist()] if "macd" in tail_df.columns else []
-                    }
-                else:
-                    macd_data = {"diff": [], "dea": [], "hist": []}
-
-                dull = getattr(instrument, "dullness_state", None)
-                div = getattr(instrument, "divergence_state", None)
-
-                status = {
-                    "dull_top": bool(getattr(dull, "is_top_active", False)),
-                    "dull_bottom": bool(getattr(dull, "is_bottom_active", False)),
-                    "div_top": bool(getattr(div, "is_top_confirmed", False)),
-                    "div_bottom": bool(getattr(div, "is_bottom_confirmed", False)),
-                    "div_top_potential": False,
-                    "div_bottom_potential": False,
-                }
-
-                td_value = getattr(instrument, "td_value", None)
                 tail_last_dt = None
                 try:
                     if tail_df is not None and not tail_df.empty:
@@ -319,11 +286,9 @@ class StrategyMonitor:
                     "dates": dates,
                     "ohlc": ohlc,
                     "volumes": volumes,
-                    "macd": macd_data,
-                    "td_marks": td_marks,
+                    "indicators": instrument.indicators if hasattr(instrument, "indicators") else {},
                     "status": status,
                     "last_price": float(getattr(instrument, "latest_close", 0.0) or 0.0),
-                    "td_value": int(getattr(td_value, "td_count", 0) or 0),
                     "delivery_month": "Other"
                 }
 
@@ -377,7 +342,7 @@ class StrategyMonitor:
             for vt_symbol, inst_data in instruments_data.items():
                 prev = self._last_status_map.get(vt_symbol) or {}
                 cur = (inst_data.get("status") or {}) if isinstance(inst_data, dict) else {}
-                for state_name in ("dull_top", "dull_bottom", "div_top", "div_bottom"):
+                for state_name in cur.keys():
                     old_v = bool(prev.get(state_name, False))
                     new_v = bool(cur.get(state_name, False))
                     if old_v == new_v:

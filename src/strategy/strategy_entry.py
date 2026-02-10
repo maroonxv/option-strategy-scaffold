@@ -27,6 +27,8 @@ from .domain.aggregate.target_instrument_aggregate import InstrumentManager
 from .domain.aggregate.position_aggregate import PositionAggregate
 from .domain.domain_service.indicator_service import IndicatorService
 from .domain.domain_service.signal_service import SignalService
+# NOTE: IndicatorService 和 SignalService 是模板类，
+# 使用前请根据策略需求实现 calculate_bar() / check_open_signal() / check_close_signal()
 from .domain.domain_service.position_sizing_service import PositionSizingService
 from .domain.domain_service.option_selector_service import OptionSelectorService
 from .domain.domain_service.future_selection_service import BaseFutureSelector
@@ -82,15 +84,6 @@ class StrategyEntry(StrategyTemplate):
     # 期权选择
     strike_level: int = 3
 
-    # MACD 参数
-    macd_fast: int = 12
-    macd_slow: int = 26
-    macd_signal: int = 9
-
-    # EMA 参数
-    ema_fast: int = 5
-    ema_slow: int = 20
-
     # K线合成参数
     bar_window: int = 15
     bar_interval: str = "MINUTE"
@@ -101,11 +94,6 @@ class StrategyEntry(StrategyTemplate):
         "max_positions",
         "position_ratio",
         "strike_level",
-        "macd_fast",
-        "macd_slow",
-        "macd_signal",
-        "ema_fast",
-        "ema_slow",
         "bar_window",
         "bar_interval",
     ]
@@ -207,13 +195,7 @@ class StrategyEntry(StrategyTemplate):
 
         # ______________________________  2. 创建领域服务  ______________________________
 
-        self.indicator_service = IndicatorService(
-            macd_fast=self.macd_fast,
-            macd_slow=self.macd_slow,
-            macd_signal=self.macd_signal,
-            ema_fast=self.ema_fast,
-            ema_slow=self.ema_slow
-        )
+        self.indicator_service = IndicatorService()
         self.signal_service = SignalService()
         self.position_sizing_service = PositionSizingService(
             max_positions=self.max_positions,

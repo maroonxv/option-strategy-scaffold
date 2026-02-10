@@ -107,6 +107,7 @@ class SnapshotReader:
         }
 
     def _parse_instruments(self, aggregate, macd_history, dullness_states, divergence_states):
+        """解析标的数据（兼容旧 pickle 格式参数，但不再使用 MACD/TD 专属逻辑）"""
         result = {}
         # aggregate 是 InstrumentManager 对象
         
@@ -132,7 +133,6 @@ class SnapshotReader:
                 volumes = []
                 
                 # 遍历行
-                td_marks = []
                 for idx, row in bars_df.iterrows():
                     dt = row.get("datetime")
                     if isinstance(dt, str):
@@ -150,19 +150,6 @@ class SnapshotReader:
                         high
                     ])
                     volumes.append(row.get("volume", 0))
-
-                    # TD 标记
-                    td_c = row.get("td_count", 0)
-                    if td_c and abs(td_c) in [9, 13]:
-                        # td_count > 0: 买入结构 (底部)，标记在 Low 下方
-                        # td_count < 0: 卖出结构 (顶部)，标记在 High 上方
-                        is_buy = td_c > 0
-                        td_marks.append({
-                            "coord": [dt_str, low if is_buy else high],
-                            "value": int(abs(td_c)),
-                            "position": "bottom" if is_buy else "top",
-                            "type": "buy" if is_buy else "sell"
-                        })
             
             elif hasattr(instrument, "bar_history"):
                 # 旧格式或 deque？
@@ -174,7 +161,6 @@ class SnapshotReader:
                 ohlc = []
                 dates = []
                 volumes = []
-                td_marks = []
                 
                 for bar in bars:
                     # BarData 通常包含 datetime, open_price, high_price, low_price, close_price, volume
@@ -186,36 +172,16 @@ class SnapshotReader:
             else:
                 continue
             
-            # MACD 指标
-            macd_list = macd_history.get(symbol, [])
-            macd_data = {
-                "diff": [m.dif for m in macd_list],
-                "dea": [m.dea for m in macd_list],
-                "hist": [m.macd_bar for m in macd_list]
-            }
-            
-            # 状态
-            dull = dullness_states.get(symbol)
-            div = divergence_states.get(symbol)
-            
-            status = {
-                "dull_top": dull.is_top_active if dull else False,
-                "dull_bottom": dull.is_bottom_active if dull else False,
-                "div_top": div.is_top_confirmed if div else False,
-                "div_bottom": div.is_bottom_confirmed if div else False,
-                "div_top_potential": False,  # DivergenceState 中未定义 potential 状态
-                "div_bottom_potential": False,
-            }
+            # 指标数据和状态由具体策略实现决定
+            indicator_data = getattr(instrument, "indicators", {})
             
             result[symbol] = {
                 "dates": dates,
                 "ohlc": ohlc,
                 "volumes": volumes,
-                "macd": macd_data,
-                "td_marks": td_marks,
-                "status": status,
+                "indicators": indicator_data,
+                "status": {},
                 "last_price": instrument.latest_close,
-                "td_value": instrument.td_value.td_count if hasattr(instrument, "td_value") and instrument.td_value else 0,
                 "delivery_month": self.extract_delivery_month(symbol)
             }
         return result

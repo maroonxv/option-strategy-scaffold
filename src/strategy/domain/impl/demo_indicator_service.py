@@ -3,14 +3,11 @@
 
 本模块提供了 IIndicatorService 接口的示例实现，展示如何计算技术指标并更新 TargetInstrument 的 indicators 字典。
 
-实现的指标:
-- MACD (Moving Average Convergence Divergence): 指数平滑异同移动平均线
-- EMA (Exponential Moving Average): 指数移动平均线
-
 使用场景:
 - 作为学习示例，了解如何实现 IIndicatorService 接口
 - 作为模板，快速开发自定义指标服务
-- 在实际策略中使用 MACD 指标进行交易决策
+
+注意: 本示例使用 MACD/EMA 作为演示指标，实际使用时请替换为你的策略所需指标。
 """
 
 from typing import TYPE_CHECKING
