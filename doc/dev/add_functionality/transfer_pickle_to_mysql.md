@@ -21,7 +21,7 @@
 
 ### 2.1 保存/恢复入口
 - 实盘/模拟盘启动：
-  - `MacdTdIndexStrategy.on_init` 会优先尝试从 `data/pickle/{strategy_name}.pkl` 恢复（成功则跳过历史数据加载，失败才 warmup）。
+  - `StrategyEntry.on_init` 会优先尝试从 `data/pickle/{strategy_name}.pkl` 恢复（成功则跳过历史数据加载，失败才 warmup）。
   - 停止时 `on_stop` 会保存到同一路径。
 
 ### 2.2 被 Pickle 保存的内容（核心问题点）
@@ -159,7 +159,7 @@
 ## 6. 实现结构建议（便于直接落代码）
 
 ### 6.1 推荐新增/调整的逻辑入口
-- 在 `MacdTdIndexStrategy.on_init` 的“状态处理”分支中，将逻辑从：
+- 在 `StrategyEntry.on_init` 的“状态处理”分支中，将逻辑从：
   - “尝试 load_state -> 成功跳过历史数据加载”
   - 改成：
     1) 读取瘦身 state（若存在）

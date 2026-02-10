@@ -22,7 +22,7 @@
 │                                    │                                     │
 │                                    ▼                                     │
 │  ┌─────────────────────────────────────────────────────────────────┐    │
-│  │         src/strategy/macd_td_index_strategy.py           │    │
+│  │         src/strategy/strategy_entry.py           │    │
 │  │         (接口层 - VnPy StrategyTemplate)                         │    │
 │  └─────────────────────────────────────────────────────────────────┘    │
 │                                    │                                     │
@@ -97,7 +97,7 @@ class VnpyTradeExecutionGateway:
 │  │         └──────────────────┼───────────────────┘                │    │
 │  │                            ▼                                     │    │
 │  │  ┌──────────────────────────────────────────────────────────┐   │    │
-│  │  │           MacdTdIndexStrategy                     │   │    │
+│  │  │           StrategyEntry                     │   │    │
 │  │  │           (商品波动率策略实例)                             │   │    │
 │  │  └──────────────────────────────────────────────────────────┘   │    │
 │  └─────────────────────────────────────────────────────────────────┘    │
@@ -176,7 +176,7 @@ sequenceDiagram
     participant Engine as MainEngine
     participant Gateway as CtpGateway
     participant Strategy as StrategyEngine
-    participant Volatility as MacdTdIndexStrategy
+    participant Volatility as StrategyEntry
 
     Main->>Parent: start()
     Parent->>Child: subprocess.Popen
@@ -194,7 +194,7 @@ sequenceDiagram
     Strategy->>Strategy: init_engine()
     Strategy-->>Child: strategy_engine
     
-    Child->>Strategy: add_strategy("MacdTdIndexStrategy", ...)
+    Child->>Strategy: add_strategy("StrategyEntry", ...)
     Strategy->>Volatility: __init__(strategy_engine, ...)
     
     Child->>Strategy: init_strategy(strategy_name)
@@ -1481,7 +1481,7 @@ CTP_ENV=实盘
 
 ```yaml
 strategies:
-  - class_name: "MacdTdIndexStrategy"
+  - class_name: "StrategyEntry"
     strategy_name: "commodity_vol_01"
     vt_symbols:
       - "rb2501.SHFE"
@@ -1571,7 +1571,7 @@ export STRATEGY_LOG_LEVEL=DEBUG
 main.py
     └── ChildProcess
             └── MainEngine + StrategyEngine
-                    └── MacdTdIndexStrategy (already implemented)
+                    └── StrategyEntry (already implemented)
                             └── VolatilityTrade (already implemented)
                                     └── Vnpy*Gateway (already implemented)
                                             ├── VnpyMarketDataGateway.subscribe/get_tick/get_contract

@@ -188,7 +188,7 @@ class IIndicatorService(ABC):
 
 ### 第四步：策略入口改造 (Strategy Entry Point)
 
-`MacdTdIndexStrategy` 将重命名为 **`GenericStrategyAdapter`**。
+`StrategyEntry` 将重命名为 **`GenericStrategyAdapter`**。
 它是连接 VnPy 引擎与 `StrategyEngine` 的胶水层。
 
 #### 1. 核心设计原则
@@ -277,18 +277,18 @@ class MyDemoStrategy(GenericStrategyAdapter):
 #### 1. 进程入口与守护 (Keep)
 *   `src/main/main.py`: 系统入口，保持原样。
 *   `src/main/parent_process.py`: 守护进程。
-    *   **处理**: 检查并移除任何硬编码的旧策略名称（如日志打印中的 `"MacdTdIndexStrategy"`），改为通用描述。
+    *   **处理**: 检查并移除任何硬编码的旧策略名称（如日志打印中的 `"StrategyEntry"`），改为通用描述。
 
 #### 2. 策略执行环境 (Core Refactor)
 *   **`src/main/child_process.py`**:
-    *   **现状**: 硬编码引入了具体的策略类 `MacdTdIndexStrategy`。
+    *   **现状**: 硬编码引入了具体的策略类 `StrategyEntry`。
     *   **重构方案**: 解耦策略加载逻辑，采用**固定入口模式**。
         1.  约定：所有基于模板开发的策略，必须在 `src/strategy/__init__.py` (或指定入口模块) 中暴露一个名为 `StrategyEntry` 的类。
         2.  代码修改：
             ```python
             # child_process.py 修改前
-            from src.strategy.macd_td_index_strategy import MacdTdIndexStrategy
-            engine.add_strategy(MacdTdIndexStrategy, setting)
+            from src.strategy.strategy_entry import StrategyEntry
+            engine.add_strategy(StrategyEntry, setting)
             
             # child_process.py 修改后
             from src.strategy import StrategyEntry # 动态指向用户的策略类

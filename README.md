@@ -142,7 +142,7 @@ strategies:
 
 ```
 src/strategy/
-├── macd_td_index_strategy.py          # VnPy 策略入口（适配器层）
+├── strategy_entry.py          # VnPy 策略入口（适配器层）
 ├── application/                        # 应用层
 │   └── volatility_trade.py           # 策略执行协调器
 ├── domain/                            # 领域层
@@ -166,7 +166,7 @@ src/strategy/
 ### 2. 核心模块说明
 
 #### 策略入口层
-*   **`macd_td_index_strategy.py`**：VnPy 策略模板的实现，负责接收 VnPy 回调并转发给应用层
+*   **`strategy_entry.py`**：VnPy 策略模板的实现，负责接收 VnPy 回调并转发给应用层
 
 #### 应用层
 *   **`volatility_trade.py`**：策略执行协调器，编排各个领域服务的调用流程

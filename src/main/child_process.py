@@ -32,7 +32,7 @@ from vnpy_portfoliostrategy import PortfolioStrategyApp
 from src.main.gateway import GatewayManager
 from src.main.utils.config_loader import ConfigLoader
 from src.main.utils.log_handler import setup_logging
-from src.strategy.macd_td_index_strategy import MacdTdIndexStrategy
+from src.strategy.strategy_entry import StrategyEntry
 
 # 添加策略路径
 STRATEGY_PATH = PROJECT_ROOT / "src" / "strategy"
@@ -278,9 +278,9 @@ class ChildProcess:
         self.logger.info("策略引擎已初始化")
 
         self.strategy_engine.load_strategy_class_from_module(
-            "src.strategy.macd_td_index_strategy"
+            "src.strategy.strategy_entry"
         )
-        self.logger.info("已加载策略类: MacdTdIndexStrategy")
+        self.logger.info("已加载策略类: StrategyEntry")
 
         self._init_data_recorder()
 
@@ -446,10 +446,13 @@ class ChildProcess:
 
         strategies = getattr(self.strategy_engine, "strategies", {}) or {}
         for strategy in strategies.values():
-            app_service = getattr(strategy, "app_service", None)
-            if not app_service:
-                continue
-            target_aggregate = getattr(app_service, "target_aggregate", None)
+            # 优先直接从策略实例获取 target_aggregate (pragmatic DDD)
+            # 兼容旧版通过 app_service 间接获取
+            target_aggregate = getattr(strategy, "target_aggregate", None)
+            if not target_aggregate:
+                app_service = getattr(strategy, "app_service", None)
+                if app_service:
+                    target_aggregate = getattr(app_service, "target_aggregate", None)
             if not target_aggregate or not hasattr(target_aggregate, "get_all_active_contracts"):
                 continue
             try:

@@ -89,7 +89,7 @@ class GatewayManager:
                 self.logger.error("PAPER 网关未找到，请检查 PaperAccountApp 是否加载")
 ```
 
-### 4.4 策略层的适配 (`MacdTdIndexStrategy`)
+### 4.4 策略层的适配 (`StrategyEntry`)
 
 VnPy 的 `StrategyTemplate` 默认会向所有连接的网关发单，或者需要指定 `gateway_name`。
 在 `PaperAccountApp` 模式下，存在两个网关：`CTP` 和 `PAPER`。

@@ -63,7 +63,7 @@ logger.setLevel(logging.DEBUG)
 # 5. 现在才导入其他 VnPy 模块
 from vnpy.trader.constant import Interval
 from vnpy_portfoliostrategy import BacktestingEngine
-from src.strategy.macd_td_index_strategy import MacdTdIndexStrategy
+from src.strategy.strategy_entry import StrategyEntry
 from src.main.utils.config_loader import ConfigLoader
 from src.backtesting.vt_symbol_generator import VtSymbolGenerator
 
@@ -204,7 +204,7 @@ def run_backtesting(
     )
     
     engine.add_strategy(
-        strategy_class=MacdTdIndexStrategy,
+        strategy_class=StrategyEntry,
         setting=setting
     )
     

@@ -5,7 +5,7 @@
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │  Interface Layer (接口层)                                        │
-│  macd_td_index_strategy.py                               │
+│  strategy_entry.py                               │
 │  职责: VnPy回调入口 (on_init, on_bars, on_order等)               │
 ├─────────────────────────────────────────────────────────────────┤
 │  Application Layer (应用层)                                      │
@@ -127,7 +127,7 @@ class FeishuEventHandler:
         requests.post(self.webhook_url, json=payload, timeout=5)
 
 
-# 在接口层注册 (macd_td_index_strategy.py)
+# 在接口层注册 (strategy_entry.py)
 def on_init(self):
     # 创建飞书处理器
     self.feishu_handler = FeishuEventHandler(
@@ -1043,7 +1043,7 @@ def on_bar(self):
 ## 六、基础设施层设计 (Infrastructure Layer)
 
 **设计原则**:
-采用 "Context Injection" 模式。网关适配器不直接持有 `MainEngine`，而是持有 `MacdTdIndexStrategy` (作为 `strategy_context`)。
+采用 "Context Injection" 模式。网关适配器不直接持有 `MainEngine`，而是持有 `StrategyEntry` (作为 `strategy_context`)。
 这使得我们可以直接调用 `PortfolioStrategy` 模板提供的 `buy`, `sell`, `short`, `cover` 方法，这些方法已经内置了对 `StrategyEngine` 的调用和复杂的订单路由逻辑（如锁仓/净仓处理、目标仓位管理）。
 
 ### 6.2 网关适配器实现
@@ -1053,8 +1053,8 @@ def on_bar(self):
 职责: 实现需求方接口，将订阅/查询/下单等调用适配到 VnPy 的引擎与策略模板方法。
 
 **依赖关系说明**:
-`MacdTdIndexStrategy` (Interface) -> `VolatilityTrade` (Application) -> `Vnpy*Gateway` (Infrastructure)。
-在 `MacdTdIndexStrategy.on_init` 中，将 `self`（策略实例）传递给 `VolatilityTrade`，后者将其传递给各个网关适配器。
+`StrategyEntry` (Interface) -> `VolatilityTrade` (Application) -> `Vnpy*Gateway` (Infrastructure)。
+在 `StrategyEntry.on_init` 中，将 `self`（策略实例）传递给 `VolatilityTrade`，后者将其传递给各个网关适配器。
 
 ```python
 # src/strategy/infrastructure/gateway/vnpy_trade_execution_gateway.py
@@ -1124,7 +1124,7 @@ class FeishuEventHandler:
 传递路径如下:
 
 1.  **Interface Layer (起点)**:
-    - `MacdTdIndexStrategy` (策略入口类) 在 `on_init` 中创建应用服务 `VolatilityTrade`。
+    - `StrategyEntry` (策略入口类) 在 `on_init` 中创建应用服务 `VolatilityTrade`。
     - 它将 `self` (即 `PortfolioStrategy` 实例) 传递给 `VolatilityTrade`。
 
 2.  **Application Layer**:
@@ -1141,7 +1141,7 @@ class FeishuEventHandler:
     - 它们只处理纯数据 (Entity, Value Object) 和业务逻辑。
 
 ```
-MacdTdIndexStrategy (Interface)
+StrategyEntry (Interface)
        │
        ▼ 1. 创建并传递 self
 VolatilityTrade (Application) ────────┐
@@ -1160,16 +1160,16 @@ Domain Layer (SignalService, TargetInstrument...)
 
 ## 七、接口层设计 (Interface Layer / Adapter)
 
-### 7.1 MacdTdIndexStrategy (策略入口)
+### 7.1 StrategyEntry (策略入口)
 
-位置: `src/strategy/macd_td_index_strategy.py`
+位置: `src/strategy/strategy_entry.py`
 
 职责:
 1.  **组装**: 在 `on_init` 中实例化 Application Layer (并将 `self` 传递给它)。
 2.  **适配**: 将 VnPy 的 `on_bars`, `on_trade` 等回调转换为 Application Layer 的调用。
 
 ```python
-class MacdTdIndexStrategy(StrategyTemplate):
+class StrategyEntry(StrategyTemplate):
     
     def __init__(self, strategy_engine, strategy_name, vt_symbols, setting):
         super().__init__(strategy_engine, strategy_name, vt_symbols, setting)

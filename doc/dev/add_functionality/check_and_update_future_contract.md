@@ -114,8 +114,8 @@
 
 ### 2.4 接口层 (Interface Layer)
 
-#### 2.4.1 `MacdTdIndexStrategy` (策略入口)
-*   **位置**：`src/strategy/macd_td_index_strategy.py`
+#### 2.4.1 `StrategyEntry` (策略入口)
+*   **位置**：`src/strategy/strategy_entry.py`
 *   **改动**：
     *   **`on_start`**: 
         1.  调用 `ConfigLoader.load_target_products()` 读取品种列表。
@@ -152,7 +152,7 @@
 ### 步骤 3: 应用层编排 (`VolatilityTrade`)
 实现 `handle_universe_initialization` 和 `handle_universe_rollover_check`，串联获取合约、调用服务、更新状态、管理订阅的流程。
 
-### 步骤 4: 策略入口接入 (`MacdTdIndexStrategy`)
+### 步骤 4: 策略入口接入 (`StrategyEntry`)
 在 `on_start` 中调用初始化逻辑，在 `on_bars` 或定时器中调用检查逻辑。
 
 ---
@@ -296,7 +296,7 @@ def handle_universe_rollover_check(self, current_time: datetime):
     pass
 ```
 
-### 4.6 MacdTdIndexStrategy (策略入口实现)
+### 4.6 StrategyEntry (策略入口实现)
 
 ```python
 def on_bars(self, bars: Dict[str, BarData]):

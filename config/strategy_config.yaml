@@ -1,5 +1,5 @@
 strategies:
-  - class_name: "MacdTdIndexStrategy"  # 策略类名，对应 src/strategy/macd_td_index_strategy.py 中的类
+  - class_name: "StrategyEntry"  # 策略类名，对应 src/strategy/strategy_entry.py 中的类
     setting:
       max_positions: 5                 # 策略允许持有的最大合约数量（风控限制）
       position_ratio: 0.1              # 单次开仓使用的资金比例（相对于账户总权益）

@@ -13,7 +13,7 @@
 ![Class Diagram](../image/class_diagram.png)
 
 ### 1.2 接口层 (Interface Layer) / 适配层
-*   **文件**: `src/strategy/macd_td_index_strategy.py`
+*   **文件**: `src/strategy/strategy_entry.py`
 *   **职责**: 
     *   作为 VnPy `StrategyTemplate`（来自 `vnpy_portfoliostrategy`）的子类，充当系统入口。
     *   **不包含核心业务逻辑**。

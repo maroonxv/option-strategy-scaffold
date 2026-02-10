@@ -2,7 +2,7 @@
 
 ## 1. 概述
 
-`src/backtesting` 模块主要用于对 `MacdTdIndexStrategy` (商品波动率策略) 进行历史数据回测。
+`src/backtesting` 模块主要用于对 `StrategyEntry` (商品波动率策略) 进行历史数据回测。
 通过模拟历史行情的撮合交易，验证策略逻辑的有效性，评估策略的风险收益特征（如夏普比率、最大回撤、年化收益等），为实盘交易提供参考。
 
 ## 2. 架构设计
@@ -11,7 +11,7 @@
 
 *   **BacktestingEngine**: `vnpy_portfoliostrategy.BacktestingEngine`
     *   VnPy 提供的组合策略回测引擎，负责管理时间序列、数据加载、订单撮合、持仓结算等核心逻辑。
-*   **MacdTdIndexStrategy**: `src.strategy.macd_td_index_strategy.MacdTdIndexStrategy`
+*   **StrategyEntry**: `src.strategy.strategy_entry.StrategyEntry`
     *   待回测的策略类，包含具体的交易逻辑。
 *   **ConfigLoader**: `src.main.utils.config_loader.ConfigLoader`
     *   配置加载工具，用于读取 `config/strategy_config.yaml` 中的策略参数和合约配置，确保回测参数与实盘一致。
@@ -24,7 +24,7 @@ graph LR
     Loader --> Script[run_backtesting.py]
     DB[(VnPy Database)] --> Engine[BacktestingEngine]
     Script --> Engine
-    Engine --> Strategy[MacdTdIndexStrategy]
+    Engine --> Strategy[StrategyEntry]
     Strategy --> Engine
     Engine --> Result[Statistics & Charts]
 ```
@@ -70,7 +70,7 @@ sys.path.insert(0, str(PROJECT_ROOT))
 
 from vnpy.trader.constant import Interval
 from vnpy_portfoliostrategy import BacktestingEngine
-from src.strategy.macd_td_index_strategy import MacdTdIndexStrategy
+from src.strategy.strategy_entry import StrategyEntry
 from src.main.utils.config_loader import ConfigLoader
 ```
 
@@ -128,7 +128,7 @@ def run_backtesting(
     
     # 4. 添加策略
     engine.add_strategy(
-        strategy_class=MacdTdIndexStrategy,
+        strategy_class=StrategyEntry,
         strategy_name=strategy_config["strategy_name"],
         vt_symbols=vt_symbols,
         setting=setting

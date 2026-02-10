@@ -15,7 +15,7 @@
     *   创建 `TimedRotatingFileHandler` 打开日志文件 (e.g., `strategy.log`)。
     *   此时文件被主进程持有。
 
-2.  **策略层 (`MacdTdIndexStrategy`)**:
+2.  **策略层 (`StrategyEntry`)**:
     *   初始化时调用 `setup_strategy_logger`。
     *   **再次**创建一个新的 `RotatingFileHandler` 尝试写入**同一个日志文件**。
     *   默认设置了 `propagate=False`，切断了与 Root Logger 的联系。
