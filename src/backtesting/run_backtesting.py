@@ -1,5 +1,4 @@
 import sys
-import os
 from pathlib import Path
 from dotenv import load_dotenv
 from datetime import datetime
@@ -12,45 +11,16 @@ PROJECT_ROOT = Path(__file__).parent.parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
 
 # 2. 在导入其他 VnPy 模块之前，先配置数据库
-from vnpy.trader.setting import SETTINGS
-import vnpy.trader.database
+from src.main.bootstrap.database_factory import DatabaseFactory
 
-# --- 核心修正: 强制替换 get_database 以防止回退到 SQLite ---
-_mysql_db_instance = None
-
-def force_mysql_database():
-    global _mysql_db_instance
-    if _mysql_db_instance:
-        return _mysql_db_instance
-
-    print("[Database] Forcing initialization of vnpy_mysql...")
-    try:
-        import vnpy_mysql.mysql_database as mysql_db
-        # 强制修改表名以匹配现有数据库
-        mysql_db.DbBarData._meta.table_name = "dbbardata"
-        if hasattr(mysql_db, "DbTickData"):
-            mysql_db.DbTickData._meta.table_name = "dbtickdata"
-        print(f"[Database] Patched table name to: {mysql_db.DbBarData._meta.table_name}")
-        
-        import vnpy_mysql
-        _mysql_db_instance = vnpy_mysql.Database()
-        return _mysql_db_instance
-    except ImportError as e:
-        print(f"[Database Error] Failed to import vnpy_mysql: {e}")
-        raise
-
-# 暴力替换 VnPy 的工厂函数
-vnpy.trader.database.get_database = force_mysql_database
-# -------------------------------------------------------------
-
-if os.getenv("VNPY_DATABASE_DRIVER"):
-    SETTINGS["database.driver"] = "mysql" # 确保 Settings 也同步
-    SETTINGS["database.database"] = os.getenv("VNPY_DATABASE_DATABASE")
-    SETTINGS["database.host"] = os.getenv("VNPY_DATABASE_HOST")
-    SETTINGS["database.port"] = int(os.getenv("VNPY_DATABASE_PORT", 3306))
-    SETTINGS["database.user"] = os.getenv("VNPY_DATABASE_USER")
-    SETTINGS["database.password"] = os.getenv("VNPY_DATABASE_PASSWORD")
-    print(f"已注入数据库配置: mysql://{SETTINGS['database.host']}")
+# 通过 DatabaseFactory 统一初始化数据库
+try:
+    factory = DatabaseFactory.get_instance()
+    factory.initialize(eager=True)
+    print(f"[Database] DatabaseFactory 初始化完成")
+except Exception as e:
+    print(f"[Database Error] 数据库初始化失败: {e}")
+    raise
 
 # 4. 开启 Peewee SQL 日志 (Debug) - 保持开启以便验证
 import logging
@@ -116,7 +86,7 @@ def run_backtesting(
     # --- 新增: 从数据库补全期权合约 ---
     print("正在从数据库查找关联期权合约...")
     try:
-        # 此时数据库已通过 force_mysql_database 初始化
+        # 此时数据库已通过 DatabaseFactory 初始化
         option_symbols = VtSymbolGenerator.get_available_options_from_db(vt_symbols)
         if option_symbols:
             print(f"找到 {len(option_symbols)} 个期权合约，将加入回测列表")
@@ -146,8 +116,7 @@ def run_backtesting(
         print("错误: 无法生成有效的 'vt_symbols'，无法运行回测。")
         return
 
-    from vnpy.trader.database import get_database
-    db_instance = get_database()
+    db_instance = DatabaseFactory.get_instance().get_database()
     print(f"[Debug] verify get_database() returns: {type(db_instance)}")
     
     # 2. 初始化回测引擎

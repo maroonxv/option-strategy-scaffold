@@ -106,7 +106,7 @@
     - _Requirements: 1.1, 1.6, 2.1, 2.3_
 
 - [-] 10. 集成 DatabaseFactory 到启动流程
-  - [-] 10.1 修改 `src/main/bootstrap/database_setup.py`，改为调用 `DatabaseFactory.get_instance().initialize()`
+  - [x] 10.1 修改 `src/main/bootstrap/database_setup.py`，改为调用 `DatabaseFactory.get_instance().initialize()`
     - 替换原有的直接 SETTINGS 注入逻辑
     - _Requirements: 3.1, 3.2, 3.3, 3.4, 3.5_
   - [-] 10.2 修改 `src/backtesting/run_backtesting.py`，使用 `DatabaseFactory` 替代 monkey-patch
