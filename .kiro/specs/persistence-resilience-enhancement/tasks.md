@@ -38,7 +38,7 @@
 - [x] 4. Checkpoint - 序列化层验证
   - Ensure all tests pass, ask the user if questions arise.
 
-- [ ] 5. 实现 DatabaseFactory
+- [x] 5. 实现 DatabaseFactory
   - [x] 5.1 创建 `src/main/bootstrap/database_factory.py`，实现 `DatabaseFactory` 单例类
     - 实现 `get_instance()`、`initialize(eager, timeout)`、`get_database()`、`get_peewee_db()`
     - 实现 `validate_env_vars()` 静态方法和 `validate_connection()` 方法
@@ -48,12 +48,12 @@
     - 包含 id (AutoField)、strategy_name、snapshot_json、schema_version、saved_at 字段
     - 定义复合索引 (strategy_name, saved_at)
     - _Requirements: 1.4_
-  - [~] 5.3 编写 DatabaseFactory 属性测试
+  - [x] 5.3 编写 DatabaseFactory 属性测试
     - **Property 6: Missing environment variables detection**
     - **Validates: Requirements 3.3**
     - **Property 9: Database factory singleton identity**
     - **Validates: Requirements 5.6**
-  - [~] 5.4 编写 DatabaseFactory 单元测试
+  - [x] 5.4 编写 DatabaseFactory 单元测试
     - 测试 eager vs lazy 初始化、不回退 SQLite、日志输出
     - _Requirements: 3.4, 3.5, 5.5_
 
