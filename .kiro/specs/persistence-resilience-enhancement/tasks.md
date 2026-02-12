@@ -23,15 +23,15 @@
     - **Validates: Requirements 4.3**
 
 - [-] 3. 实现 JsonSerializer
-  - [-] 3.1 创建 `src/strategy/infrastructure/persistence/json_serializer.py`，实现 `JsonSerializer` 类
+  - [x] 3.1 创建 `src/strategy/infrastructure/persistence/json_serializer.py`，实现 `JsonSerializer` 类
     - 实现自定义 `JSONEncoder` 处理 DataFrame、datetime、date、set、Enum、dataclass
     - 实现 `serialize()` 方法，自动注入 `schema_version`
     - 实现 `deserialize()` 方法，支持类型还原和版本迁移
     - _Requirements: 4.1, 4.2, 4.5, 4.6_
-  - [~] 3.2 编写 JsonSerializer 属性测试
+  - [-] 3.2 编写 JsonSerializer 属性测试
     - **Property 7: JSON serialization round-trip**
     - **Validates: Requirements 4.1, 4.2, 4.5, 4.6, 4.8**
-  - [~] 3.3 编写 JsonSerializer 单元测试
+  - [-] 3.3 编写 JsonSerializer 单元测试
     - 测试空 DataFrame、嵌套 datetime、Enum、set 等边界情况
     - _Requirements: 4.5, 4.6_
 
