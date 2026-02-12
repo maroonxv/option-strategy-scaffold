@@ -49,28 +49,28 @@
     - **Property 4: 隐含波动率 Round-Trip**
     - **Validates: Requirements 2.1, 2.3**
 
-- [ ] 3. Checkpoint - Greeks 计算验证
+- [x] 3. Checkpoint - Greeks 计算验证
   - Ensure all tests pass, ask the user if questions arise.
 
-- [ ] 4. 实现 PortfolioRiskAggregator 领域服务
-  - [ ] 4.1 实现持仓级风控检查
+- [x] 4. 实现 PortfolioRiskAggregator 领域服务
+  - [x] 4.1 实现持仓级风控检查
     - 在 `src/strategy/domain/domain_service/` 下新建 `portfolio_risk_aggregator.py`
     - 实现 check_position_risk 方法
     - _Requirements: 3.1, 3.2, 3.3, 3.4_
-  - [ ] 4.2 Property test: 持仓级风控检查正确性
+  - [x] 4.2 Property test: 持仓级风控检查正确性
     - **Property 5: 持仓级风控检查正确性**
     - **Validates: Requirements 3.1, 3.2, 3.3, 3.4**
-  - [ ] 4.3 实现组合级 Greeks 聚合
+  - [x] 4.3 实现组合级 Greeks 聚合
     - 在 portfolio_risk_aggregator.py 中实现 aggregate_portfolio_greeks 方法
     - 返回 PortfolioGreeks 快照和 GreeksRiskBreachEvent 列表
     - _Requirements: 4.1, 4.2, 4.3, 4.4, 4.5_
-  - [ ] 4.4 Property test: 组合级 Greeks 聚合正确性
+  - [x] 4.4 Property test: 组合级 Greeks 聚合正确性
     - **Property 6: 组合级 Greeks 聚合为正确的加权求和**
     - **Validates: Requirements 4.1, 4.2**
-  - [ ] 4.5 Property test: 组合级阈值突破事件
+  - [x] 4.5 Property test: 组合级阈值突破事件
     - **Property 7: 组合级阈值突破事件产生**
     - **Validates: Requirements 4.3, 4.4, 4.5**
-  - [ ] 4.6 Property test: PortfolioGreeks 序列化 Round-Trip
+  - [x] 4.6 Property test: PortfolioGreeks 序列化 Round-Trip
     - **Property 12: PortfolioGreeks 序列化 Round-Trip**
     - **Validates: Requirements 9.2**
 
