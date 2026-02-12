@@ -95,8 +95,8 @@
     - 测试默认间隔 60 秒、写入失败不中断
     - _Requirements: 1.2, 1.5_
 
-- [ ] 9. 集成到 StrategyEntry
-  - [-] 9.1 修改 `src/strategy/strategy_entry.py`
+- [x] 9. 集成到 StrategyEntry
+  - [x] 9.1 修改 `src/strategy/strategy_entry.py`
     - 在 `on_init` 中：创建 `JsonSerializer`、`MigrationChain`、`StateRepository`（注入 DatabaseFactory）
     - 在 `on_init` 中：非回测模式下创建 `AutoSaveService`
     - 在 `on_init` 中：调用 `StateRepository.load()`，ArchiveNotFound 时使用空状态，CorruptionError 时 fail-fast
@@ -105,11 +105,11 @@
     - 移除旧的 pickle 文件路径逻辑和 `_load_state`/`_dump_state` 方法
     - _Requirements: 1.1, 1.6, 2.1, 2.3_
 
-- [ ] 10. 集成 DatabaseFactory 到启动流程
-  - [~] 10.1 修改 `src/main/bootstrap/database_setup.py`，改为调用 `DatabaseFactory.get_instance().initialize()`
+- [-] 10. 集成 DatabaseFactory 到启动流程
+  - [-] 10.1 修改 `src/main/bootstrap/database_setup.py`，改为调用 `DatabaseFactory.get_instance().initialize()`
     - 替换原有的直接 SETTINGS 注入逻辑
     - _Requirements: 3.1, 3.2, 3.3, 3.4, 3.5_
-  - [~] 10.2 修改 `src/backtesting/run_backtesting.py`，使用 `DatabaseFactory` 替代 monkey-patch
+  - [-] 10.2 修改 `src/backtesting/run_backtesting.py`，使用 `DatabaseFactory` 替代 monkey-patch
     - 移除 `force_mysql_database` 函数和 `vnpy.trader.database.get_database` 替换
     - 改为调用 `DatabaseFactory.get_instance().initialize()` 和 `DatabaseFactory.get_instance().get_database()`
     - _Requirements: 5.1, 5.2, 5.3_
