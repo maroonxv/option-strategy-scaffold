@@ -14,16 +14,16 @@
     - 包含 `strategy_name` 字段
     - _Requirements: 2.1_
 
-- [-] 2. 实现 MigrationChain
+- [x] 2. 实现 MigrationChain
   - [x] 2.1 创建 `src/strategy/infrastructure/persistence/migration_chain.py`，实现 `MigrationChain` 类
     - 实现 `register(from_version, fn)` 和 `migrate(data, from_version, to_version)` 方法
     - _Requirements: 4.3, 4.4_
-  - [-] 2.2 编写 MigrationChain 属性测试
+  - [x] 2.2 编写 MigrationChain 属性测试
     - **Property 8: Migration chain sequential application**
     - **Validates: Requirements 4.3**
 
-- [ ] 3. 实现 JsonSerializer
-  - [~] 3.1 创建 `src/strategy/infrastructure/persistence/json_serializer.py`，实现 `JsonSerializer` 类
+- [-] 3. 实现 JsonSerializer
+  - [-] 3.1 创建 `src/strategy/infrastructure/persistence/json_serializer.py`，实现 `JsonSerializer` 类
     - 实现自定义 `JSONEncoder` 处理 DataFrame、datetime、date、set、Enum、dataclass
     - 实现 `serialize()` 方法，自动注入 `schema_version`
     - 实现 `deserialize()` 方法，支持类型还原和版本迁移
