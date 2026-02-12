@@ -122,7 +122,7 @@
     - 测试缺失配置时的默认值
     - _Requirements: 5.1, 5.2, 5.3_
 
-- [ ] 9. Final checkpoint - 全量测试通过
+- [x] 9. Final checkpoint - 全量测试通过
   - Ensure all tests pass, ask the user if questions arise.
 
 ## Notes
