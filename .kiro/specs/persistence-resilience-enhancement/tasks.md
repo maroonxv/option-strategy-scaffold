@@ -58,14 +58,14 @@
     - _Requirements: 3.4, 3.5, 5.5_
 
 - [-] 6. 改造 StateRepository
-  - [-] 6.1 重写 `src/strategy/infrastructure/persistence/state_repository.py`
+  - [x] 6.1 重写 `src/strategy/infrastructure/persistence/state_repository.py`
     - 构造函数接受 `JsonSerializer` 和 `DatabaseFactory`
     - 实现 `save(strategy_name, data)` — INSERT 追加到 strategy_state 表
     - 实现 `load(strategy_name)` — 查询最新记录，返回 Dict 或 ArchiveNotFound，损坏时抛出 CorruptionError
     - 实现 `verify_integrity(strategy_name)` — 验证 JSON 可解析且包含 schema_version
     - 实现 `cleanup(strategy_name, keep_days)` — 清理旧快照
     - _Requirements: 1.4, 2.1, 2.2, 2.4, 2.5, 4.1, 4.8_
-  - [~] 6.2 编写 StateRepository 属性测试
+  - [-] 6.2 编写 StateRepository 属性测试
     - **Property 2: Save then load returns latest snapshot**
     - **Validates: Requirements 1.4**
     - **Property 3: Non-existent strategy returns ArchiveNotFound**
