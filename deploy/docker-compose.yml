@@ -28,7 +28,7 @@ services:
       context: ..  # 上下文设为项目根目录
       dockerfile: deploy/Dockerfile
     container_name: vnpy_dashboard
-    command: python src/interface/web/app.py
+    command: python src/web/app.py
     ports:
       - "5007:5007"
     environment:

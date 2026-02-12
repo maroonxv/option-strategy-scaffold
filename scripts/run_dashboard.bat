@@ -19,7 +19,7 @@ start "" "http://localhost:5007"
 
 REM Start Flask server
 echo Starting Strategy Dashboard on http://localhost:5007...
-python src/interface/web/app.py
+python src/web/app.py
 
 REM Pause if error occurs
 if %ERRORLEVEL% NEQ 0 (

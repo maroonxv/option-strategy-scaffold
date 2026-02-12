@@ -10,15 +10,15 @@ from typing import Any, Dict, List, Optional, Tuple
 
 # 将项目根目录添加到 sys.path 以允许反序列化策略对象
 current_dir = os.path.dirname(os.path.abspath(__file__))
-# src/interface/web -> src/interface -> src -> 根目录
-project_root = os.path.dirname(os.path.dirname(os.path.dirname(current_dir)))
+# src/web -> src -> 根目录
+project_root = os.path.dirname(os.path.dirname(current_dir))
 if project_root not in sys.path:
     sys.path.insert(0, project_root)
 
 class SnapshotReader:
     def __init__(self, monitor_dir="data/monitor"):
         # 将项目根目录添加到 sys.path 以允许反序列化策略对象
-        # src/interface/web -> src/interface -> src -> 项目根目录
+        # src/web -> src -> 项目根目录
         self.monitor_dir = os.path.join(project_root, monitor_dir)
 
     @staticmethod
