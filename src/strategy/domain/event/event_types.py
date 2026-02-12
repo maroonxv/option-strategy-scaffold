@@ -135,6 +135,45 @@ class RiskLimitExceededEvent(DomainEvent):
     limit_volume: int = 0
 
 
+@dataclass
+class GreeksRiskBreachEvent(DomainEvent):
+    """
+    Greeks 风控阈值突破事件
+
+    触发时机: 持仓级或组合级 Greeks 超过配置的阈值。
+    """
+    level: str = ""          # "position" | "portfolio"
+    greek_name: str = ""     # "delta" | "gamma" | "vega"
+    current_value: float = 0.0
+    limit_value: float = 0.0
+    vt_symbol: str = ""
+
+
+@dataclass
+class OrderTimeoutEvent(DomainEvent):
+    """
+    订单超时事件
+
+    触发时机: 限价单在配置的超时时间内未完全成交。
+    """
+    vt_orderid: str = ""
+    vt_symbol: str = ""
+    elapsed_seconds: float = 0.0
+
+
+@dataclass
+class OrderRetryExhaustedEvent(DomainEvent):
+    """
+    订单重试耗尽事件
+
+    触发时机: 订单超时撤销后重试次数达到上限。
+    """
+    vt_symbol: str = ""
+    total_retries: int = 0
+    original_price: float = 0.0
+    final_price: float = 0.0
+
+
 # ========== 策略告警数据 (用于飞书通知) ==========
 @dataclass
 class StrategyAlertData:

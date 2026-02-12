@@ -6,7 +6,7 @@ TODO
 
 .vscode/
 .pytest_cache/
-.kiro/
+
 .hypothesis/
 
 temp/

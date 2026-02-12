@@ -10,6 +10,9 @@ Value Object Module
 - ContractParams: 合约交易参数
 - QuoteRequest: 报价请求
 - OptionContract: 期权合约信息
+- GreeksInput / GreeksResult / IVResult: Greeks 计算相关
+- RiskThresholds / RiskCheckResult / PortfolioGreeks / PositionGreeksEntry: 风控相关
+- OrderExecutionConfig / ManagedOrder: 订单执行相关
 """
 
 from .order_instruction import OrderInstruction, Direction, Offset, OrderType
@@ -18,6 +21,9 @@ from .position_snapshot import PositionSnapshot, PositionDirection
 from .contract_params import ContractParams
 from .quote_request import QuoteRequest
 from .option_contract import OptionContract
+from .greeks import GreeksInput, GreeksResult, IVResult
+from .risk import RiskThresholds, RiskCheckResult, PortfolioGreeks, PositionGreeksEntry
+from .order_execution import OrderExecutionConfig, ManagedOrder
 
 __all__ = [
     # 交易指令相关
@@ -34,4 +40,16 @@ __all__ = [
     "OptionContract",
     # 报价相关
     "QuoteRequest",
+    # Greeks 相关
+    "GreeksInput",
+    "GreeksResult",
+    "IVResult",
+    # 风控相关
+    "RiskThresholds",
+    "RiskCheckResult",
+    "PortfolioGreeks",
+    "PositionGreeksEntry",
+    # 订单执行相关
+    "OrderExecutionConfig",
+    "ManagedOrder",
 ]
