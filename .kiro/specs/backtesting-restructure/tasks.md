@@ -36,7 +36,7 @@
 - [x] 3. Checkpoint - 确保所有测试通过
   - 确保所有测试通过，如有问题请询问用户。
 
-- [ ] 4. 实现合约工厂和注册表
+- [x] 4. 实现合约工厂和注册表
   - [x] 4.1 实现 `src/backtesting/contract/contract_factory.py`
     - ContractFactory.create()：解析 vt_symbol 构建 ContractData
     - 支持期货格式（rb2505.SHFE）和期权格式（MO2601-C-6300.CFFEX、rb2505C3000.SHFE）
@@ -53,7 +53,7 @@
     - **Property 7: 合约注册表 round-trip**
     - **Validates: Requirements 7.1, 7.2, 7.3**
 
-- [~] 5. Checkpoint - 确保所有测试通过
+- [-] 5. Checkpoint - 确保所有测试通过
   - 确保所有测试通过，如有问题请询问用户。
 
 - [ ] 6. 实现合约发现组件

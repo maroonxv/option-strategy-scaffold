@@ -43,6 +43,10 @@ class _ContractData:
             if not hasattr(self, attr):
                 setattr(self, attr, None)
 
+    @property
+    def vt_symbol(self) -> str:
+        return f"{self.symbol}.{self.exchange.value}"
+
 
 # Patch sys.modules so that `from vnpy.trader.constant import ...` works
 _const_mod = MagicMock()
