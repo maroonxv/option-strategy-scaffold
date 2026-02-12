@@ -21,7 +21,7 @@
     - ExchangeResolver.resolve()：从 EXCHANGE_MAP 查找，未知品种抛出 ValueError
     - ExchangeResolver.is_czce()：判断是否郑商所品种
     - _Requirements: 3.1, 3.2_
-  - [~] 2.2 为 ExchangeResolver 编写属性测试
+  - [x] 2.2 为 ExchangeResolver 编写属性测试
     - **Property 2: 交易所解析一致性**
     - **Validates: Requirements 3.1**
   - [~] 2.3 实现 `src/backtesting/contract/expiry_calculator.py`
