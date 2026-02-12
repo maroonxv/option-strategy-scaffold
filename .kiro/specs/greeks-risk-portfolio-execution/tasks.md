@@ -74,33 +74,33 @@
     - **Property 12: PortfolioGreeks 序列化 Round-Trip**
     - **Validates: Requirements 9.2**
 
-- [ ] 5. Checkpoint - 风控聚合验证
+- [x] 5. Checkpoint - 风控聚合验证
   - Ensure all tests pass, ask the user if questions arise.
 
-- [ ] 6. 实现 SmartOrderExecutor 领域服务
-  - [ ] 6.1 实现自适应价格计算和价格对齐
+- [x] 6. 实现 SmartOrderExecutor 领域服务
+  - [x] 6.1 实现自适应价格计算和价格对齐
     - 在 `src/strategy/domain/domain_service/` 下新建 `smart_order_executor.py`
     - 实现 calculate_adaptive_price 和 round_price_to_tick 方法
     - _Requirements: 7.1, 7.2, 7.3, 7.4_
-  - [ ] 6.2 Property test: 自适应委托价格计算
+  - [x] 6.2 Property test: 自适应委托价格计算
     - **Property 9: 自适应委托价格计算**
     - **Validates: Requirements 7.1, 7.2**
-  - [ ] 6.3 Property test: 价格对齐到最小变动价位
+  - [x] 6.3 Property test: 价格对齐到最小变动价位
     - **Property 10: 价格对齐到最小变动价位**
     - **Validates: Requirements 7.4**
-  - [ ] 6.4 实现订单超时管理
+  - [x] 6.4 实现订单超时管理
     - 实现 register_order, check_timeouts, mark_order_filled, mark_order_cancelled 方法
     - _Requirements: 6.1, 6.2, 6.3_
-  - [ ] 6.5 Property test: 订单超时检查正确性
+  - [x] 6.5 Property test: 订单超时检查正确性
     - **Property 8: 订单超时检查正确性**
     - **Validates: Requirements 6.1, 6.2, 6.3**
-  - [ ] 6.6 实现订单重试逻辑
+  - [x] 6.6 实现订单重试逻辑
     - 实现 prepare_retry 方法
     - _Requirements: 8.1, 8.2, 8.3_
-  - [ ] 6.7 Property test: 订单重试逻辑
+  - [x] 6.7 Property test: 订单重试逻辑
     - **Property 11: 订单重试逻辑**
     - **Validates: Requirements 8.1, 8.2, 8.3**
-  - [ ] 6.8 Property test: ManagedOrder 序列化 Round-Trip
+  - [x] 6.8 Property test: ManagedOrder 序列化 Round-Trip
     - **Property 13: ManagedOrder 序列化 Round-Trip**
     - **Validates: Requirements 9.4**
 
