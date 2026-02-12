@@ -46,10 +46,10 @@
     - **Property 5: 期货合约构建正确性**
     - **Property 6: 期权合约构建正确性**
     - **Validates: Requirements 5.1, 5.2, 5.3, 5.4**
-  - [-] 4.3 实现 `src/backtesting/contract/contract_registry.py`
+  - [x] 4.3 实现 `src/backtesting/contract/contract_registry.py`
     - ContractRegistry：register()、get()、get_all()、register_many()、inject_into_engine()
     - _Requirements: 7.1, 7.2, 7.3, 7.4_
-  - [~] 4.4 为 ContractRegistry 编写属性测试
+  - [x] 4.4 为 ContractRegistry 编写属性测试
     - **Property 7: 合约注册表 round-trip**
     - **Validates: Requirements 7.1, 7.2, 7.3**
 
