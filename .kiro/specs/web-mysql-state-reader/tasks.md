@@ -17,7 +17,7 @@
     - **Property 1: Special marker resolution produces only JSON-primitive types**
     - **Validates: Requirements 5.1, 5.2, 5.3, 5.4, 5.5, 5.6, 3.4, 4.5**
 
-  - [~] 1.3 实现 `transform_instruments` 方法
+  - [-] 1.3 实现 `transform_instruments` 方法
     - 从 `target_aggregate.instruments` 提取每个标的的 bars → dates/ohlc/volumes
     - 解析 indicators 中的特殊标记
     - 提取 delivery_month（复用 `extract_delivery_month` 逻辑）

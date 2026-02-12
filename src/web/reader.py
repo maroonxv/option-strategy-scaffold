@@ -81,6 +81,96 @@ class SnapshotJsonTransformer:
         # 基本类型: str, int, float, bool, None
         return obj
 
+    @staticmethod
+    def extract_delivery_month(vt_symbol: str) -> str:
+        """从合约代码提取到期月份
+
+        支持格式:
+        - pp2601.DCE -> 2601
+        - SH601.CZCE -> 601 -> 2601 (补全)
+        """
+        try:
+            symbol = vt_symbol.split('.')[0]
+
+            # 尝试匹配 4 位数字 (如 2601): 字母开头 + 2 + 3位数字
+            match_4 = re.search(r'[a-zA-Z]+(2\d{3})', symbol)
+            if match_4:
+                return match_4.group(1)
+
+            # 尝试匹配 3 位数字 (如 601): 字母开头 + 6/7/8/9 + 2位数字
+            match_3 = re.search(r'[a-zA-Z]+([6-9]\d{2})', symbol)
+            if match_3:
+                short_month = match_3.group(1)
+                return "2" + short_month
+        except Exception:
+            pass
+
+        return "Other"
+
+    @staticmethod
+    def transform_instruments(target_aggregate: dict) -> dict:
+        """转换标的数据为前端格式
+
+        Args:
+            target_aggregate: snapshot_json 中的 target_aggregate 字段
+
+        Returns:
+            {vt_symbol: {dates, ohlc, volumes, indicators, status, last_price, delivery_month}}
+        """
+        instruments = target_aggregate.get("instruments", {})
+        result = {}
+
+        for vt_symbol, instrument_data in instruments.items():
+            # 获取 bars 字段并解析特殊标记（如 __dataframe__）
+            raw_bars = instrument_data.get("bars", [])
+            bars = SnapshotJsonTransformer.resolve_special_markers(raw_bars)
+
+            # 跳过 bars 为空的标的
+            if not bars:
+                continue
+
+            # 提取 dates, ohlc, volumes
+            dates = []
+            ohlc = []
+            volumes = []
+
+            for record in bars:
+                # datetime 可能是字符串或 __datetime__ 标记（已被 resolve 处理）
+                dt_val = record.get("datetime", "")
+                if isinstance(dt_val, dict):
+                    dt_val = SnapshotJsonTransformer.resolve_special_markers(dt_val)
+                dates.append(str(dt_val))
+
+                ohlc.append([
+                    record.get("open", 0),
+                    record.get("close", 0),
+                    record.get("low", 0),
+                    record.get("high", 0),
+                ])
+                volumes.append(record.get("volume", 0))
+
+            # last_price: 最后一条记录的 close
+            last_price = bars[-1].get("close", 0)
+
+            # indicators: 解析特殊标记
+            raw_indicators = instrument_data.get("indicators", {})
+            indicators = SnapshotJsonTransformer.resolve_special_markers(raw_indicators)
+
+            # delivery_month
+            delivery_month = SnapshotJsonTransformer.extract_delivery_month(vt_symbol)
+
+            result[vt_symbol] = {
+                "dates": dates,
+                "ohlc": ohlc,
+                "volumes": volumes,
+                "indicators": indicators,
+                "status": {},
+                "last_price": last_price,
+                "delivery_month": delivery_month,
+            }
+
+        return result
+
 
 class SnapshotReader:
     def __init__(self, monitor_dir="data/monitor"):
@@ -288,71 +378,7 @@ class SnapshotReader:
         return result
 
 
-    class SnapshotJsonTransformer:
-        """将 strategy_state 的 snapshot_json 转换为前端格式"""
 
-        @staticmethod
-        def resolve_special_markers(obj: Any) -> Any:
-            """递归解析 JSON 中的特殊类型标记
-
-            解析规则:
-            - __dataframe__: 返回 records 列表（递归解析）
-            - __datetime__: 解析 ISO 字符串，返回 "YYYY-MM-DD HH:MM:SS" 格式
-            - __date__: 原样返回日期字符串
-            - __enum__: 原样返回枚举字符串
-            - __set__: 返回 values 列表（递归解析）
-            - __dataclass__: 移除 __dataclass__ 键，返回剩余字段（递归解析）
-            - 未知标记/普通 dict: 递归解析所有值
-            - list: 递归解析每个元素
-            - 基本类型 (str, int, float, bool, None): 原样返回
-            """
-            if isinstance(obj, dict):
-                # __dataframe__ 标记
-                if "__dataframe__" in obj:
-                    records = obj.get("records", [])
-                    return [SnapshotJsonTransformer.resolve_special_markers(r) for r in records]
-
-                # __datetime__ 标记
-                if "__datetime__" in obj:
-                    raw = obj["__datetime__"]
-                    try:
-                        dt = datetime.fromisoformat(str(raw))
-                        return dt.strftime("%Y-%m-%d %H:%M:%S")
-                    except (ValueError, TypeError):
-                        return str(raw)
-
-                # __date__ 标记
-                if "__date__" in obj:
-                    return str(obj["__date__"])
-
-                # __enum__ 标记
-                if "__enum__" in obj:
-                    return str(obj["__enum__"])
-
-                # __set__ 标记
-                if "__set__" in obj:
-                    values = obj.get("values", [])
-                    return [SnapshotJsonTransformer.resolve_special_markers(v) for v in values]
-
-                # __dataclass__ 标记
-                if "__dataclass__" in obj:
-                    return {
-                        k: SnapshotJsonTransformer.resolve_special_markers(v)
-                        for k, v in obj.items()
-                        if k != "__dataclass__"
-                    }
-
-                # 普通 dict: 递归解析所有值
-                return {
-                    k: SnapshotJsonTransformer.resolve_special_markers(v)
-                    for k, v in obj.items()
-                }
-
-            if isinstance(obj, list):
-                return [SnapshotJsonTransformer.resolve_special_markers(item) for item in obj]
-
-            # 基本类型: str, int, float, bool, None
-            return obj
 
 
 
