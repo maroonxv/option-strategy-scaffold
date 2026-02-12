@@ -6,61 +6,61 @@
 
 ## Tasks
 
-- [ ] 1. 新增值对象、枚举和领域事件定义
-  - [ ] 1.1 创建 `src/strategy/domain/value_object/advanced_order.py`，定义 AdvancedOrderType、AdvancedOrderStatus 枚举，AdvancedOrderRequest、AdvancedOrder、ChildOrder、SliceEntry 数据类
+- [x] 1. 新增值对象、枚举和领域事件定义
+  - [x] 1.1 创建 `src/strategy/domain/value_object/advanced_order.py`，定义 AdvancedOrderType、AdvancedOrderStatus 枚举，AdvancedOrderRequest、AdvancedOrder、ChildOrder、SliceEntry 数据类
     - 包含 `to_dict()` / `from_dict()` 序列化方法
     - _Requirements: 4.4, 4.5_
-  - [ ] 1.2 创建 `src/strategy/domain/value_object/hedging.py`，定义 HedgingConfig、HedgeResult、GammaScalpConfig、ScalpResult 数据类
+  - [x] 1.2 创建 `src/strategy/domain/value_object/hedging.py`，定义 HedgingConfig、HedgeResult、GammaScalpConfig、ScalpResult 数据类
     - _Requirements: 5.1, 5.2, 6.1_
-  - [ ] 1.3 创建 `src/strategy/domain/value_object/vol_surface.py`，定义 VolQuote、VolQueryResult、VolSmile、TermStructure、VolSurfaceSnapshot 数据类
+  - [x] 1.3 创建 `src/strategy/domain/value_object/vol_surface.py`，定义 VolQuote、VolQueryResult、VolSmile、TermStructure、VolSurfaceSnapshot 数据类
     - VolSurfaceSnapshot 包含 `to_dict()` / `from_dict()` 序列化方法
     - _Requirements: 8.1, 8.4, 8.5_
-  - [ ] 1.4 扩展 `src/strategy/domain/event/event_types.py`，新增 IcebergCompleteEvent、IcebergCancelledEvent、TWAPCompleteEvent、VWAPCompleteEvent、HedgeExecutedEvent、GammaScalpEvent
+  - [x] 1.4 扩展 `src/strategy/domain/event/event_types.py`，新增 IcebergCompleteEvent、IcebergCancelledEvent、TWAPCompleteEvent、VWAPCompleteEvent、HedgeExecutedEvent、GammaScalpEvent
     - _Requirements: 1.3, 1.4, 2.3, 3.3, 5.4, 6.3_
-  - [ ] 1.5 更新 `src/strategy/domain/value_object/__init__.py` 导出新增值对象
+  - [x] 1.5 更新 `src/strategy/domain/value_object/__init__.py` 导出新增值对象
     - _Requirements: 4.4, 5.1, 8.1_
 
-- [ ] 2. 实现 AdvancedOrderScheduler
-  - [ ] 2.1 创建 `src/strategy/domain/domain_service/advanced_order_scheduler.py`，实现 submit_iceberg 方法
+- [x] 2. 实现 AdvancedOrderScheduler
+  - [x] 2.1 创建 `src/strategy/domain/domain_service/advanced_order_scheduler.py`，实现 submit_iceberg 方法
     - 拆分总量为子单，每个子单 volume <= batch_size，sum == total_volume
     - _Requirements: 1.1, 1.5_
-  - [ ] 2.2 编写冰山单拆分属性测试
+  - [x] 2.2 编写冰山单拆分属性测试
     - **Property 1: 冰山单拆分正确性**
     - **Validates: Requirements 1.1, 1.5**
-  - [ ] 2.3 实现 submit_twap 方法
+  - [x] 2.3 实现 submit_twap 方法
     - 均匀分配总量到时间片，计算 slice_schedule
     - _Requirements: 2.1, 2.4_
-  - [ ] 2.4 编写 TWAP 调度属性测试
+  - [x] 2.4 编写 TWAP 调度属性测试
     - **Property 3: TWAP 调度正确性**
     - **Validates: Requirements 2.1, 2.3, 2.4**
-  - [ ] 2.5 实现 submit_vwap 方法
+  - [x] 2.5 实现 submit_vwap 方法
     - 按 volume_profile 权重比例分配总量
     - _Requirements: 3.1, 3.2, 3.4_
-  - [ ] 2.6 编写 VWAP 分配属性测试
+  - [x] 2.6 编写 VWAP 分配属性测试
     - **Property 4: VWAP 分配正确性**
     - **Validates: Requirements 3.1, 3.2, 3.3, 3.4**
-  - [ ] 2.7 实现 on_child_filled、get_pending_children、cancel_order 方法
+  - [x] 2.7 实现 on_child_filled、get_pending_children、cancel_order 方法
     - on_child_filled: 更新 filled_volume，检查是否全部成交并产生完成事件
     - get_pending_children: 返回当前时刻应提交的子单 (冰山单: 前一批已成交; TWAP/VWAP: 到达调度时间)
     - cancel_order: 标记取消状态，返回未提交子单 ID 列表和取消事件
     - _Requirements: 1.2, 1.3, 1.4, 2.2, 3.3, 4.1, 4.2, 4.3_
-  - [ ] 2.8 编写冰山单生命周期属性测试
+  - [x] 2.8 编写冰山单生命周期属性测试
     - **Property 2: 冰山单生命周期**
     - **Validates: Requirements 1.2, 1.3, 1.4**
-  - [ ] 2.9 编写高级订单成交量追踪属性测试
+  - [x] 2.9 编写高级订单成交量追踪属性测试
     - **Property 5: 高级订单成交量追踪**
     - **Validates: Requirements 4.2, 4.3**
-  - [ ] 2.10 编写高级订单序列化 Round-Trip 属性测试
+  - [x] 2.10 编写高级订单序列化 Round-Trip 属性测试
     - **Property 6: 高级订单序列化 Round-Trip**
     - **Validates: Requirements 4.4, 4.5**
-  - [ ] 2.11 编写 AdvancedOrderScheduler 单元测试
+  - [x] 2.11 编写 AdvancedOrderScheduler 单元测试
     - 冰山单具体拆分 (100 总量 / 30 每批 = 4 子单)
     - TWAP 具体时间片 (300 秒 / 5 片 = 60 秒间隔)
     - VWAP 具体分配 ([0.1, 0.3, 0.6] 分布)
     - 参数校验错误 (总量 <= 0, batch_size <= 0, num_slices <= 0, 空 volume_profile)
     - _Requirements: 1.1, 1.2, 1.3, 1.4, 1.5, 2.1, 2.3, 2.4, 3.1, 3.2, 3.3, 3.4_
 
-- [ ] 3. Checkpoint - 高级订单模块验证
+- [x] 3. Checkpoint - 高级订单模块验证
   - Ensure all tests pass, ask the user if questions arise.
 
 - [ ] 4. 实现 DeltaHedgingEngine

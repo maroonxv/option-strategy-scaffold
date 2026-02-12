@@ -13,6 +13,9 @@ Value Object Module
 - GreeksInput / GreeksResult / IVResult: Greeks 计算相关
 - RiskThresholds / RiskCheckResult / PortfolioGreeks / PositionGreeksEntry: 风控相关
 - OrderExecutionConfig / ManagedOrder: 订单执行相关
+- AdvancedOrderType / AdvancedOrderStatus / AdvancedOrderRequest / AdvancedOrder / ChildOrder / SliceEntry: 高级订单相关
+- HedgingConfig / HedgeResult / GammaScalpConfig / ScalpResult: 对冲相关
+- VolQuote / VolQueryResult / VolSmile / TermStructure / VolSurfaceSnapshot: 波动率曲面相关
 """
 
 from .order_instruction import OrderInstruction, Direction, Offset, OrderType
@@ -24,6 +27,12 @@ from .option_contract import OptionContract
 from .greeks import GreeksInput, GreeksResult, IVResult
 from .risk import RiskThresholds, RiskCheckResult, PortfolioGreeks, PositionGreeksEntry
 from .order_execution import OrderExecutionConfig, ManagedOrder
+from .advanced_order import (
+    AdvancedOrderType, AdvancedOrderStatus,
+    AdvancedOrderRequest, AdvancedOrder, ChildOrder, SliceEntry,
+)
+from .hedging import HedgingConfig, HedgeResult, GammaScalpConfig, ScalpResult
+from .vol_surface import VolQuote, VolQueryResult, VolSmile, TermStructure, VolSurfaceSnapshot
 
 __all__ = [
     # 交易指令相关
@@ -52,4 +61,22 @@ __all__ = [
     # 订单执行相关
     "OrderExecutionConfig",
     "ManagedOrder",
+    # 高级订单相关
+    "AdvancedOrderType",
+    "AdvancedOrderStatus",
+    "AdvancedOrderRequest",
+    "AdvancedOrder",
+    "ChildOrder",
+    "SliceEntry",
+    # 对冲相关
+    "HedgingConfig",
+    "HedgeResult",
+    "GammaScalpConfig",
+    "ScalpResult",
+    # 波动率曲面相关
+    "VolQuote",
+    "VolQueryResult",
+    "VolSmile",
+    "TermStructure",
+    "VolSurfaceSnapshot",
 ]

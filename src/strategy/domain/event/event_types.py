@@ -222,3 +222,59 @@ class StrategyAlertData:
             vt_symbol=vt_symbol,
             volume=volume,
         )
+
+
+# ========== 高级订单事件 ==========
+@dataclass
+class IcebergCompleteEvent(DomainEvent):
+    """冰山单完成事件"""
+    order_id: str = ""
+    vt_symbol: str = ""
+    total_volume: int = 0
+    filled_volume: int = 0
+
+
+@dataclass
+class IcebergCancelledEvent(DomainEvent):
+    """冰山单取消事件"""
+    order_id: str = ""
+    vt_symbol: str = ""
+    filled_volume: int = 0
+    remaining_volume: int = 0
+
+
+@dataclass
+class TWAPCompleteEvent(DomainEvent):
+    """TWAP 完成事件"""
+    order_id: str = ""
+    vt_symbol: str = ""
+    total_volume: int = 0
+
+
+@dataclass
+class VWAPCompleteEvent(DomainEvent):
+    """VWAP 完成事件"""
+    order_id: str = ""
+    vt_symbol: str = ""
+    total_volume: int = 0
+
+
+# ========== 对冲引擎事件 ==========
+@dataclass
+class HedgeExecutedEvent(DomainEvent):
+    """对冲执行事件"""
+    hedge_volume: int = 0
+    hedge_direction: str = ""
+    portfolio_delta_before: float = 0.0
+    portfolio_delta_after: float = 0.0
+    hedge_instrument: str = ""
+
+
+@dataclass
+class GammaScalpEvent(DomainEvent):
+    """Gamma Scalping 再平衡事件"""
+    rebalance_volume: int = 0
+    rebalance_direction: str = ""
+    portfolio_delta_before: float = 0.0
+    portfolio_gamma: float = 0.0
+    hedge_instrument: str = ""
