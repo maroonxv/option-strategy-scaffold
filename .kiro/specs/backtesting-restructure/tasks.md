@@ -42,11 +42,11 @@
     - 支持期货格式（rb2505.SHFE）和期权格式（MO2601-C-6300.CFFEX、rb2505C3000.SHFE）
     - 期权反向映射（MO→IM）、自动填充 size/pricetick
     - _Requirements: 5.1, 5.2, 5.3, 5.4, 5.5_
-  - [-] 4.2 为 ContractFactory 编写属性测试
+  - [x] 4.2 为 ContractFactory 编写属性测试
     - **Property 5: 期货合约构建正确性**
     - **Property 6: 期权合约构建正确性**
     - **Validates: Requirements 5.1, 5.2, 5.3, 5.4**
-  - [~] 4.3 实现 `src/backtesting/contract/contract_registry.py`
+  - [-] 4.3 实现 `src/backtesting/contract/contract_registry.py`
     - ContractRegistry：register()、get()、get_all()、register_many()、inject_into_engine()
     - _Requirements: 7.1, 7.2, 7.3, 7.4_
   - [~] 4.4 为 ContractRegistry 编写属性测试
