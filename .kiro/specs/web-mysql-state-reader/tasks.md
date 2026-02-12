@@ -75,13 +75,13 @@
     - 修改 `mysql_ready` 函数适配新的数据源检查逻辑
     - _Requirements: 6.1, 6.2, 6.3, 6.4_
 
-  - [-] 4.2 移除 pickle 依赖
+  - [x] 4.2 移除 pickle 依赖
     - 移除 `SnapshotReader` 的 import 和 `pickle_reader` 实例
     - 移除 `list_strategies_best_effort` 和 `get_snapshot_best_effort` 中的 pickle 回退逻辑
     - 保留 `MySQLSnapshotReader` 用于 events/bars API
     - _Requirements: 7.1, 7.2, 7.3_
 
-  - [~] 4.3 更新 WebSocket poll_db 函数
+  - [-] 4.3 更新 WebSocket poll_db 函数
     - 将 `poll_db` 中的快照轮询改为查询 `strategy_state` 表
     - 保留事件轮询逻辑（仍使用 `monitor_signal_event` 表）
     - _Requirements: 8.3_

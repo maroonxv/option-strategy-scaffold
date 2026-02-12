@@ -212,59 +212,62 @@ if socketio is not None:
 
     def poll_db():
         mysql_reader.ensure_tables()
-        last_snapshot: dict = {}
+        last_snapshot: dict = {}  # {strategy_name: saved_at}
         last_event_id = 0
         poll_interval = float(os.getenv("MONITOR_POLL_INTERVAL", "1.0") or 1.0)
         while True:
-            if not mysql_ready():
-                socketio.sleep(poll_interval)
-                continue
             try:
-                conn = mysql_reader._connect()
-                if conn is None:
-                    socketio.sleep(poll_interval)
-                    continue
+                # --- Snapshot polling via strategy_state table ---
                 try:
-                    with conn.cursor() as cursor:
-                        cursor.execute("SELECT variant, updated_at FROM monitor_signal_snapshot")
-                        snapshot_rows = cursor.fetchall() or []
-                        for r in snapshot_rows:
-                            variant = r.get("variant", "")
-                            updated_at = r.get("updated_at", None)
-                            last = last_snapshot.get(variant)
-                            if last is None or (updated_at and updated_at > last):
-                                last_snapshot[variant] = updated_at
-                                payload = mysql_reader.get_strategy_data(variant)
-                                if payload:
-                                    socketio.emit("snapshot_update", payload, room=f"variant:{variant}")
+                    strategies = state_reader.list_available_strategies()
+                    for s in strategies:
+                        variant = s.get("variant", "")
+                        last_update = s.get("last_update", "")
+                        last = last_snapshot.get(variant)
+                        if last is None or (last_update and last_update > last):
+                            last_snapshot[variant] = last_update
+                            payload = state_reader.get_strategy_data(variant)
+                            if payload:
+                                socketio.emit("snapshot_update", payload, room=f"variant:{variant}")
+                except Exception:
+                    pass
 
-                        cursor.execute(
-                            "SELECT id, variant, instance_id, vt_symbol, bar_dt, event_type, event_key, created_at, payload_json "
-                            "FROM monitor_signal_event WHERE id>%s ORDER BY id ASC LIMIT 500",
-                            (last_event_id,),
-                        )
-                        event_rows = cursor.fetchall() or []
-                        for e in event_rows:
-                            last_event_id = max(last_event_id, int(e.get("id", 0) or 0))
-                            variant = e.get("variant", "")
-                            payload = e.get("payload_json")
-                            if isinstance(payload, str):
-                                try:
-                                    payload_obj = json.loads(payload)
-                                except Exception:
-                                    payload_obj = {"raw": payload}
-                            elif isinstance(payload, dict):
-                                payload_obj = payload
-                            else:
-                                payload_obj = {}
-                            out = dict(e)
-                            out["payload"] = payload_obj
-                            out.pop("payload_json", None)
-                            if variant:
-                                socketio.emit("event_new", out, room=f"variant:{variant}")
-                finally:
+                # --- Event polling via monitor_signal_event table (unchanged) ---
+                if mysql_ready():
                     try:
-                        conn.close()
+                        conn = mysql_reader._connect()
+                        if conn is not None:
+                            try:
+                                with conn.cursor() as cursor:
+                                    cursor.execute(
+                                        "SELECT id, variant, instance_id, vt_symbol, bar_dt, event_type, event_key, created_at, payload_json "
+                                        "FROM monitor_signal_event WHERE id>%s ORDER BY id ASC LIMIT 500",
+                                        (last_event_id,),
+                                    )
+                                    event_rows = cursor.fetchall() or []
+                                    for e in event_rows:
+                                        last_event_id = max(last_event_id, int(e.get("id", 0) or 0))
+                                        variant = e.get("variant", "")
+                                        payload = e.get("payload_json")
+                                        if isinstance(payload, str):
+                                            try:
+                                                payload_obj = json.loads(payload)
+                                            except Exception:
+                                                payload_obj = {"raw": payload}
+                                        elif isinstance(payload, dict):
+                                            payload_obj = payload
+                                        else:
+                                            payload_obj = {}
+                                        out = dict(e)
+                                        out["payload"] = payload_obj
+                                        out.pop("payload_json", None)
+                                        if variant:
+                                            socketio.emit("event_new", out, room=f"variant:{variant}")
+                            finally:
+                                try:
+                                    conn.close()
+                                except Exception:
+                                    pass
                     except Exception:
                         pass
             except Exception:
