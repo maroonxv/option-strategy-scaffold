@@ -81,7 +81,7 @@
     - argparse CLI 入口
     - 支持 config、start、end、capital、rate、slippage、no-chart 参数
     - _Requirements: 10.1, 10.2, 10.3_
-  - [~] 7.3 为 BacktestConfig 编写属性测试
+  - [x] 7.3 为 BacktestConfig 编写属性测试
     - **Property 8: 配置 CLI 覆盖优先级**
     - **Validates: Requirements 8.4**
 
