@@ -65,7 +65,7 @@
   - [x] 6.2 为 SymbolGenerator 编写属性测试
     - **Property 1: 合约代码生成格式正确性**
     - **Validates: Requirements 2.1, 2.2, 2.3**
-  - [~] 6.3 实现 `src/backtesting/discovery/option_discovery.py`
+  - [-] 6.3 实现 `src/backtesting/discovery/option_discovery.py`
     - OptionDiscoveryService.discover()：从数据库查找关联期权
     - 使用 FUTURE_OPTION_MAP 进行前缀匹配
     - 数据库失败时返回空列表
