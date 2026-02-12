@@ -135,17 +135,17 @@
 - [x] 8. Checkpoint - 波动率曲面模块验证
   - Ensure all tests pass, ask the user if questions arise.
 
-- [ ] 9. 配置集成与 StrategyEntry 编排
-  - [ ] 9.1 扩展 `config/strategy_config.yaml`，新增 hedging 和 advanced_orders 配置节
+- [x] 9. 配置集成与 StrategyEntry 编排
+  - [x] 9.1 扩展 `config/strategy_config.yaml`，新增 hedging 和 advanced_orders 配置节
     - _Requirements: 7.1, 7.2_
-  - [ ] 9.2 扩展 `src/main/config/config_loader.py`，支持加载 hedging 和 advanced_orders 配置
+  - [x] 9.2 扩展 `src/main/config/config_loader.py`，支持加载 hedging 和 advanced_orders 配置
     - _Requirements: 7.1, 7.2, 7.3, 7.4_
-  - [ ] 9.3 编写配置加载单元测试
+  - [x] 9.3 编写配置加载单元测试
     - 完整配置加载
     - 缺失字段默认值回退
     - _Requirements: 7.1, 7.2, 7.3, 7.4_
 
-- [ ] 10. Final checkpoint - 全模块集成验证
+- [x] 10. Final checkpoint - 全模块集成验证
   - Ensure all tests pass, ask the user if questions arise.
 
 ## Notes

@@ -45,3 +45,24 @@ order_execution:
     # 但需确保 CTP 服务器在 13:00 已允许连接，否则可能消耗重启次数。
     - start: "13:00"
       end: "15:30"
+
+
+# ========== 动态对冲配置 ==========
+hedging:
+  delta_hedging:
+    target_delta: 0.0
+    hedging_band: 0.5
+    hedge_instrument_vt_symbol: ""    # 运行时由策略设置
+    hedge_instrument_delta: 1.0
+    hedge_instrument_multiplier: 10.0
+  gamma_scalping:
+    rebalance_threshold: 0.3
+    hedge_instrument_vt_symbol: ""
+    hedge_instrument_delta: 1.0
+    hedge_instrument_multiplier: 10.0
+
+# ========== 高级订单配置 ==========
+advanced_orders:
+  default_iceberg_batch_size: 5
+  default_twap_slices: 10
+  default_time_window_seconds: 300

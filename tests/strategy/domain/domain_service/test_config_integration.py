@@ -131,3 +131,104 @@ order_execution:
         assert thresholds.portfolio_delta_limit == 5.0
         assert order_cfg.timeout_seconds == 30
         assert order_cfg.max_retries == 3
+
+
+import importlib.util as _ilu
+_spec = _ilu.spec_from_file_location("config_loader", "src/main/config/config_loader.py")
+_mod = _ilu.module_from_spec(_spec)
+_spec.loader.exec_module(_mod)
+ConfigLoader = _mod.ConfigLoader
+
+
+class TestHedgingConfigIntegration:
+    """对冲和高级订单配置加载测试"""
+
+    def test_full_hedging_config(self):
+        """完整对冲配置正确解析"""
+        yaml_str = """
+hedging:
+  delta_hedging:
+    target_delta: 1.0
+    hedging_band: 0.8
+    hedge_instrument_vt_symbol: "IF2506.CFFEX"
+    hedge_instrument_delta: 1.0
+    hedge_instrument_multiplier: 300.0
+  gamma_scalping:
+    rebalance_threshold: 0.5
+    hedge_instrument_vt_symbol: "IF2506.CFFEX"
+    hedge_instrument_delta: 1.0
+    hedge_instrument_multiplier: 300.0
+"""
+        config = _load_config(yaml_str)
+        hedging = ConfigLoader.load_hedging_config(config)
+
+        assert hedging["delta_hedging"]["target_delta"] == 1.0
+        assert hedging["delta_hedging"]["hedging_band"] == 0.8
+        assert hedging["delta_hedging"]["hedge_instrument_multiplier"] == 300.0
+        assert hedging["gamma_scalping"]["rebalance_threshold"] == 0.5
+
+    def test_missing_hedging_uses_defaults(self):
+        """缺少 hedging 节时使用默认值"""
+        config = _load_config("")
+        hedging = ConfigLoader.load_hedging_config(config)
+
+        assert hedging["delta_hedging"]["target_delta"] == 0.0
+        assert hedging["delta_hedging"]["hedging_band"] == 0.5
+        assert hedging["delta_hedging"]["hedge_instrument_multiplier"] == 10.0
+        assert hedging["gamma_scalping"]["rebalance_threshold"] == 0.3
+
+    def test_partial_hedging_fills_defaults(self):
+        """部分对冲配置时，缺失字段使用默认值"""
+        yaml_str = """
+hedging:
+  delta_hedging:
+    target_delta: 2.0
+"""
+        config = _load_config(yaml_str)
+        hedging = ConfigLoader.load_hedging_config(config)
+
+        assert hedging["delta_hedging"]["target_delta"] == 2.0
+        assert hedging["delta_hedging"]["hedging_band"] == 0.5  # default
+        assert hedging["gamma_scalping"]["rebalance_threshold"] == 0.3  # default
+
+    def test_full_advanced_orders_config(self):
+        """完整高级订单配置正确解析"""
+        yaml_str = """
+advanced_orders:
+  default_iceberg_batch_size: 10
+  default_twap_slices: 20
+  default_time_window_seconds: 600
+"""
+        config = _load_config(yaml_str)
+        ao = ConfigLoader.load_advanced_orders_config(config)
+
+        assert ao["default_iceberg_batch_size"] == 10
+        assert ao["default_twap_slices"] == 20
+        assert ao["default_time_window_seconds"] == 600
+
+    def test_missing_advanced_orders_uses_defaults(self):
+        """缺少 advanced_orders 节时使用默认值"""
+        config = _load_config("")
+        ao = ConfigLoader.load_advanced_orders_config(config)
+
+        assert ao["default_iceberg_batch_size"] == 5
+        assert ao["default_twap_slices"] == 10
+        assert ao["default_time_window_seconds"] == 300
+
+    def test_actual_config_file_hedging(self):
+        """验证实际的 strategy_config.yaml 中的对冲配置"""
+        config_path = os.path.join("config", "strategy_config.yaml")
+        if not os.path.exists(config_path):
+            pytest.skip("config/strategy_config.yaml not found")
+
+        with open(config_path, "r", encoding="utf-8") as f:
+            config = yaml.safe_load(f)
+
+        hedging = ConfigLoader.load_hedging_config(config)
+        ao = ConfigLoader.load_advanced_orders_config(config)
+
+        assert hedging["delta_hedging"]["target_delta"] == 0.0
+        assert hedging["delta_hedging"]["hedging_band"] == 0.5
+        assert hedging["gamma_scalping"]["rebalance_threshold"] == 0.3
+        assert ao["default_iceberg_batch_size"] == 5
+        assert ao["default_twap_slices"] == 10

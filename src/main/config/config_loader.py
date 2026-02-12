@@ -194,3 +194,58 @@ class ConfigLoader:
             
         with open(path, "r", encoding="utf-8") as f:
             return yaml.safe_load(f)
+
+
+    @staticmethod
+    def load_hedging_config(config: dict) -> dict:
+        """
+        从策略配置中加载对冲配置
+
+        Args:
+            config: 完整策略配置字典
+
+        Returns:
+            包含 delta_hedging 和 gamma_scalping 配置的字典，缺失字段使用默认值
+        """
+        hedging = config.get("hedging", {})
+
+        delta_defaults = {
+            "target_delta": 0.0,
+            "hedging_band": 0.5,
+            "hedge_instrument_vt_symbol": "",
+            "hedge_instrument_delta": 1.0,
+            "hedge_instrument_multiplier": 10.0,
+        }
+        gamma_defaults = {
+            "rebalance_threshold": 0.3,
+            "hedge_instrument_vt_symbol": "",
+            "hedge_instrument_delta": 1.0,
+            "hedge_instrument_multiplier": 10.0,
+        }
+
+        delta_cfg = hedging.get("delta_hedging", {})
+        gamma_cfg = hedging.get("gamma_scalping", {})
+
+        return {
+            "delta_hedging": {k: delta_cfg.get(k, v) for k, v in delta_defaults.items()},
+            "gamma_scalping": {k: gamma_cfg.get(k, v) for k, v in gamma_defaults.items()},
+        }
+
+    @staticmethod
+    def load_advanced_orders_config(config: dict) -> dict:
+        """
+        从策略配置中加载高级订单配置
+
+        Args:
+            config: 完整策略配置字典
+
+        Returns:
+            高级订单配置字典，缺失字段使用默认值
+        """
+        defaults = {
+            "default_iceberg_batch_size": 5,
+            "default_twap_slices": 10,
+            "default_time_window_seconds": 300,
+        }
+        ao_cfg = config.get("advanced_orders", {})
+        return {k: ao_cfg.get(k, v) for k, v in defaults.items()}
