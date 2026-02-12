@@ -7,13 +7,13 @@
 ## Tasks
 
 - [ ] 1. 实现 SnapshotJsonTransformer 转换器
-  - [-] 1.1 实现 `resolve_special_markers` 方法
+  - [x] 1.1 实现 `resolve_special_markers` 方法
     - 在 `src/web/reader.py` 中新增 `SnapshotJsonTransformer` 类
     - 实现递归解析 `__dataframe__`、`__datetime__`、`__date__`、`__enum__`、`__set__`、`__dataclass__` 标记
     - 未知标记保留原始值
     - _Requirements: 5.1, 5.2, 5.3, 5.4, 5.5, 5.6_
 
-  - [~] 1.2 编写 `resolve_special_markers` 的属性测试
+  - [x] 1.2 编写 `resolve_special_markers` 的属性测试
     - **Property 1: Special marker resolution produces only JSON-primitive types**
     - **Validates: Requirements 5.1, 5.2, 5.3, 5.4, 5.5, 5.6, 3.4, 4.5**
 
