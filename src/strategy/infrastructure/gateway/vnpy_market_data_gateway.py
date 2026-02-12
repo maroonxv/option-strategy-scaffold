@@ -176,7 +176,7 @@ class VnpyMarketDataGateway(VnpyGatewayAdapter):
         if self.main_engine:
             return self.main_engine.get_contract(vt_symbol)
             
-        # 回测模式兼容: 尝试从 strategy_engine 获取 (Hack injected in run_backtesting.py)
+        # 回测模式兼容: 尝试从 strategy_engine 获取 (通过 ContractRegistry.inject_into_engine 注入)
         if hasattr(self.context, "strategy_engine"):
             engine = self.context.strategy_engine
             if hasattr(engine, "get_contract"):

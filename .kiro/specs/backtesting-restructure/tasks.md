@@ -86,10 +86,10 @@
     - **Validates: Requirements 8.4**
 
 - [ ] 8. 更新模块导出和清理旧代码
-  - [-] 8.1 更新 `src/backtesting/__init__.py`，导出核心公共接口
+  - [x] 8.1 更新 `src/backtesting/__init__.py`，导出核心公共接口
     - 导出 BacktestConfig、BacktestRunner、SymbolGenerator、ContractFactory、ContractRegistry
     - _Requirements: 1.1_
-  - [~] 8.2 删除旧文件 `src/backtesting/run_backtesting.py` 和 `src/backtesting/vt_symbol_generator.py`
+  - [-] 8.2 删除旧文件 `src/backtesting/run_backtesting.py` 和 `src/backtesting/vt_symbol_generator.py`
     - 确认所有功能已迁移到新组件
     - 更新项目中其他引用旧模块的代码
     - _Requirements: 1.3, 1.4_
