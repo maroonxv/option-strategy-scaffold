@@ -45,7 +45,7 @@
     - 处理缺失字段的默认值
     - _Requirements: 2.2, 2.3_
 
-  - [~] 1.8 编写完整快照转换的属性测试
+  - [x] 1.8 编写完整快照转换的属性测试
     - **Property 4: Full snapshot transform produces all required Frontend_Format fields**
     - **Validates: Requirements 2.2, 2.3, 3.1**
 

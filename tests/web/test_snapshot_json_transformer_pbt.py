@@ -466,3 +466,142 @@ class TestPositionsOrdersTransformProperty:
         for item in result:
             missing = ORDER_REQUIRED_FIELDS - set(item.keys())
             assert not missing, f"Order item missing fields: {missing}"
+
+
+# ---------------------------------------------------------------------------
+# Property 4: Full snapshot transform produces all required Frontend_Format fields
+# ---------------------------------------------------------------------------
+
+import re as _re
+
+
+def _datetime_marker_for_snapshot():
+    """Generate a __datetime__ marker with a valid ISO datetime string for current_dt."""
+    return st.builds(
+        lambda y, mo, d, h, mi, s: {
+            "__datetime__": f"{y:04d}-{mo:02d}-{d:02d}T{h:02d}:{mi:02d}:{s:02d}"
+        },
+        y=st.integers(min_value=2000, max_value=2030),
+        mo=st.integers(min_value=1, max_value=12),
+        d=st.integers(min_value=1, max_value=28),
+        h=st.integers(min_value=0, max_value=23),
+        mi=st.integers(min_value=0, max_value=59),
+        s=st.integers(min_value=0, max_value=59),
+    )
+
+
+def _vt_symbol():
+    """Generate a vt_symbol like 'rb2501.SHFE'."""
+    prefix = st.text(
+        alphabet=st.sampled_from("abcdefghijklmnopqrstuvwxyz"),
+        min_size=1,
+        max_size=4,
+    )
+    digits = st.text(
+        alphabet=st.sampled_from("0123456789"),
+        min_size=3,
+        max_size=4,
+    )
+    exchange = st.sampled_from(["SHFE", "DCE", "CZCE", "CFFEX", "INE"])
+    return st.builds(lambda p, d, e: f"{p}{d}.{e}", p=prefix, d=digits, e=exchange)
+
+
+def _instrument_with_bars():
+    """Generate an instrument entry with non-empty bars (at least one record)."""
+    records = st.lists(_bar_record(), min_size=1, max_size=5)
+    return st.builds(
+        lambda recs: {"bars": {"__dataframe__": True, "records": recs}},
+        recs=records,
+    )
+
+
+def _target_aggregate():
+    """Generate a target_aggregate with at least one instrument with non-empty bars."""
+    instruments = st.dictionaries(
+        keys=_vt_symbol(),
+        values=_instrument_with_bars(),
+        min_size=1,
+        max_size=3,
+    )
+    return st.builds(lambda insts: {"instruments": insts}, insts=instruments)
+
+
+def _position_aggregate():
+    """Generate a position_aggregate with positions and pending_orders dicts."""
+    return st.builds(
+        lambda pos, ords: {"positions": pos, "pending_orders": ords},
+        pos=_positions_dict(),
+        ords=_orders_dict(),
+    )
+
+
+def _strategy_name():
+    """Generate a random strategy name string."""
+    return st.text(
+        alphabet=st.sampled_from("abcdefghijklmnopqrstuvwxyz0123456789_"),
+        min_size=1,
+        max_size=20,
+    )
+
+
+def _valid_snapshot():
+    """Generate a valid snapshot_json dict with current_dt, target_aggregate, position_aggregate."""
+    return st.builds(
+        lambda dt, ta, pa: {
+            "current_dt": dt,
+            "target_aggregate": ta,
+            "position_aggregate": pa,
+        },
+        dt=_datetime_marker_for_snapshot(),
+        ta=_target_aggregate(),
+        pa=_position_aggregate(),
+    )
+
+
+_TIMESTAMP_PATTERN = _re.compile(r"^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$")
+_EXPECTED_KEYS = {"timestamp", "variant", "instruments", "positions", "orders"}
+
+
+class TestFullSnapshotTransformProperty:
+    """Property 4: Full snapshot transform produces all required Frontend_Format fields
+
+    **Validates: Requirements 2.2, 2.3, 3.1**
+    """
+
+    @given(snapshot=_valid_snapshot(), name=_strategy_name())
+    @settings(max_examples=100)
+    def test_transform_produces_all_required_fields(self, snapshot, name):
+        """For any valid snapshot_json, calling transform SHALL produce a dict
+        containing exactly the keys timestamp, variant, instruments, positions, orders,
+        where variant equals the input strategy_name and timestamp matches YYYY-MM-DD HH:MM:SS."""
+        result = SnapshotJsonTransformer.transform(snapshot, name)
+
+        # Exactly the required keys
+        assert set(result.keys()) == _EXPECTED_KEYS, (
+            f"Expected keys {_EXPECTED_KEYS}, got {set(result.keys())}"
+        )
+
+        # variant equals strategy_name
+        assert result["variant"] == name, (
+            f"Expected variant={name!r}, got {result['variant']!r}"
+        )
+
+        # timestamp matches YYYY-MM-DD HH:MM:SS
+        assert _TIMESTAMP_PATTERN.match(result["timestamp"]), (
+            f"Timestamp {result['timestamp']!r} does not match YYYY-MM-DD HH:MM:SS"
+        )
+
+        # instruments is a dict
+        assert isinstance(result["instruments"], dict), (
+            f"Expected instruments to be dict, got {type(result['instruments'])}"
+        )
+
+        # positions is a list
+        assert isinstance(result["positions"], list), (
+            f"Expected positions to be list, got {type(result['positions'])}"
+        )
+
+        # orders is a list
+        assert isinstance(result["orders"], list), (
+            f"Expected orders to be list, got {type(result['orders'])}"
+        )
