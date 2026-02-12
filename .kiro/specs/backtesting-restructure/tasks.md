@@ -71,7 +71,7 @@
     - 数据库失败时返回空列表
     - _Requirements: 6.1, 6.2, 6.3, 6.4_
 
-- [ ] 7. 实现回测执行器和 CLI
+- [x] 7. 实现回测执行器和 CLI
   - [x] 7.1 实现 `src/backtesting/runner.py`
     - BacktestRunner.run()：完整回测流程编排
     - 使用 ContractRegistry 替代 monkey-patching
@@ -86,7 +86,7 @@
     - **Validates: Requirements 8.4**
 
 - [ ] 8. 更新模块导出和清理旧代码
-  - [~] 8.1 更新 `src/backtesting/__init__.py`，导出核心公共接口
+  - [-] 8.1 更新 `src/backtesting/__init__.py`，导出核心公共接口
     - 导出 BacktestConfig、BacktestRunner、SymbolGenerator、ContractFactory、ContractRegistry
     - _Requirements: 1.1_
   - [~] 8.2 删除旧文件 `src/backtesting/run_backtesting.py` 和 `src/backtesting/vt_symbol_generator.py`
