@@ -15,7 +15,7 @@ from src.strategy.domain.value_object.advanced_order import (
 )
 from src.strategy.domain.event.event_types import (
     DomainEvent, IcebergCompleteEvent, IcebergCancelledEvent,
-    TWAPCompleteEvent, VWAPCompleteEvent,
+    TWAPCompleteEvent, VWAPCompleteEvent, TimedSplitCompleteEvent,
 )
 
 
@@ -306,6 +306,13 @@ class AdvancedOrderScheduler:
                                 order_id=order.order_id,
                                 vt_symbol=vt_symbol,
                                 total_volume=total_vol,
+                            ))
+                        elif order.request.order_type == AdvancedOrderType.TIMED_SPLIT:
+                            events.append(TimedSplitCompleteEvent(
+                                order_id=order.order_id,
+                                vt_symbol=vt_symbol,
+                                total_volume=total_vol,
+                                filled_volume=order.filled_volume,
                             ))
                     return events
         return events
