@@ -17,6 +17,10 @@ class AdvancedOrderType(Enum):
     ICEBERG = "iceberg"
     TWAP = "twap"
     VWAP = "vwap"
+    TIMED_SPLIT = "timed_split"
+    CLASSIC_ICEBERG = "classic_iceberg"
+    ENHANCED_TWAP = "enhanced_twap"
+
 
 
 class AdvancedOrderStatus(Enum):
@@ -43,6 +47,7 @@ class ChildOrder:
     scheduled_time: Optional[datetime] = None
     is_submitted: bool = False
     is_filled: bool = False
+    price_offset: float = 0.0
 
 
 @dataclass
@@ -54,6 +59,11 @@ class AdvancedOrderRequest:
     time_window_seconds: int = 0
     num_slices: int = 0
     volume_profile: List[float] = field(default_factory=list)
+    interval_seconds: int = 0
+    per_order_volume: int = 0
+    volume_randomize_ratio: float = 0.0
+    price_offset_ticks: int = 0
+    price_tick: float = 0.0
 
 
 @dataclass
