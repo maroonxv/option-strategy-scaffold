@@ -445,6 +445,12 @@ class AdvancedOrderScheduler:
                                 total_volume=total_vol,
                                 filled_volume=order.filled_volume,
                             ))
+                        elif order.request.order_type == AdvancedOrderType.ENHANCED_TWAP:
+                            events.append(EnhancedTWAPCompleteEvent(
+                                order_id=order.order_id,
+                                vt_symbol=vt_symbol,
+                                total_volume=total_vol,
+                            ))
                     return events
         return events
 

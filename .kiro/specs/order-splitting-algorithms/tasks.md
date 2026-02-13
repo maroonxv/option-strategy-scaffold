@@ -66,7 +66,7 @@
   - [x] 5.2 扩展 get_pending_children 支持 ENHANCED_TWAP 类型
     - 在 `get_pending_children` 中新增 `ENHANCED_TWAP` 分支：按 scheduled_time 提交
     - _Requirements: 3.3_
-  - [~] 5.3 扩展 on_child_filled 和 cancel_order 支持增强型 TWAP 事件
+  - [x] 5.3 扩展 on_child_filled 和 cancel_order 支持增强型 TWAP 事件
     - 在 `on_child_filled` 中新增 `ENHANCED_TWAP` 分支：全部成交时发布 `EnhancedTWAPCompleteEvent`
     - 在 `cancel_order` 中扩展取消逻辑
     - _Requirements: 3.4, 3.5_

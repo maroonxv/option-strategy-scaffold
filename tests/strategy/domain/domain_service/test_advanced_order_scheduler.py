@@ -20,6 +20,7 @@ from src.strategy.domain.event.event_types import (
     IcebergCompleteEvent, IcebergCancelledEvent,
     TWAPCompleteEvent, VWAPCompleteEvent,
     ClassicIcebergCompleteEvent, ClassicIcebergCancelledEvent,
+    EnhancedTWAPCompleteEvent,
 )
 
 
@@ -823,6 +824,55 @@ class TestAdvancedOrderSchedulerUnit:
         pending = scheduler.get_pending_children(t_end)
         assert len(pending) == 4
         assert all(c.child_id != order.child_orders[0].child_id for c in pending)
+
+    def test_enhanced_twap_on_child_filled_complete_event(self):
+        """增强型 TWAP: 全部成交时发布 EnhancedTWAPCompleteEvent"""
+        scheduler = AdvancedOrderScheduler()
+        start = datetime(2025, 1, 1, 9, 0, 0)
+        order = scheduler.submit_enhanced_twap(make_instruction(100), 300, 5, start)
+        assert len(order.child_orders) == 5
+
+        # 逐笔成交前 4 笔，不应产生完成事件
+        for i in range(4):
+            events = scheduler.on_child_filled(order.child_orders[i].child_id)
+            assert len(events) == 0
+
+        # 成交最后一笔，应产生 EnhancedTWAPCompleteEvent
+        events = scheduler.on_child_filled(order.child_orders[4].child_id)
+        assert len(events) == 1
+        evt = events[0]
+        assert isinstance(evt, EnhancedTWAPCompleteEvent)
+        assert evt.order_id == order.order_id
+        assert evt.vt_symbol == "IO2506-C-4000.CFFEX"
+        assert evt.total_volume == 100
+        assert order.status == AdvancedOrderStatus.COMPLETED
+
+    def test_enhanced_twap_cancel_after_partial_fill(self):
+        """增强型 TWAP: 部分成交后取消 -> CANCELLED 状态 + 正确的子单 ID"""
+        scheduler = AdvancedOrderScheduler()
+        start = datetime(2025, 1, 1, 9, 0, 0)
+        order = scheduler.submit_enhanced_twap(make_instruction(100), 300, 5, start)
+        # 5 笔子单，每笔 20
+
+        # 成交第一笔
+        order.child_orders[0].is_submitted = True
+        scheduler.on_child_filled(order.child_orders[0].child_id)
+
+        # 提交第二笔但未成交
+        order.child_orders[1].is_submitted = True
+
+        # 取消订单
+        cancel_ids, events = scheduler.cancel_order(order.order_id)
+
+        # 应返回已提交未成交的子单 ID（仅第二笔）
+        assert order.child_orders[1].child_id in cancel_ids
+        assert order.child_orders[0].child_id not in cancel_ids  # 已成交不需撤销
+        assert len(cancel_ids) == 1
+
+        # ENHANCED_TWAP 取消不产生特定取消事件（需求 3.5 未要求）
+        assert len(events) == 0
+
+        assert order.status == AdvancedOrderStatus.CANCELLED
 
 
 
