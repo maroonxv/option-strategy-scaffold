@@ -96,6 +96,11 @@ class AdvancedOrder:
                 "time_window_seconds": self.request.time_window_seconds,
                 "num_slices": self.request.num_slices,
                 "volume_profile": self.request.volume_profile,
+                "interval_seconds": self.request.interval_seconds,
+                "per_order_volume": self.request.per_order_volume,
+                "volume_randomize_ratio": self.request.volume_randomize_ratio,
+                "price_offset_ticks": self.request.price_offset_ticks,
+                "price_tick": self.request.price_tick,
             },
             "status": self.status.value,
             "filled_volume": self.filled_volume,
@@ -107,6 +112,7 @@ class AdvancedOrder:
                     "scheduled_time": c.scheduled_time.isoformat() if c.scheduled_time else None,
                     "is_submitted": c.is_submitted,
                     "is_filled": c.is_filled,
+                    "price_offset": c.price_offset,
                 }
                 for c in self.child_orders
             ],
@@ -141,6 +147,11 @@ class AdvancedOrder:
             time_window_seconds=req_data.get("time_window_seconds", 0),
             num_slices=req_data.get("num_slices", 0),
             volume_profile=req_data.get("volume_profile", []),
+            interval_seconds=req_data.get("interval_seconds", 0),
+            per_order_volume=req_data.get("per_order_volume", 0),
+            volume_randomize_ratio=req_data.get("volume_randomize_ratio", 0.0),
+            price_offset_ticks=req_data.get("price_offset_ticks", 0),
+            price_tick=req_data.get("price_tick", 0.0),
         )
         child_orders = [
             ChildOrder(
@@ -150,6 +161,7 @@ class AdvancedOrder:
                 scheduled_time=datetime.fromisoformat(c["scheduled_time"]) if c.get("scheduled_time") else None,
                 is_submitted=c["is_submitted"],
                 is_filled=c["is_filled"],
+                price_offset=c.get("price_offset", 0.0),
             )
             for c in data.get("child_orders", [])
         ]

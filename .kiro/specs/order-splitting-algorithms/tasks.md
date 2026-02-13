@@ -7,12 +7,12 @@
 ## 任务
 
 - [-] 1. 扩展值对象和领域事件
-  - [-] 1.1 扩展 AdvancedOrderType 枚举和 AdvancedOrderRequest 数据类
+  - [x] 1.1 扩展 AdvancedOrderType 枚举和 AdvancedOrderRequest 数据类
     - 在 `src/strategy/domain/value_object/advanced_order.py` 中新增 `TIMED_SPLIT`、`CLASSIC_ICEBERG`、`ENHANCED_TWAP` 枚举值
     - 在 `AdvancedOrderRequest` 中新增 `interval_seconds`、`per_order_volume`、`volume_randomize_ratio`、`price_offset_ticks`、`price_tick` 字段
     - 在 `ChildOrder` 中新增 `price_offset: float = 0.0` 字段
     - _Requirements: 1.1, 2.1, 2.3, 3.1_
-  - [~] 1.2 更新 AdvancedOrder 的 to_dict/from_dict 以支持新字段
+  - [-] 1.2 更新 AdvancedOrder 的 to_dict/from_dict 以支持新字段
     - 在 `to_dict` 中序列化新增的 `AdvancedOrderRequest` 字段和 `ChildOrder.price_offset`
     - 在 `from_dict` 中反序列化新增字段
     - _Requirements: 5.1, 5.2, 5.3_
