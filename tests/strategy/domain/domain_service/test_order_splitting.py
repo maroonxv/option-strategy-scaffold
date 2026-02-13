@@ -295,3 +295,149 @@ class TestSerializationRoundTripProperty:
         for orig_s, rest_s in zip(order.slice_schedule, restored.slice_schedule):
             assert rest_s.scheduled_time == orig_s.scheduled_time
             assert rest_s.volume == orig_s.volume
+
+
+class TestInvalidParameterRejectionProperty:
+    """Feature: order-splitting-algorithms, Property 9: 无效参数拒绝"""
+
+    # ---- 定时拆单 (Req 1.5) ----
+
+    @given(total_volume=st.integers(max_value=0))
+    @settings(max_examples=100)
+    def test_timed_split_rejects_invalid_total_volume(self, total_volume):
+        """
+        **Validates: Requirements 1.5**
+
+        定时拆单：total_volume <= 0 应抛出 ValueError
+        """
+        scheduler = AdvancedOrderScheduler()
+        instruction = make_instruction(total_volume)
+        start_time = datetime(2025, 1, 1, 10, 0, 0)
+        with pytest.raises(ValueError):
+            scheduler.submit_timed_split(instruction, interval_seconds=10, per_order_volume=5, start_time=start_time)
+
+    @given(interval_seconds=st.integers(max_value=0))
+    @settings(max_examples=100)
+    def test_timed_split_rejects_invalid_interval_seconds(self, interval_seconds):
+        """
+        **Validates: Requirements 1.5**
+
+        定时拆单：interval_seconds <= 0 应抛出 ValueError
+        """
+        scheduler = AdvancedOrderScheduler()
+        instruction = make_instruction(100)
+        start_time = datetime(2025, 1, 1, 10, 0, 0)
+        with pytest.raises(ValueError):
+            scheduler.submit_timed_split(instruction, interval_seconds=interval_seconds, per_order_volume=10, start_time=start_time)
+
+    @given(per_order_volume=st.integers(max_value=0))
+    @settings(max_examples=100)
+    def test_timed_split_rejects_invalid_per_order_volume(self, per_order_volume):
+        """
+        **Validates: Requirements 1.5**
+
+        定时拆单：per_order_volume <= 0 应抛出 ValueError
+        """
+        scheduler = AdvancedOrderScheduler()
+        instruction = make_instruction(100)
+        start_time = datetime(2025, 1, 1, 10, 0, 0)
+        with pytest.raises(ValueError):
+            scheduler.submit_timed_split(instruction, interval_seconds=10, per_order_volume=per_order_volume, start_time=start_time)
+
+    # ---- 经典冰山单 (Req 2.7, 2.8) ----
+
+    @given(total_volume=st.integers(max_value=0))
+    @settings(max_examples=100)
+    def test_classic_iceberg_rejects_invalid_total_volume(self, total_volume):
+        """
+        **Validates: Requirements 2.7**
+
+        经典冰山单：total_volume <= 0 应抛出 ValueError
+        """
+        scheduler = AdvancedOrderScheduler()
+        instruction = make_instruction(total_volume)
+        with pytest.raises(ValueError):
+            scheduler.submit_classic_iceberg(instruction, per_order_volume=10)
+
+    @given(per_order_volume=st.integers(max_value=0))
+    @settings(max_examples=100)
+    def test_classic_iceberg_rejects_invalid_per_order_volume(self, per_order_volume):
+        """
+        **Validates: Requirements 2.7**
+
+        经典冰山单：per_order_volume <= 0 应抛出 ValueError
+        """
+        scheduler = AdvancedOrderScheduler()
+        instruction = make_instruction(100)
+        with pytest.raises(ValueError):
+            scheduler.submit_classic_iceberg(instruction, per_order_volume=per_order_volume)
+
+    @given(volume_randomize_ratio=st.floats(max_value=-0.001, allow_nan=False, allow_infinity=False))
+    @settings(max_examples=100)
+    def test_classic_iceberg_rejects_negative_randomize_ratio(self, volume_randomize_ratio):
+        """
+        **Validates: Requirements 2.8**
+
+        经典冰山单：volume_randomize_ratio < 0 应抛出 ValueError
+        """
+        scheduler = AdvancedOrderScheduler()
+        instruction = make_instruction(100)
+        with pytest.raises(ValueError):
+            scheduler.submit_classic_iceberg(instruction, per_order_volume=10, volume_randomize_ratio=volume_randomize_ratio)
+
+    @given(volume_randomize_ratio=st.floats(min_value=1.0, max_value=100.0, allow_nan=False, allow_infinity=False))
+    @settings(max_examples=100)
+    def test_classic_iceberg_rejects_ratio_gte_one(self, volume_randomize_ratio):
+        """
+        **Validates: Requirements 2.8**
+
+        经典冰山单：volume_randomize_ratio >= 1 应抛出 ValueError
+        """
+        scheduler = AdvancedOrderScheduler()
+        instruction = make_instruction(100)
+        with pytest.raises(ValueError):
+            scheduler.submit_classic_iceberg(instruction, per_order_volume=10, volume_randomize_ratio=volume_randomize_ratio)
+
+    # ---- 增强型 TWAP (Req 3.6) ----
+
+    @given(total_volume=st.integers(max_value=0))
+    @settings(max_examples=100)
+    def test_enhanced_twap_rejects_invalid_total_volume(self, total_volume):
+        """
+        **Validates: Requirements 3.6**
+
+        增强型 TWAP：total_volume <= 0 应抛出 ValueError
+        """
+        scheduler = AdvancedOrderScheduler()
+        instruction = make_instruction(total_volume)
+        start_time = datetime(2025, 1, 1, 10, 0, 0)
+        with pytest.raises(ValueError):
+            scheduler.submit_enhanced_twap(instruction, time_window_seconds=300, num_slices=5, start_time=start_time)
+
+    @given(time_window_seconds=st.integers(max_value=0))
+    @settings(max_examples=100)
+    def test_enhanced_twap_rejects_invalid_time_window(self, time_window_seconds):
+        """
+        **Validates: Requirements 3.6**
+
+        增强型 TWAP：time_window_seconds <= 0 应抛出 ValueError
+        """
+        scheduler = AdvancedOrderScheduler()
+        instruction = make_instruction(100)
+        start_time = datetime(2025, 1, 1, 10, 0, 0)
+        with pytest.raises(ValueError):
+            scheduler.submit_enhanced_twap(instruction, time_window_seconds=time_window_seconds, num_slices=5, start_time=start_time)
+
+    @given(num_slices=st.integers(max_value=0))
+    @settings(max_examples=100)
+    def test_enhanced_twap_rejects_invalid_num_slices(self, num_slices):
+        """
+        **Validates: Requirements 3.6**
+
+        增强型 TWAP：num_slices <= 0 应抛出 ValueError
+        """
+        scheduler = AdvancedOrderScheduler()
+        instruction = make_instruction(100)
+        start_time = datetime(2025, 1, 1, 10, 0, 0)
+        with pytest.raises(ValueError):
+            scheduler.submit_enhanced_twap(instruction, time_window_seconds=300, num_slices=num_slices, start_time=start_time)

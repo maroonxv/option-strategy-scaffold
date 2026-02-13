@@ -81,7 +81,7 @@
   - [x] 6.2 编写序列化 Round-Trip 属性测试
     - **Property 8: 序列化 Round-Trip**
     - **Validates: Requirements 5.1, 5.2, 5.3**
-  - [~] 6.3 编写无效参数拒绝属性测试
+  - [x] 6.3 编写无效参数拒绝属性测试
     - **Property 9: 无效参数拒绝**
     - **Validates: Requirements 1.5, 2.7, 2.8, 3.6**
 
