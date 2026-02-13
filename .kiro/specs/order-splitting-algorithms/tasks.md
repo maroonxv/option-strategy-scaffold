@@ -28,10 +28,10 @@
   - [x] 2.2 扩展 get_pending_children 支持 TIMED_SPLIT 类型
     - 在 `get_pending_children` 中新增 `TIMED_SPLIT` 分支：按 scheduled_time 提交
     - _Requirements: 1.3_
-  - [-] 2.3 扩展 on_child_filled 支持 TIMED_SPLIT 完成事件
+  - [x] 2.3 扩展 on_child_filled 支持 TIMED_SPLIT 完成事件
     - 在 `on_child_filled` 中新增 `TIMED_SPLIT` 分支：全部成交时发布 `TimedSplitCompleteEvent`
     - _Requirements: 1.4_
-  - [~] 2.4 编写定时拆单属性测试
+  - [x] 2.4 编写定时拆单属性测试
     - **Property 1: 定时拆单拆分正确性**
     - **Validates: Requirements 1.1, 1.2**
 
