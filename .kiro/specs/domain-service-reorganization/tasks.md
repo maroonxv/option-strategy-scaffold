@@ -73,7 +73,7 @@
     - `.domain.domain_service.portfolio_risk_aggregator` → `.domain.domain_service.risk.portfolio_risk_aggregator`
     - `.domain.domain_service.position_sizing_service` → `.domain.domain_service.risk.position_sizing_service`
     - _需求：3.1_
-  - [~] 6.3 更新测试文件 `test_portfolio_risk_aggregator.py` 的导入路径
+  - [x] 6.3 更新测试文件 `test_portfolio_risk_aggregator.py` 的导入路径
     - `src.strategy.domain.domain_service.portfolio_risk_aggregator` → `src.strategy.domain.domain_service.risk.portfolio_risk_aggregator`
     - _需求：4.1_
 

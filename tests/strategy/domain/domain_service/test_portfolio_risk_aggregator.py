@@ -7,7 +7,7 @@ import json
 import pytest
 from hypothesis import given, strategies as st, settings
 
-from src.strategy.domain.domain_service.portfolio_risk_aggregator import PortfolioRiskAggregator
+from src.strategy.domain.domain_service.risk.portfolio_risk_aggregator import PortfolioRiskAggregator
 from src.strategy.domain.value_object.greeks import GreeksResult
 from src.strategy.domain.value_object.risk import (
     RiskThresholds,
