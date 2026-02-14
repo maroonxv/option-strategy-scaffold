@@ -230,7 +230,7 @@
 
 ## 任务 4：单元测试
 
-- [-] 4.1 编写 BarPipeline 单元测试
+- [x] 4.1 编写 BarPipeline 单元测试
   - 文件：`tests/strategy/infrastructure/bar_pipeline/__init__.py`（创建空包文件）
   - 文件：`tests/strategy/infrastructure/bar_pipeline/test_bar_pipeline.py`
   - 测试用例：
@@ -241,7 +241,7 @@
   - 使用 `unittest.mock.patch` 或 `unittest.mock.MagicMock` mock PBG
   - **Validates: Requirements 2.2, 2.3, 2.4, 2.5**
 
-- [~] 4.2 编写 StrategyEntry 重构后的单元测试
+- [-] 4.2 编写 StrategyEntry 重构后的单元测试
   - 文件：`tests/strategy/test_strategy_entry_bar_pipeline.py`
   - 测试用例：
     1. **参数隔离**：断言 `StrategyEntry.parameters` 列表中不包含 `"bar_window"` 和 `"bar_interval"`
