@@ -64,7 +64,7 @@
     - `src.strategy.domain.domain_service.future_selection_service` → `src.strategy.domain.domain_service.selection.future_selection_service`
     - _需求：4.1_
 
-- [ ] 6. 移动 risk 组文件并更新导入
+- [x] 6. 移动 risk 组文件并更新导入
   - [x] 6.1 移动 `portfolio_risk_aggregator.py` 和 `position_sizing_service.py` 到 `risk/`
     - 移动文件到 `risk/` 子目录
     - 将两个文件中的相对导入 `..` 调整为 `...`
@@ -78,7 +78,7 @@
     - _需求：4.1_
 
 - [ ] 7. 移动 signal 组文件并更新导入
-  - [~] 7.1 移动 `signal_service.py` 和 `indicator_service.py` 到 `signal/`
+  - [-] 7.1 移动 `signal_service.py` 和 `indicator_service.py` 到 `signal/`
     - 移动文件到 `signal/` 子目录
     - 将两个文件中的相对导入 `..` 调整为 `...`
     - _需求：2.6_

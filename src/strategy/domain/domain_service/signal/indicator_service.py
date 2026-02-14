@@ -30,7 +30,7 @@ from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from ..entity.target_instrument import TargetInstrument
+    from ...entity.target_instrument import TargetInstrument
 
 
 class IIndicatorService(ABC):

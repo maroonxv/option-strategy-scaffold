@@ -28,8 +28,8 @@ from abc import ABC, abstractmethod
 from typing import Optional, TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from ..entity.target_instrument import TargetInstrument
-    from ..entity.position import Position
+    from ...entity.target_instrument import TargetInstrument
+    from ...entity.position import Position
 
 
 class ISignalService(ABC):
