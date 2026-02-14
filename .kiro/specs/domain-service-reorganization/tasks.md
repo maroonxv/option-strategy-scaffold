@@ -13,7 +13,7 @@
     - 确认 `calculation_service/` 保持不变
     - _需求：1.1, 1.2, 1.3_
 
-- [ ] 2. 移动 pricing 组文件并更新导入
+- [x] 2. 移动 pricing 组文件并更新导入
   - [x] 2.1 移动 `greeks_calculator.py` 和 `vol_surface_builder.py` 到 `pricing/`
     - 移动文件到 `pricing/` 子目录
     - 将两个文件中的相对导入 `..` 调整为 `...`（多一层）
@@ -27,7 +27,7 @@
     - _需求：4.1_
 
 - [ ] 3. 移动 hedging 组文件并更新导入
-  - [~] 3.1 移动 `delta_hedging_engine.py` 和 `gamma_scalping_engine.py` 到 `hedging/`
+  - [x] 3.1 移动 `delta_hedging_engine.py` 和 `gamma_scalping_engine.py` 到 `hedging/`
     - 移动文件到 `hedging/` 子目录
     - 将两个文件中的相对导入 `..` 调整为 `...`
     - _需求：2.2_
