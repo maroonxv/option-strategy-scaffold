@@ -17,7 +17,6 @@ from datetime import datetime, date
 
 
 from vnpy_portfoliostrategy import StrategyTemplate, StrategyEngine
-from vnpy_portfoliostrategy.utility import PortfolioBarGenerator
 from vnpy.trader.object import BarData, OrderData, TradeData, PositionData, TickData
 from vnpy.trader.constant import Interval
 
@@ -445,8 +444,8 @@ class StrategyEntry(StrategyTemplate):
 
     def on_tick(self, tick: TickData) -> None:
         """Tick 推送回调"""
-        if self.pbg:
-            self.pbg.update_tick(tick)
+        if self.bar_pipeline:
+            self.bar_pipeline.handle_tick(tick)
 
     def on_bars(self, bars: Dict[str, BarData]) -> None:
         """
@@ -476,19 +475,14 @@ class StrategyEntry(StrategyTemplate):
                 self.universe_check_interval = 0
                 self._validate_universe()
 
-        if self.pbg:
-            self.pbg.update_bars(bars)
+        if self.bar_pipeline:
+            self.bar_pipeline.handle_bars(bars)
         else:
             self._process_bars(bars)
 
         # 周期性自动保存 (非回测模式)
         if self.auto_save_service and not self.warming_up:
             self.auto_save_service.maybe_save(self._create_snapshot)
-
-    def on_window_bars(self, bars: Dict[str, BarData]) -> None:
-        """合成K线回调 — 直接编排领域逻辑"""
-        self.logger.debug(f"on_window_bars received: {list(bars.keys())}")
-        self._process_bars(bars)
 
     def on_order(self, order: OrderData) -> None:
         """

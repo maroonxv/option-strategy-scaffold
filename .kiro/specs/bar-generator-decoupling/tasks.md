@@ -81,7 +81,7 @@
     ```
   - **Validates: Requirements 3.4**
 
-- [-] 2.3 重构 `on_init` 中的K线生成器初始化（第5步）
+- [x] 2.3 重构 `on_init` 中的K线生成器初始化（第5步）
   - 文件：`src/strategy/strategy_entry.py`，`on_init` 方法，"5. 初始化组合K线生成器" 部分
   - 删除当前的 PBG 初始化代码（约第 310-325 行）：
     ```python
@@ -118,7 +118,7 @@
     ```
   - **Validates: Requirements 3.1, 4.2, 4.3**
 
-- [~] 2.4 重构 `on_bars` 方法
+- [x] 2.4 重构 `on_bars` 方法
   - 文件：`src/strategy/strategy_entry.py`，`on_bars` 方法
   - 当前代码（约第 484-487 行）：
     ```python
@@ -137,7 +137,7 @@
   - 保留 `self.last_bars.update(bars)` 和换月检查、补漏检查、自动保存逻辑不变
   - **Validates: Requirements 1.1, 3.2**
 
-- [~] 2.5 重构 `on_tick` 方法
+- [x] 2.5 重构 `on_tick` 方法
   - 文件：`src/strategy/strategy_entry.py`，`on_tick` 方法
   - 当前代码：
     ```python
@@ -154,7 +154,7 @@
   - 无 BarPipeline 时 `on_tick` 不做任何K线相关处理（与当前行为一致）
   - **Validates: Requirements 1.3, 3.3**
 
-- [~] 2.6 移除 `on_window_bars` 方法
+- [x] 2.6 移除 `on_window_bars` 方法
   - 文件：`src/strategy/strategy_entry.py`
   - 完整删除 `on_window_bars` 方法（约第 489-492 行）：
     ```python
@@ -167,7 +167,7 @@
   - 该回调职责已由 BarPipeline 内部的 `_on_window_bars` 承担
   - **Validates: Requirements 3.4**
 
-- [~] 2.7 清理无用导入
+- [-] 2.7 清理无用导入
   - 文件：`src/strategy/strategy_entry.py`
   - 如果 `PortfolioBarGenerator` 不再被直接使用，移除其导入语句：
     ```python
