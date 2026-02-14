@@ -65,11 +65,11 @@
     - _需求：4.1_
 
 - [ ] 6. 移动 risk 组文件并更新导入
-  - [-] 6.1 移动 `portfolio_risk_aggregator.py` 和 `position_sizing_service.py` 到 `risk/`
+  - [x] 6.1 移动 `portfolio_risk_aggregator.py` 和 `position_sizing_service.py` 到 `risk/`
     - 移动文件到 `risk/` 子目录
     - 将两个文件中的相对导入 `..` 调整为 `...`
     - _需求：2.5_
-  - [~] 6.2 更新 `strategy_entry.py` 中 `portfolio_risk_aggregator` 和 `position_sizing_service` 的导入路径
+  - [x] 6.2 更新 `strategy_entry.py` 中 `portfolio_risk_aggregator` 和 `position_sizing_service` 的导入路径
     - `.domain.domain_service.portfolio_risk_aggregator` → `.domain.domain_service.risk.portfolio_risk_aggregator`
     - `.domain.domain_service.position_sizing_service` → `.domain.domain_service.risk.position_sizing_service`
     - _需求：3.1_
