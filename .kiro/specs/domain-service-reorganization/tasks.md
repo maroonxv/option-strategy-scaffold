@@ -14,11 +14,11 @@
     - _需求：1.1, 1.2, 1.3_
 
 - [ ] 2. 移动 pricing 组文件并更新导入
-  - [-] 2.1 移动 `greeks_calculator.py` 和 `vol_surface_builder.py` 到 `pricing/`
+  - [x] 2.1 移动 `greeks_calculator.py` 和 `vol_surface_builder.py` 到 `pricing/`
     - 移动文件到 `pricing/` 子目录
     - 将两个文件中的相对导入 `..` 调整为 `...`（多一层）
     - _需求：2.1_
-  - [~] 2.2 更新 `strategy_entry.py` 中 `greeks_calculator` 的导入路径
+  - [x] 2.2 更新 `strategy_entry.py` 中 `greeks_calculator` 的导入路径
     - `.domain.domain_service.greeks_calculator` → `.domain.domain_service.pricing.greeks_calculator`
     - _需求：3.1_
   - [~] 2.3 更新测试文件 `test_greeks_calculator.py` 和 `test_vol_surface_builder.py` 的导入路径
