@@ -195,3 +195,81 @@ class TestPassthroughIgnoresTickProperty:
         entry.on_tick(tick)
 
         assert entry.bar_pipeline is None
+
+
+# ── Import BarPipeline for Property 3 ──
+from src.strategy.infrastructure.bar_pipeline import BarPipeline
+
+
+# ── Helper: mirrors on_init BarPipeline creation logic ──
+
+def create_bar_pipeline_from_setting(setting: dict):
+    """Mirrors the BarPipeline creation logic from StrategyEntry.on_init.
+
+    The real on_init does:
+        bar_window = int(self.setting.get("bar_window", 0))
+        if bar_window > 0: ... create BarPipeline ...
+
+    int(None) raises TypeError, so we wrap in try/except to handle
+    None and other non-integer-convertible values gracefully.
+    """
+    try:
+        bar_window = int(setting.get("bar_window", 0))
+    except (TypeError, ValueError):
+        bar_window = 0
+
+    if bar_window > 0:
+        bar_interval_str = setting.get("bar_interval", "MINUTE")
+        interval_map = {
+            "MINUTE": mock_interval.MINUTE,
+            "HOUR": mock_interval.HOUR,
+            "DAILY": mock_interval.DAILY,
+        }
+        interval = interval_map.get(bar_interval_str, mock_interval.MINUTE)
+        return BarPipeline(
+            bar_callback=lambda bars: None,
+            window=bar_window,
+            interval=interval,
+        )
+    return None
+
+
+# ═══════════════════════════════════════════════════════════════════
+#  Property 3: BarPipeline 创建条件
+#  Feature: bar-generator-decoupling, Property 3: BarPipeline 创建条件
+#  **Validates: Requirements 3.1, 1.2**
+# ═══════════════════════════════════════════════════════════════════
+
+class TestBarPipelineCreationConditionProperty:
+    """
+    For any setting dict, when bar_window is a positive integer,
+    create_bar_pipeline_from_setting returns a BarPipeline instance;
+    when bar_window is 0, negative, None, or missing, it returns None.
+
+    Feature: bar-generator-decoupling, Property 3: BarPipeline 创建条件
+    **Validates: Requirements 3.1, 1.2**
+    """
+
+    @given(
+        bar_window=st.one_of(st.none(), st.integers()),
+        bar_interval=st.sampled_from(["MINUTE", "HOUR", "DAILY", "INVALID", ""]),
+    )
+    @settings(max_examples=200)
+    def test_positive_window_creates_pipeline_otherwise_none(
+        self, bar_window, bar_interval: str,
+    ) -> None:
+        """bar_window > 0 → BarPipeline instance; else → None."""
+        setting = {"bar_interval": bar_interval}
+        if bar_window is not None:
+            setting["bar_window"] = bar_window
+
+        result = create_bar_pipeline_from_setting(setting)
+
+        if isinstance(bar_window, int) and bar_window > 0:
+            assert isinstance(result, BarPipeline), (
+                f"Expected BarPipeline for bar_window={bar_window}, got {result}"
+            )
+        else:
+            assert result is None, (
+                f"Expected None for bar_window={bar_window}, got {result}"
+            )

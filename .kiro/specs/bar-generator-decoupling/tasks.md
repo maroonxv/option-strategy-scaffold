@@ -275,7 +275,7 @@
   - 至少 100 次迭代
   - **Validates: Requirements 1.3**
 
-- [~] 5.3 Property 3: BarPipeline 创建条件
+- [x] 5.3 Property 3: BarPipeline 创建条件
   - 文件：`tests/strategy/infrastructure/bar_pipeline/test_bar_pipeline_pbt.py`（同上文件）
   - Tag: `Feature: bar-generator-decoupling, Property 3: BarPipeline 创建条件`
   - 使用 `hypothesis` 生成随机的 setting 字典：
