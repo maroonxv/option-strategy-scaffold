@@ -69,7 +69,7 @@
     ```
   - **Validates: Requirements 4.1**
 
-- [-] 2.2 重构 `__init__` 方法中的 PBG 属性声明
+- [x] 2.2 重构 `__init__` 方法中的 PBG 属性声明
   - 文件：`src/strategy/strategy_entry.py`，`__init__` 方法
   - 将 `self.pbg: Optional[PortfolioBarGenerator] = None` 替换为：
     ```python
@@ -81,7 +81,7 @@
     ```
   - **Validates: Requirements 3.4**
 
-- [~] 2.3 重构 `on_init` 中的K线生成器初始化（第5步）
+- [-] 2.3 重构 `on_init` 中的K线生成器初始化（第5步）
   - 文件：`src/strategy/strategy_entry.py`，`on_init` 方法，"5. 初始化组合K线生成器" 部分
   - 删除当前的 PBG 初始化代码（约第 310-325 行）：
     ```python

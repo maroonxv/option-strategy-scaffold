@@ -299,22 +299,25 @@ class StrategyEntry(StrategyTemplate):
         # 初始快照
         self._record_snapshot()
 
-        # ______________________________  5. 初始化组合K线生成器  ______________________________
+        # ______________________________  5. 初始化K线合成管道  ______________________________
 
-        interval_map = {
-            "MINUTE": Interval.MINUTE,
-            "HOUR": Interval.HOUR,
-            "DAILY": Interval.DAILY,
-        }
-        interval = interval_map.get(self.bar_interval, Interval.MINUTE)
-
-        self.pbg = PortfolioBarGenerator(
-            on_bars=self.on_bars,
-            window=self.bar_window,
-            on_window_bars=self.on_window_bars,
-            interval=interval
-        )
-        self.logger.info(f"K线生成器已启用: {self.bar_window}{self.bar_interval}")
+        bar_window = int(self.setting.get("bar_window", 0))
+        if bar_window > 0:
+            bar_interval_str = self.setting.get("bar_interval", "MINUTE")
+            interval_map = {
+                "MINUTE": Interval.MINUTE,
+                "HOUR": Interval.HOUR,
+                "DAILY": Interval.DAILY,
+            }
+            interval = interval_map.get(bar_interval_str, Interval.MINUTE)
+            self.bar_pipeline = BarPipeline(
+                bar_callback=self._process_bars,
+                window=bar_window,
+                interval=interval,
+            )
+            self.logger.info(f"K线合成管道已启用: {bar_window}{bar_interval_str}")
+        else:
+            self.logger.info("未配置K线合成，使用直通模式")
 
         # ______________________________  6. warmup  ______________________________
 
