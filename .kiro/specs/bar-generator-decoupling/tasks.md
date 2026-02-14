@@ -167,7 +167,7 @@
   - 该回调职责已由 BarPipeline 内部的 `_on_window_bars` 承担
   - **Validates: Requirements 3.4**
 
-- [-] 2.7 清理无用导入
+- [x] 2.7 清理无用导入
   - 文件：`src/strategy/strategy_entry.py`
   - 如果 `PortfolioBarGenerator` 不再被直接使用，移除其导入语句：
     ```python
@@ -179,7 +179,7 @@
 
 ## 任务 3：历史数据回放兼容
 
-- [~] 3.1 重构实盘 warmup 回放回调
+- [x] 3.1 重构实盘 warmup 回放回调
   - 文件：`src/strategy/strategy_entry.py`，`on_init` 方法，warmup 部分
   - 当前代码（约第 388-393 行）：
     ```python
@@ -201,14 +201,14 @@
   - 注意：由于 `on_bars` 内部已经根据 `self.bar_pipeline` 做了分支判断，所以回调仍然传 `self.on_bars` 即可，无需额外修改。但需要确认 warmup 期间 `self.bar_pipeline` 已经创建（步骤5在步骤6之前执行，已满足）
   - **Validates: Requirements 5.1, 5.2**
 
-- [~] 3.2 确认回测模式兼容性
+- [x] 3.2 确认回测模式兼容性
   - 文件：`src/strategy/strategy_entry.py`，`on_init` 方法，回测 warmup 部分
   - 当前回测 warmup 使用 `self.load_bars(self.warmup_days)`，该方法内部会调用 `on_bars`
   - 确认 `load_bars` → `on_bars` → `bar_pipeline.handle_bars` 或 `_process_bars` 的链路在回测模式下正常工作
   - 无需代码修改，仅需验证
   - **Validates: Requirements 5.3**
 
-- [~] 3.3 添加 warmup 过程中的 BarPipeline 异常处理
+- [-] 3.3 添加 warmup 过程中的 BarPipeline 异常处理
   - 文件：`src/strategy/strategy_entry.py`，`on_init` 方法
   - 在实盘 warmup 的 try-except 块中，确保 BarPipeline 处理数据失败时能被捕获：
     ```python
