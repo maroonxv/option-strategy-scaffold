@@ -241,7 +241,7 @@
   - 使用 `unittest.mock.patch` 或 `unittest.mock.MagicMock` mock PBG
   - **Validates: Requirements 2.2, 2.3, 2.4, 2.5**
 
-- [-] 4.2 编写 StrategyEntry 重构后的单元测试
+- [x] 4.2 编写 StrategyEntry 重构后的单元测试
   - 文件：`tests/strategy/test_strategy_entry_bar_pipeline.py`
   - 测试用例：
     1. **参数隔离**：断言 `StrategyEntry.parameters` 列表中不包含 `"bar_window"` 和 `"bar_interval"`
@@ -256,7 +256,7 @@
 
 ## 任务 5：属性测试（Property-Based Testing）
 
-- [~] 5.1 Property 1: 直通路径恒等传递
+- [x] 5.1 Property 1: 直通路径恒等传递
   - 文件：`tests/strategy/infrastructure/bar_pipeline/test_bar_pipeline_pbt.py`
   - Tag: `Feature: bar-generator-decoupling, Property 1: 直通路径恒等传递`
   - 使用 `hypothesis` 生成随机的 `Dict[str, BarData]`（包含 0~N 个 vt_symbol → BarData 映射）
