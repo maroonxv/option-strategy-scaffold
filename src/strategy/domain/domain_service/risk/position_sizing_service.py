@@ -2,9 +2,11 @@
 PositionSizingService - 计算【考虑了当日开仓限额、品种开仓限额后的真实开仓数量与平仓数量】
 """
 import math
-from typing import List, Optional
+from typing import List, Optional, Tuple
 
 from ...value_object.order_instruction import OrderInstruction, Direction, Offset
+from ...value_object.greeks import GreeksResult
+from ...value_object.risk import PortfolioGreeks, RiskThresholds
 from ...entity.position import Position
 
 
@@ -95,8 +97,34 @@ class PositionSizingService:
             return 0
         return math.floor(available / margin_per_lot)
 
+    def _calc_greeks_volume(
+        self,
+        greeks: GreeksResult,
+        multiplier: float,
+        portfolio_greeks: PortfolioGreeks,
+        risk_thresholds: RiskThresholds,
+    ) -> Tuple[int, float, float, float]:
+        """Greeks 维度：返回 (允许手数, delta_budget, gamma_budget, vega_budget)"""
+        delta_budget = risk_thresholds.portfolio_delta_limit - abs(portfolio_greeks.total_delta)
+        gamma_budget = risk_thresholds.portfolio_gamma_limit - abs(portfolio_greeks.total_gamma)
+        vega_budget = risk_thresholds.portfolio_vega_limit - abs(portfolio_greeks.total_vega)
 
-    
+        dimensions = [
+            (greeks.delta, delta_budget),
+            (greeks.gamma, gamma_budget),
+            (greeks.vega, vega_budget),
+        ]
+
+        min_volume = 999999
+        for greek_val, budget in dimensions:
+            per_lot = abs(greek_val * multiplier)
+            if per_lot == 0:
+                continue
+            vol = math.floor(budget / per_lot)
+            min_volume = min(min_volume, vol)
+
+        return (min_volume, delta_budget, gamma_budget, vega_budget)
+
     def calculate_open_volumn(
         self,
         account_balance: float,

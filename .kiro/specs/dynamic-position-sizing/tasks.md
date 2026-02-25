@@ -44,7 +44,7 @@
     - **Property 2: 保证金使用率不变量**
     - **Validates: Requirements 2.2**
 
-  - [~] 3.7 实现 `_calc_greeks_volume` 方法
+  - [x] 3.7 实现 `_calc_greeks_volume` 方法
     - 对 Delta/Gamma/Vega 分别计算 `floor((limit - |current|) / |greek × multiplier|)`
     - Greek 值为零的维度视为无限制
     - 返回 (允许手数, delta_budget, gamma_budget, vega_budget)
