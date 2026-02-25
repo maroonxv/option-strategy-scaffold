@@ -32,7 +32,7 @@
     - **Property 1: 保证金估算公式正确性**
     - **Validates: Requirements 1.1**
 
-  - [~] 3.4 实现 `_calc_margin_volume` 方法
+  - [-] 3.4 实现 `_calc_margin_volume` 方法
     - 公式：`floor(available_funds / margin_per_lot)`
     - _Requirements: 1.2_
 

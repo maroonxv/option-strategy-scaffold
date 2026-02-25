@@ -1,6 +1,7 @@
 """
 PositionSizingService - 计算【考虑了当日开仓限额、品种开仓限额后的真实开仓数量与平仓数量】
 """
+import math
 from typing import List, Optional
 
 from ...value_object.order_instruction import OrderInstruction, Direction, Offset
@@ -74,6 +75,15 @@ class PositionSizingService:
             underlying_price * multiplier * self.min_margin_ratio,
         )
         return margin
+
+    def _calc_margin_volume(
+        self, available_funds: float, margin_per_lot: float
+    ) -> int:
+        """保证金维度：可用资金 / 单手保证金"""
+        if margin_per_lot <= 0:
+            return 0
+        return math.floor(available_funds / margin_per_lot)
+
 
     
     def calculate_open_volumn(
