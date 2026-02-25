@@ -66,13 +66,13 @@
 - [x] 5. Checkpoint - 确保各定价器独立测试通过
   - 确保所有测试通过，如有问题请向用户确认。
 
-- [ ] 6. 编写跨定价器属性测试
+- [x] 6. 编写跨定价器属性测试
   - [x] 6.1 编写 Property 5 属性测试：无效输入返回错误
     - **Property 5: 无效输入返回错误**
     - *For any* 包含无效参数的输入，BAWPricer、CRRPricer、BlackScholesPricer 均应返回 success=False
     - **Validates: Requirements 2.5, 3.6, 4.3**
 
-- [~] 7. 更新模块导出
+- [-] 7. 更新模块导出
   - 更新 `src/strategy/domain/domain_service/pricing/__init__.py` 导出各定价器
   - 更新 `src/strategy/domain/value_object/__init__.py` 导出新增值对象（如 1.1 中未完成）
   - _Requirements: 4.2_
