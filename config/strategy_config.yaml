@@ -73,3 +73,9 @@ advanced_orders:
   default_iceberg_batch_size: 5
   default_twap_slices: 10
   default_time_window_seconds: 300
+
+# ========== 组合策略风控配置 ==========
+combination_risk:
+  delta_limit: 2.0               # 组合级 Delta 阈值
+  gamma_limit: 0.5               # 组合级 Gamma 阈值
+  vega_limit: 200.0              # 组合级 Vega 阈值

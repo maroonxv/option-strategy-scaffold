@@ -161,7 +161,7 @@
   - 运行 `pytest tests/strategy/domain/aggregate/ tests/strategy/domain/entity/ -v`，确保所有测试通过，有问题请询问用户。
 
 - [ ] 13. 扩展 YAML 配置支持
-  - [~] 13.1 在 `config/strategy_config.yaml` 中新增 combination_risk 配置节，包含 delta_limit、gamma_limit、vega_limit 三个字段
+  - [x] 13.1 在 `config/strategy_config.yaml` 中新增 combination_risk 配置节，包含 delta_limit、gamma_limit、vega_limit 三个字段
     - _Requirements: 8.1, 8.2_
 
   - [~] 13.2 在策略配置加载逻辑中支持读取 combination_risk 配置节，缺失时使用默认值（delta_limit=2.0, gamma_limit=0.5, vega_limit=200.0）
