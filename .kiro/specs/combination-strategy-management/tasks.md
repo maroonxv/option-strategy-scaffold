@@ -119,7 +119,7 @@
     - **Validates: Requirements 6.5**
 
 - [ ] 10. 实现 CombinationAggregate 聚合根
-  - [-] 10.1 创建 `src/strategy/domain/aggregate/combination_aggregate.py`
+  - [x] 10.1 创建 `src/strategy/domain/aggregate/combination_aggregate.py`
     - 实现 _combinations 字典、_symbol_index 反向索引、_domain_events 事件队列
     - 实现 register_combination()（调用 validate 后注册并建立反向索引）
     - 实现 get_combination()、get_combinations_by_underlying()、get_active_combinations()、get_combinations_by_symbol()
@@ -128,7 +128,7 @@
     - 实现 pop_domain_events()/has_pending_events()
     - _Requirements: 7.1, 7.2, 7.3, 7.4, 7.5_
 
-  - [~] 10.2 编写 CombinationAggregate 属性测试（Property 9: 聚合根注册与查询一致性）
+  - [x] 10.2 编写 CombinationAggregate 属性测试（Property 9: 聚合根注册与查询一致性）
     - 文件：`tests/strategy/domain/aggregate/test_combination_aggregate_properties.py`
     - **Property 9: 聚合根注册与查询一致性**
     - 使用 Hypothesis 生成随机 Combination 集合注册后，验证按 id/underlying/vt_symbol 查询的一致性
@@ -152,8 +152,8 @@
     - 使用 Hypothesis 生成随机 Combination 集合注册后，验证 _symbol_index 与 _combinations 的双向一致性
     - **Validates: Requirements 7.2**
 
-- [ ] 11. 扩展领域事件
-  - [~] 11.1 在 `src/strategy/domain/event/event_types.py` 中新增 CombinationStatusChangedEvent 事件类
+- [x] 11. 扩展领域事件
+  - [x] 11.1 在 `src/strategy/domain/event/event_types.py` 中新增 CombinationStatusChangedEvent 事件类
     - 继承 DomainEvent，包含 combination_id、old_status、new_status、combination_type 字段
     - _Requirements: 7.4_
 
