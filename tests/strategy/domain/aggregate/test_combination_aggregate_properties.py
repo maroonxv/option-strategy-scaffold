@@ -940,3 +940,244 @@ class TestProperty10CrossAggregateStatusSync:
         events = aggregate.pop_domain_events()
         assert len(events) == 1
         assert events[0].combination_type == combo.combination_type.value
+
+
+# ---------------------------------------------------------------------------
+# Feature: combination-strategy-management, Property 12: 聚合根快照往返一致性
+# ---------------------------------------------------------------------------
+
+class TestProperty12AggregateSnapshotRoundTrip:
+    """
+    Property 12: 聚合根快照往返一致性
+
+    *For any* 有效的 CombinationAggregate 状态（包含若干已注册的 Combination），
+    `CombinationAggregate.from_snapshot(aggregate.to_snapshot())` 应恢复等价的聚合根状态
+    （所有 Combination 和反向索引一致）。
+
+    **Validates: Requirements 7.1**
+    """
+
+    @given(combinations=_multiple_combinations_strategy(min_combos=1, max_combos=5))
+    @settings(max_examples=100)
+    def test_snapshot_round_trip_preserves_combinations(self, combinations: List[Combination]):
+        """Feature: combination-strategy-management, Property 12: 聚合根快照往返一致性
+        快照往返后所有 Combination 应保持一致。
+        **Validates: Requirements 7.1**
+        """
+        # 创建聚合根并注册所有 Combination
+        aggregate = CombinationAggregate()
+        for combo in combinations:
+            aggregate.register_combination(combo)
+
+        # 执行快照往返
+        snapshot = aggregate.to_snapshot()
+        restored = CombinationAggregate.from_snapshot(snapshot)
+
+        # 验证 Combination 数量一致
+        assert len(restored._combinations) == len(aggregate._combinations)
+
+        # 验证每个 Combination 的内容一致
+        for combo_id, original_combo in aggregate._combinations.items():
+            restored_combo = restored.get_combination(combo_id)
+            assert restored_combo is not None
+            assert restored_combo.combination_id == original_combo.combination_id
+            assert restored_combo.combination_type == original_combo.combination_type
+            assert restored_combo.underlying_vt_symbol == original_combo.underlying_vt_symbol
+            assert restored_combo.status == original_combo.status
+            assert restored_combo.create_time == original_combo.create_time
+            assert restored_combo.close_time == original_combo.close_time
+            assert len(restored_combo.legs) == len(original_combo.legs)
+
+            # 验证每个 Leg 的内容一致
+            for orig_leg, rest_leg in zip(original_combo.legs, restored_combo.legs):
+                assert rest_leg.vt_symbol == orig_leg.vt_symbol
+                assert rest_leg.option_type == orig_leg.option_type
+                assert rest_leg.strike_price == orig_leg.strike_price
+                assert rest_leg.expiry_date == orig_leg.expiry_date
+                assert rest_leg.direction == orig_leg.direction
+                assert rest_leg.volume == orig_leg.volume
+                assert rest_leg.open_price == orig_leg.open_price
+
+    @given(combinations=_multiple_combinations_strategy(min_combos=1, max_combos=5))
+    @settings(max_examples=100)
+    def test_snapshot_round_trip_preserves_symbol_index(self, combinations: List[Combination]):
+        """Feature: combination-strategy-management, Property 12: 聚合根快照往返一致性
+        快照往返后反向索引 _symbol_index 应保持一致。
+        **Validates: Requirements 7.1**
+        """
+        # 创建聚合根并注册所有 Combination
+        aggregate = CombinationAggregate()
+        for combo in combinations:
+            aggregate.register_combination(combo)
+
+        # 执行快照往返
+        snapshot = aggregate.to_snapshot()
+        restored = CombinationAggregate.from_snapshot(snapshot)
+
+        # 验证 symbol_index 的 key 集合一致
+        assert set(restored._symbol_index.keys()) == set(aggregate._symbol_index.keys())
+
+        # 验证每个 vt_symbol 对应的 combination_id 集合一致
+        for vt_symbol, original_ids in aggregate._symbol_index.items():
+            restored_ids = restored._symbol_index.get(vt_symbol, set())
+            assert restored_ids == original_ids
+
+    @given(combinations=_multiple_combinations_strategy(min_combos=1, max_combos=5))
+    @settings(max_examples=100)
+    def test_snapshot_round_trip_query_consistency(self, combinations: List[Combination]):
+        """Feature: combination-strategy-management, Property 12: 聚合根快照往返一致性
+        快照往返后各种查询接口应返回一致的结果。
+        **Validates: Requirements 7.1**
+        """
+        # 创建聚合根并注册所有 Combination
+        aggregate = CombinationAggregate()
+        for combo in combinations:
+            aggregate.register_combination(combo)
+
+        # 执行快照往返
+        snapshot = aggregate.to_snapshot()
+        restored = CombinationAggregate.from_snapshot(snapshot)
+
+        # 验证 get_combination 查询一致
+        for combo in combinations:
+            orig_result = aggregate.get_combination(combo.combination_id)
+            rest_result = restored.get_combination(combo.combination_id)
+            assert (orig_result is None) == (rest_result is None)
+            if orig_result is not None:
+                assert rest_result.combination_id == orig_result.combination_id
+
+        # 验证 get_active_combinations 查询一致
+        orig_active = aggregate.get_active_combinations()
+        rest_active = restored.get_active_combinations()
+        assert len(rest_active) == len(orig_active)
+        orig_active_ids = {c.combination_id for c in orig_active}
+        rest_active_ids = {c.combination_id for c in rest_active}
+        assert rest_active_ids == orig_active_ids
+
+        # 验证 get_combinations_by_symbol 查询一致
+        for combo in combinations:
+            for leg in combo.legs:
+                orig_by_symbol = aggregate.get_combinations_by_symbol(leg.vt_symbol)
+                rest_by_symbol = restored.get_combinations_by_symbol(leg.vt_symbol)
+                orig_ids = {c.combination_id for c in orig_by_symbol}
+                rest_ids = {c.combination_id for c in rest_by_symbol}
+                assert rest_ids == orig_ids
+
+        # 验证 get_combinations_by_underlying 查询一致
+        underlyings = {combo.underlying_vt_symbol for combo in combinations}
+        for underlying in underlyings:
+            orig_by_underlying = aggregate.get_combinations_by_underlying(underlying)
+            rest_by_underlying = restored.get_combinations_by_underlying(underlying)
+            orig_ids = {c.combination_id for c in orig_by_underlying}
+            rest_ids = {c.combination_id for c in rest_by_underlying}
+            assert rest_ids == orig_ids
+
+    @given(combo=_single_combination_strategy())
+    @settings(max_examples=100)
+    def test_snapshot_round_trip_single_combination(self, combo: Combination):
+        """Feature: combination-strategy-management, Property 12: 聚合根快照往返一致性
+        单个 Combination 的快照往返应保持完全一致。
+        **Validates: Requirements 7.1**
+        """
+        # 创建聚合根并注册单个 Combination
+        aggregate = CombinationAggregate()
+        aggregate.register_combination(combo)
+
+        # 执行快照往返
+        snapshot = aggregate.to_snapshot()
+        restored = CombinationAggregate.from_snapshot(snapshot)
+
+        # 验证恢复的 Combination 与原始一致
+        restored_combo = restored.get_combination(combo.combination_id)
+        assert restored_combo is not None
+        assert restored_combo.to_dict() == combo.to_dict()
+
+    @settings(max_examples=100)
+    @given(st.data())
+    def test_snapshot_round_trip_empty_aggregate(self, data):
+        """Feature: combination-strategy-management, Property 12: 聚合根快照往返一致性
+        空聚合根的快照往返应保持一致。
+        **Validates: Requirements 7.1**
+        """
+        # 创建空聚合根
+        aggregate = CombinationAggregate()
+
+        # 执行快照往返
+        snapshot = aggregate.to_snapshot()
+        restored = CombinationAggregate.from_snapshot(snapshot)
+
+        # 验证恢复的聚合根也是空的
+        assert len(restored._combinations) == 0
+        assert len(restored._symbol_index) == 0
+        assert restored.get_active_combinations() == []
+
+    @given(combinations=_multiple_active_combinations_strategy(min_combos=2, max_combos=4))
+    @settings(max_examples=100)
+    def test_snapshot_round_trip_preserves_status_after_sync(self, combinations: List[Combination]):
+        """Feature: combination-strategy-management, Property 12: 聚合根快照往返一致性
+        状态同步后的快照往返应保持更新后的状态。
+        **Validates: Requirements 7.1**
+        """
+        # 创建聚合根并注册所有 Combination
+        aggregate = CombinationAggregate()
+        for combo in combinations:
+            aggregate.register_combination(combo)
+
+        # 对第一个 Combination 执行部分平仓
+        target_combo = combinations[0]
+        if len(target_combo.legs) >= 2:
+            first_leg_symbol = target_combo.legs[0].vt_symbol
+            closed_vt_symbols = {first_leg_symbol}
+            aggregate.sync_combination_status(first_leg_symbol, closed_vt_symbols)
+
+            # 清空事件队列
+            aggregate.pop_domain_events()
+
+            # 执行快照往返
+            snapshot = aggregate.to_snapshot()
+            restored = CombinationAggregate.from_snapshot(snapshot)
+
+            # 验证恢复后的状态与同步后一致
+            orig_combo = aggregate.get_combination(target_combo.combination_id)
+            rest_combo = restored.get_combination(target_combo.combination_id)
+            assert rest_combo is not None
+            assert rest_combo.status == orig_combo.status
+            assert rest_combo.status == CombinationStatus.PARTIALLY_CLOSED
+
+    @given(combinations=_multiple_combinations_strategy(min_combos=1, max_combos=5))
+    @settings(max_examples=100)
+    def test_snapshot_format_contains_required_keys(self, combinations: List[Combination]):
+        """Feature: combination-strategy-management, Property 12: 聚合根快照往返一致性
+        快照格式应包含 combinations 和 symbol_index 两个必需的键。
+        **Validates: Requirements 7.1**
+        """
+        # 创建聚合根并注册所有 Combination
+        aggregate = CombinationAggregate()
+        for combo in combinations:
+            aggregate.register_combination(combo)
+
+        # 生成快照
+        snapshot = aggregate.to_snapshot()
+
+        # 验证快照格式
+        assert "combinations" in snapshot
+        assert "symbol_index" in snapshot
+        assert isinstance(snapshot["combinations"], dict)
+        assert isinstance(snapshot["symbol_index"], dict)
+
+        # 验证 combinations 中的每个条目都是有效的字典
+        for combo_id, combo_dict in snapshot["combinations"].items():
+            assert isinstance(combo_id, str)
+            assert isinstance(combo_dict, dict)
+            assert "combination_id" in combo_dict
+            assert "combination_type" in combo_dict
+            assert "underlying_vt_symbol" in combo_dict
+            assert "legs" in combo_dict
+            assert "status" in combo_dict
+
+        # 验证 symbol_index 中的每个条目都是有效的列表
+        for vt_symbol, combo_ids in snapshot["symbol_index"].items():
+            assert isinstance(vt_symbol, str)
+            assert isinstance(combo_ids, list)
+            for cid in combo_ids:
+                assert isinstance(cid, str)

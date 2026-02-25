@@ -140,7 +140,7 @@
     - 使用 Hypothesis 生成随机 Combination 和平仓事件序列，验证 sync_combination_status 正确更新状态并产生事件
     - **Validates: Requirements 7.3, 7.4**
 
-  - [~] 10.4 编写 CombinationAggregate 属性测试（Property 12: 聚合根快照往返一致性）
+  - [x] 10.4 编写 CombinationAggregate 属性测试（Property 12: 聚合根快照往返一致性）
     - 文件：`tests/strategy/domain/aggregate/test_combination_aggregate_properties.py`（追加）
     - **Property 12: 聚合根快照往返一致性**
     - 使用 Hypothesis 生成随机 CombinationAggregate 状态，验证 from_snapshot(to_snapshot(agg)) 恢复等价状态
