@@ -47,7 +47,7 @@
     - **Property 4: 附带 Greeks 影响计算正确性**
     - **Validates: Requirements 3.1**
 
-  - [~] 4.5 编写属性测试: 事件数据一致性
+  - [x] 4.5 编写属性测试: 事件数据一致性
     - **Property 5: 事件数据一致性**
     - **Validates: Requirements 3.2**
 

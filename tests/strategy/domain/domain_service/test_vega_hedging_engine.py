@@ -241,3 +241,64 @@ class TestVegaHedgingProperty4:
         # 验证 theta_impact
         expected_theta = vol * config.hedge_instrument_theta * multiplier * direction_sign
         assert result.theta_impact == pytest.approx(expected_theta)
+
+
+# ========== Property 5: 事件数据一致性 ==========
+
+
+class TestVegaHedgingProperty5:
+    """Property 5: 事件数据一致性
+
+    *For any* 触发对冲的输入，VegaHedgeExecutedEvent 中的 portfolio_vega_after 应等于
+    portfolio_vega_before + hedge_volume * hedge_instrument_vega * multiplier * direction_sign，
+    且事件中的 delta_impact、gamma_impact、theta_impact 与 VegaHedgeResult 中的值一致。
+
+    **Validates: Requirements 3.2**
+    """
+
+    @settings(max_examples=100)
+    @given(config=vega_hedging_config_st, data=st.data())
+    def test_property5_event_data_consistency(self, config, data):
+        """事件数据与计算结果一致
+
+        **Validates: Requirements 3.2**
+        """
+        from src.strategy.domain.value_object.order_instruction import Direction
+
+        greeks = data.draw(portfolio_greeks_exceeding_band_st(config))
+        current_price = 100.0
+
+        raw_volume = (config.target_vega - greeks.total_vega) / (
+            config.hedge_instrument_vega * config.hedge_instrument_multiplier
+        )
+        # 只关注对冲确实触发的情况
+        assume(round(raw_volume) != 0)
+
+        engine = VegaHedgingEngine(config)
+        result, events = engine.check_and_hedge(greeks, current_price)
+
+        assert result.should_hedge is True
+        assert len(events) == 1
+
+        event = events[0]
+        direction_sign = 1 if result.hedge_direction == Direction.LONG else -1
+
+        # portfolio_vega_after == portfolio_vega_before + hedge_volume * vega * multiplier * direction_sign
+        expected_vega_after = event.portfolio_vega_before + (
+            result.hedge_volume
+            * config.hedge_instrument_vega
+            * config.hedge_instrument_multiplier
+            * direction_sign
+        )
+        assert event.portfolio_vega_after == pytest.approx(expected_vega_after)
+
+        # 事件中的 Greeks 影响与 result 一致
+        assert event.delta_impact == pytest.approx(result.delta_impact)
+        assert event.gamma_impact == pytest.approx(result.gamma_impact)
+        assert event.theta_impact == pytest.approx(result.theta_impact)
+
+        # portfolio_vega_before == portfolio_greeks.total_vega
+        assert event.portfolio_vega_before == pytest.approx(greeks.total_vega)
+
+        # hedge_instrument == config.hedge_instrument_vt_symbol
+        assert event.hedge_instrument == config.hedge_instrument_vt_symbol
