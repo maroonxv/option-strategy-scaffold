@@ -83,13 +83,13 @@
     - **Validates: Requirements 4.1, 4.3**
 
 - [ ] 7. 实现 CombinationRiskChecker 服务
-  - [-] 7.1 创建 `src/strategy/domain/domain_service/combination/combination_risk_checker.py`
+  - [x] 7.1 创建 `src/strategy/domain/domain_service/combination/combination_risk_checker.py`
     - 实现 check(greeks) 方法，返回 RiskCheckResult（复用现有值对象）
     - 通过条件：|delta| ≤ delta_limit 且 |gamma| ≤ gamma_limit 且 |vega| ≤ vega_limit
     - 失败时 reject_reason 包含超限的 Greek 名称和数值
     - _Requirements: 5.1, 5.2, 5.3, 5.4_
 
-  - [~] 7.2 编写 CombinationRiskChecker 属性测试（Property 5: 风控检查正确性）
+  - [x] 7.2 编写 CombinationRiskChecker 属性测试（Property 5: 风控检查正确性）
     - 文件：`tests/strategy/domain/domain_service/combination/test_combination_risk_checker.py`
     - **Property 5: 风控检查正确性**
     - 使用 Hypothesis 生成随机 CombinationGreeks 和阈值，验证通过当且仅当所有 Greeks 绝对值在阈值内

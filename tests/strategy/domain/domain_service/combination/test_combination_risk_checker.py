@@ -92,3 +92,95 @@ class TestCombinationRiskChecker:
         greeks = CombinationGreeks(delta=3.0, gamma=0.3, vega=100.0)
         result = self.checker.check(greeks)
         assert "limit=2.0" in result.reject_reason
+
+
+# ---------------------------------------------------------------------------
+# Property-Based Tests
+# ---------------------------------------------------------------------------
+from hypothesis import given, settings
+from hypothesis import strategies as st
+
+# Hypothesis strategies for generating random Greeks and risk config values
+_greek_value = st.floats(min_value=-1000.0, max_value=1000.0, allow_nan=False, allow_infinity=False)
+_limit_value = st.floats(min_value=0.01, max_value=1000.0, allow_nan=False, allow_infinity=False)
+
+
+def _greeks_and_config():
+    """生成随机 CombinationGreeks 和 CombinationRiskConfig。"""
+    return st.tuples(
+        _greek_value,  # delta
+        _greek_value,  # gamma
+        _greek_value,  # vega
+        _limit_value,  # delta_limit
+        _limit_value,  # gamma_limit
+        _limit_value,  # vega_limit
+    )
+
+
+# ---------------------------------------------------------------------------
+# Feature: combination-strategy-management, Property 5: 风控检查正确性
+# ---------------------------------------------------------------------------
+
+class TestProperty5RiskCheckCorrectness:
+    """
+    Property 5: 风控检查正确性
+
+    *For any* CombinationGreeks 和 CombinationRiskConfig，CombinationRiskChecker
+    返回通过当且仅当 |delta| ≤ delta_limit 且 |gamma| ≤ gamma_limit 且 |vega| ≤ vega_limit。
+
+    **Validates: Requirements 5.2, 5.3**
+    """
+
+    @given(data=_greeks_and_config())
+    @settings(max_examples=100)
+    def test_risk_check_passed_iff_all_within_limits(self, data):
+        """Feature: combination-strategy-management, Property 5: 风控检查正确性
+        对于任意 CombinationGreeks 和阈值，通过当且仅当所有 Greeks 绝对值在阈值内。
+        **Validates: Requirements 5.2, 5.3**
+        """
+        delta, gamma, vega, delta_limit, gamma_limit, vega_limit = data
+
+        greeks = CombinationGreeks(delta=delta, gamma=gamma, vega=vega)
+        config = CombinationRiskConfig(
+            delta_limit=delta_limit,
+            gamma_limit=gamma_limit,
+            vega_limit=vega_limit,
+        )
+        checker = CombinationRiskChecker(config)
+        result = checker.check(greeks)
+
+        expected_passed = (
+            abs(delta) <= delta_limit
+            and abs(gamma) <= gamma_limit
+            and abs(vega) <= vega_limit
+        )
+
+        assert result.passed == expected_passed
+
+    @given(data=_greeks_and_config())
+    @settings(max_examples=100)
+    def test_violation_details_match_exceeded_greeks(self, data):
+        """Feature: combination-strategy-management, Property 5: 风控检查正确性
+        当风控检查失败时，reject_reason 应包含所有超限的 Greek 名称。
+        **Validates: Requirements 5.2, 5.3**
+        """
+        delta, gamma, vega, delta_limit, gamma_limit, vega_limit = data
+
+        greeks = CombinationGreeks(delta=delta, gamma=gamma, vega=vega)
+        config = CombinationRiskConfig(
+            delta_limit=delta_limit,
+            gamma_limit=gamma_limit,
+            vega_limit=vega_limit,
+        )
+        checker = CombinationRiskChecker(config)
+        result = checker.check(greeks)
+
+        if not result.passed:
+            if abs(delta) > delta_limit:
+                assert "delta" in result.reject_reason
+            if abs(gamma) > gamma_limit:
+                assert "gamma" in result.reject_reason
+            if abs(vega) > vega_limit:
+                assert "vega" in result.reject_reason
+        else:
+            assert result.reject_reason == ""
