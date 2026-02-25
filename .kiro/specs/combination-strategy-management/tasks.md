@@ -45,12 +45,12 @@
   - 运行 `pytest tests/strategy/domain/value_object/test_combination_vo.py tests/strategy/domain/entity/ -v`，确保所有测试通过，有问题请询问用户。
 
 - [ ] 4. 实现 CombinationRecognizer 识别服务
-  - [-] 4.1 创建 `src/strategy/domain/domain_service/combination/__init__.py` 和 `src/strategy/domain/domain_service/combination/combination_recognizer.py`
+  - [x] 4.1 创建 `src/strategy/domain/domain_service/combination/__init__.py` 和 `src/strategy/domain/domain_service/combination/combination_recognizer.py`
     - 实现 recognize(positions, contracts) 方法，按优先级匹配：IRON_CONDOR → STRADDLE → STRANGLE → VERTICAL_SPREAD → CALENDAR_SPREAD → CUSTOM
     - 输入为 List[Position] 和 Dict[str, OptionContract]，复用现有 Position 和 OptionContract 类型
     - _Requirements: 2.1, 2.2, 2.3, 2.4, 2.5, 2.6, 2.7_
 
-  - [~] 4.2 编写 CombinationRecognizer 属性测试（Property 2: 组合类型识别）
+  - [x] 4.2 编写 CombinationRecognizer 属性测试（Property 2: 组合类型识别）
     - 文件：`tests/strategy/domain/domain_service/combination/test_combination_recognizer.py`
     - **Property 2: 组合类型识别**
     - 使用 Hypothesis 生成满足特定类型结构的随机持仓，验证识别结果正确；不匹配时返回 CUSTOM
