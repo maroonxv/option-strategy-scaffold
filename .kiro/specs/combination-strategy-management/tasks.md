@@ -112,7 +112,7 @@
     - 使用 Hypothesis 生成随机 Combination，验证 open_instructions 数量等于 Leg 数量，close_instructions 数量等于活跃 Leg 数量
     - **Validates: Requirements 6.1, 6.2, 6.6**
 
-  - [~] 9.3 编写 CombinationLifecycleService 属性测试（Property 8: 调整指令生成）
+  - [-] 9.3 编写 CombinationLifecycleService 属性测试（Property 8: 调整指令生成）
     - 文件：`tests/strategy/domain/domain_service/combination/test_combination_lifecycle_service.py`（追加）
     - **Property 8: 调整指令生成**
     - 使用 Hypothesis 生成随机调整参数，验证增仓生成开仓指令、减仓生成平仓指令

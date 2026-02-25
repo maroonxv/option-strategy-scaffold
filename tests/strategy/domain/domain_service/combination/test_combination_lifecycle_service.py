@@ -404,3 +404,147 @@ class TestProperty6LifecycleInstructionGeneration:
 
         for instr in instructions:
             assert instr.vt_symbol not in closed_symbols
+
+
+# ---------------------------------------------------------------------------
+# Feature: combination-strategy-management, Property 8: 调整指令生成
+# ---------------------------------------------------------------------------
+
+
+@st.composite
+def random_active_leg(draw, idx=0):
+    """生成 volume > 0 的随机 Leg（活跃腿）。"""
+    option_type = draw(_option_type_st)
+    strike = draw(_strike_st)
+    direction = draw(_direction_st)
+    volume = draw(st.integers(min_value=1, max_value=100))
+    open_price = draw(_price_st)
+    vt_symbol = f"m2509-{option_type[0].upper()}-{int(strike)}-{idx}.DCE"
+    return Leg(
+        vt_symbol=vt_symbol,
+        option_type=option_type,
+        strike_price=strike,
+        expiry_date="20250901",
+        direction=direction,
+        volume=volume,
+        open_price=open_price,
+    )
+
+
+@st.composite
+def random_active_combination(draw):
+    """生成包含 1~6 个活跃 Leg（volume > 0）的随机 CUSTOM Combination。"""
+    num_legs = draw(st.integers(min_value=1, max_value=6))
+    legs = [draw(random_active_leg(idx=i)) for i in range(num_legs)]
+    return Combination(
+        combination_id=f"combo-{draw(st.uuids())}",
+        combination_type=CombinationType.CUSTOM,
+        underlying_vt_symbol="m2509.DCE",
+        legs=legs,
+        status=CombinationStatus.ACTIVE,
+        create_time=datetime(2025, 1, 15, 10, 30),
+    )
+
+
+class TestProperty8AdjustInstructionGeneration:
+    """
+    Property 8: 调整指令生成
+
+    *For any* Combination 中的活跃 Leg 和目标持仓量，generate_adjust_instruction
+    应生成正确方向和数量的 OrderInstruction（增仓为开仓指令，减仓为平仓指令）。
+
+    **Validates: Requirements 6.5**
+    """
+
+    @given(data=st.data())
+    @settings(max_examples=100)
+    def test_increase_volume_generates_open_instruction(self, data):
+        """Feature: combination-strategy-management, Property 8: 调整指令生成
+        增仓时生成 OPEN 偏移指令，方向与 Leg 方向一致，volume 为差额。
+        **Validates: Requirements 6.5**
+        """
+        combo = data.draw(random_active_combination())
+        # 随机选择一个 Leg
+        leg_idx = data.draw(st.integers(min_value=0, max_value=len(combo.legs) - 1))
+        target_leg = combo.legs[leg_idx]
+        # new_volume 严格大于当前 volume（增仓）
+        new_volume = data.draw(
+            st.integers(min_value=target_leg.volume + 1, max_value=target_leg.volume + 100)
+        )
+        current_price = data.draw(_price_st)
+        svc = CombinationLifecycleService()
+
+        instr = svc.generate_adjust_instruction(
+            combo, target_leg.vt_symbol, new_volume, current_price
+        )
+
+        # 增仓 → OPEN offset
+        assert instr.offset == Offset.OPEN
+        # 方向与 Leg 方向一致
+        expected_dir = Direction.LONG if target_leg.direction == "long" else Direction.SHORT
+        assert instr.direction == expected_dir
+        # volume 为差额
+        assert instr.volume == new_volume - target_leg.volume
+        # 使用 current_price
+        assert instr.price == current_price
+        # vt_symbol 正确
+        assert instr.vt_symbol == target_leg.vt_symbol
+
+    @given(data=st.data())
+    @settings(max_examples=100)
+    def test_decrease_volume_generates_close_instruction(self, data):
+        """Feature: combination-strategy-management, Property 8: 调整指令生成
+        减仓时生成 CLOSE 偏移指令，方向与 Leg 方向相反，volume 为差额绝对值。
+        **Validates: Requirements 6.5**
+        """
+        combo = data.draw(random_active_combination())
+        # 随机选择一个 Leg
+        leg_idx = data.draw(st.integers(min_value=0, max_value=len(combo.legs) - 1))
+        target_leg = combo.legs[leg_idx]
+        # new_volume 严格小于当前 volume 且 >= 0（减仓）
+        new_volume = data.draw(
+            st.integers(min_value=0, max_value=target_leg.volume - 1)
+        )
+        current_price = data.draw(_price_st)
+        svc = CombinationLifecycleService()
+
+        instr = svc.generate_adjust_instruction(
+            combo, target_leg.vt_symbol, new_volume, current_price
+        )
+
+        # 减仓 → CLOSE offset
+        assert instr.offset == Offset.CLOSE
+        # 方向与 Leg 方向相反
+        expected_dir = Direction.SHORT if target_leg.direction == "long" else Direction.LONG
+        assert instr.direction == expected_dir
+        # volume 为差额绝对值
+        assert instr.volume == target_leg.volume - new_volume
+        # 使用 current_price
+        assert instr.price == current_price
+        # vt_symbol 正确
+        assert instr.vt_symbol == target_leg.vt_symbol
+
+    @given(data=st.data())
+    @settings(max_examples=100)
+    def test_volume_diff_is_always_positive(self, data):
+        """Feature: combination-strategy-management, Property 8: 调整指令生成
+        无论增仓还是减仓，生成的指令 volume 始终为正数。
+        **Validates: Requirements 6.5**
+        """
+        combo = data.draw(random_active_combination())
+        leg_idx = data.draw(st.integers(min_value=0, max_value=len(combo.legs) - 1))
+        target_leg = combo.legs[leg_idx]
+        # new_volume != current volume
+        new_volume = data.draw(
+            st.integers(min_value=0, max_value=target_leg.volume + 100).filter(
+                lambda v: v != target_leg.volume
+            )
+        )
+        current_price = data.draw(_price_st)
+        svc = CombinationLifecycleService()
+
+        instr = svc.generate_adjust_instruction(
+            combo, target_leg.vt_symbol, new_volume, current_price
+        )
+
+        assert instr.volume > 0
