@@ -36,11 +36,11 @@
     - 公式：`floor(available_funds / margin_per_lot)`
     - _Requirements: 1.2_
 
-  - [-] 3.5 实现 `_calc_usage_volume` 方法
+  - [x] 3.5 实现 `_calc_usage_volume` 方法
     - 公式：`floor((total_equity × margin_usage_limit - used_margin) / margin_per_lot)`
     - _Requirements: 2.2_
 
-  - [~] 3.6 编写 _calc_usage_volume 属性测试
+  - [x] 3.6 编写 _calc_usage_volume 属性测试
     - **Property 2: 保证金使用率不变量**
     - **Validates: Requirements 2.2**
 
