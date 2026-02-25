@@ -4,6 +4,7 @@ VegaHedgingEngine - Vega 对冲引擎
 监控组合 Vega 敞口，当偏离目标超过容忍带时计算对冲手数并生成对冲指令。
 与 Delta 对冲不同，Vega 对冲使用期权作为对冲工具，因此需要计算附带的 Delta、Gamma、Theta 影响。
 """
+import math
 from typing import List, Tuple
 
 from ...value_object.hedging import VegaHedgingConfig, VegaHedgeResult
@@ -63,9 +64,12 @@ class VegaHedgingEngine:
             return VegaHedgeResult(should_hedge=False, reason="Vega 偏离在容忍带内"), []
 
         # 计算对冲手数
-        raw_volume = (cfg.target_vega - portfolio_greeks.total_vega) / (
-            cfg.hedge_instrument_vega * cfg.hedge_instrument_multiplier
-        )
+        denominator = cfg.hedge_instrument_vega * cfg.hedge_instrument_multiplier
+        if denominator == 0:
+            return VegaHedgeResult(should_hedge=False, reason="对冲工具有效 Vega 为零 (下溢)"), []
+        raw_volume = (cfg.target_vega - portfolio_greeks.total_vega) / denominator
+        if not math.isfinite(raw_volume):
+            return VegaHedgeResult(should_hedge=False, reason="对冲手数计算溢出"), []
         hedge_volume = round(raw_volume)
 
         if hedge_volume == 0:
