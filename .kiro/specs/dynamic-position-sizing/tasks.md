@@ -90,13 +90,13 @@
     - 测试 calculate_close_volume 保持不变
     - _Requirements: 1.3, 1.4, 2.3, 3.3, 3.4, 4.3, 4.5, 6.2_
 
-- [-] 6. 更新调用方适配新接口
-  - [-] 6.1 查找所有调用 `calculate_open_volumn` 和 `calculate_close_volumn` 的代码，更新为新方法签名
+- [x] 6. 更新调用方适配新接口
+  - [x] 6.1 查找所有调用 `calculate_open_volumn` 和 `calculate_close_volumn` 的代码，更新为新方法签名
     - 传入新增参数（total_equity, used_margin, underlying_price, strike_price, option_type, multiplier, greeks, portfolio_greeks, risk_thresholds）
     - 更新 PositionSizingService 的初始化代码，从 strategy_config.yaml 读取 position_sizing 配置节
     - _Requirements: 6.1, 6.2_
 
-- [~] 7. Final checkpoint - 确保所有测试通过
+- [x] 7. Final checkpoint - 确保所有测试通过
   - 确保所有测试通过，如有问题请询问用户。
 
 ## Notes

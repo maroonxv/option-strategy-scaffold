@@ -122,8 +122,8 @@ VnPy `StrategyTemplate` 的实现，负责：
 | `PortfolioRiskAggregator` | 组合级 Greeks 聚合与风控阈值检查 |
 | `VolSurfaceBuilder` | 波动率曲面构建（双线性插值、微笑提取、期限结构） |
 | `SmartOrderExecutor` | 智能订单执行（超时撤单、自适应滑点、重试） |
-| `DeltaHedgingEngine` | Delta 对冲引擎（目标 Delta、对冲带宽） |
-| `GammaScalpingEngine` | Gamma Scalping 再平衡引擎 |
+| `DeltaHedgingService` | Delta 对冲服务（目标 Delta、对冲带宽） |
+| `GammaScalpingService` | Gamma Scalping 再平衡服务 |
 | `AdvancedOrderScheduler` | 高级订单调度（冰山单、TWAP 分时拆单） |
 
 #### 实体
