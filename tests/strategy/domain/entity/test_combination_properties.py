@@ -3,6 +3,8 @@ Combination 实体属性测试
 
 Feature: combination-strategy-management
 """
+from datetime import datetime
+
 import pytest
 from hypothesis import given, settings, assume
 from hypothesis import strategies as st
@@ -702,3 +704,101 @@ class TestProperty7CombinationStatusReflectsLegClosure:
         # 状态已经是 PARTIALLY_CLOSED，不应再次返回
         assert result is None
         assert combo.status == CombinationStatus.PARTIALLY_CLOSED
+
+
+# ---------------------------------------------------------------------------
+# 策略：生成各种类型的有效 Combination（用于序列化测试）
+# ---------------------------------------------------------------------------
+
+_combination_status = st.sampled_from(list(CombinationStatus))
+_create_time = st.datetimes(
+    min_value=datetime(2020, 1, 1),
+    max_value=datetime(2030, 12, 31),
+)
+_combination_id = st.from_regex(r"[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}", fullmatch=True)
+_underlying = st.from_regex(r"[a-z]{1,4}[0-9]{4}\.[A-Z]{3}", fullmatch=True)
+
+
+def _any_valid_combination():
+    """
+    生成任意类型的有效 Combination 实例（含可选 close_time）。
+    覆盖所有 CombinationType，用于序列化往返测试。
+    """
+    return _combination_type.flatmap(
+        lambda ct: st.tuples(
+            st.just(ct),
+            _valid_legs_for_type(ct),
+            _combination_id,
+            _underlying,
+            _combination_status,
+            _create_time,
+            st.one_of(st.none(), _create_time),
+        )
+    ).map(
+        lambda t: Combination(
+            combination_id=t[2],
+            combination_type=t[0],
+            underlying_vt_symbol=t[3],
+            legs=t[1],
+            status=t[4],
+            create_time=t[5],
+            close_time=t[6],
+        )
+    )
+
+
+# ---------------------------------------------------------------------------
+# Feature: combination-strategy-management, Property 11: 序列化往返一致性
+# ---------------------------------------------------------------------------
+
+class TestProperty11SerializationRoundTrip:
+    """
+    Property 11: 序列化往返一致性
+
+    *For any* 有效的 Combination 实例，`Combination.from_dict(combination.to_dict())`
+    应产生与原始实例等价的 Combination（所有字段值相同）。
+
+    **Validates: Requirements 9.3**
+    """
+
+    @given(combo=_any_valid_combination())
+    @settings(max_examples=200)
+    def test_roundtrip_preserves_all_fields(self, combo):
+        """Feature: combination-strategy-management, Property 11: 序列化往返一致性
+        对于任意有效 Combination，from_dict(to_dict(c)) 应产生等价实例。
+        **Validates: Requirements 9.3**
+        """
+        serialized = combo.to_dict()
+        restored = Combination.from_dict(serialized)
+
+        # 比较所有顶层字段
+        assert restored.combination_id == combo.combination_id
+        assert restored.combination_type == combo.combination_type
+        assert restored.underlying_vt_symbol == combo.underlying_vt_symbol
+        assert restored.status == combo.status
+        assert restored.create_time == combo.create_time
+        assert restored.close_time == combo.close_time
+
+        # 比较 legs 列表（数量和每个 Leg 的所有字段）
+        assert len(restored.legs) == len(combo.legs)
+        for orig_leg, rest_leg in zip(combo.legs, restored.legs):
+            assert rest_leg.vt_symbol == orig_leg.vt_symbol
+            assert rest_leg.option_type == orig_leg.option_type
+            assert rest_leg.strike_price == orig_leg.strike_price
+            assert rest_leg.expiry_date == orig_leg.expiry_date
+            assert rest_leg.direction == orig_leg.direction
+            assert rest_leg.volume == orig_leg.volume
+            assert rest_leg.open_price == orig_leg.open_price
+
+    @given(combo=_any_valid_combination())
+    @settings(max_examples=100)
+    def test_double_roundtrip_is_stable(self, combo):
+        """Feature: combination-strategy-management, Property 11: 序列化往返一致性
+        双重往返（序列化→反序列化→序列化）应产生相同的字典。
+        **Validates: Requirements 9.3**
+        """
+        dict1 = combo.to_dict()
+        restored = Combination.from_dict(dict1)
+        dict2 = restored.to_dict()
+
+        assert dict1 == dict2

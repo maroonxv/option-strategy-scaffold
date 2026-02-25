@@ -35,7 +35,7 @@
     - 使用 Hypothesis 生成随机 Combination 和 closed_vt_symbols 集合，验证 PARTIALLY_CLOSED / CLOSED / 不变的状态转换逻辑
     - **Validates: Requirements 6.3, 6.4**
 
-  - [~] 2.4 编写 Combination 实体属性测试（Property 11: 序列化往返一致性）
+  - [x] 2.4 编写 Combination 实体属性测试（Property 11: 序列化往返一致性）
     - 文件：`tests/strategy/domain/entity/test_combination_properties.py`（追加）
     - **Property 11: 序列化往返一致性**
     - 使用 Hypothesis 生成随机有效 Combination，验证 from_dict(to_dict(c)) 等价于 c
