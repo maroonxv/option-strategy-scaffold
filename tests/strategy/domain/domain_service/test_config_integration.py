@@ -232,3 +232,72 @@ advanced_orders:
         assert hedging["gamma_scalping"]["rebalance_threshold"] == 0.3
         assert ao["default_iceberg_batch_size"] == 5
         assert ao["default_twap_slices"] == 10
+
+
+class TestCombinationRiskConfigIntegration:
+    """组合策略风控配置加载测试"""
+
+    def test_full_combination_risk_config(self):
+        """完整组合风控配置正确解析"""
+        yaml_str = """
+combination_risk:
+  delta_limit: 3.0
+  gamma_limit: 0.8
+  vega_limit: 300.0
+"""
+        config = _load_config(yaml_str)
+        risk_config = ConfigLoader.load_combination_risk_config(config)
+
+        assert risk_config.delta_limit == 3.0
+        assert risk_config.gamma_limit == 0.8
+        assert risk_config.vega_limit == 300.0
+
+    def test_missing_combination_risk_uses_defaults(self):
+        """缺少 combination_risk 节时使用默认值"""
+        config = _load_config("")
+        risk_config = ConfigLoader.load_combination_risk_config(config)
+
+        assert risk_config.delta_limit == 2.0
+        assert risk_config.gamma_limit == 0.5
+        assert risk_config.vega_limit == 200.0
+
+    def test_partial_combination_risk_fills_defaults(self):
+        """部分组合风控配置时，缺失字段使用默认值"""
+        yaml_str = """
+combination_risk:
+  delta_limit: 5.0
+"""
+        config = _load_config(yaml_str)
+        risk_config = ConfigLoader.load_combination_risk_config(config)
+
+        assert risk_config.delta_limit == 5.0
+        assert risk_config.gamma_limit == 0.5  # default
+        assert risk_config.vega_limit == 200.0  # default
+
+    def test_actual_config_file_combination_risk(self):
+        """验证实际的 strategy_config.yaml 中的组合风控配置"""
+        config_path = os.path.join("config", "strategy_config.yaml")
+        if not os.path.exists(config_path):
+            pytest.skip("config/strategy_config.yaml not found")
+
+        with open(config_path, "r", encoding="utf-8") as f:
+            config = yaml.safe_load(f)
+
+        risk_config = ConfigLoader.load_combination_risk_config(config)
+
+        # 验证配置文件中的值
+        assert risk_config.delta_limit == 2.0
+        assert risk_config.gamma_limit == 0.5
+        assert risk_config.vega_limit == 200.0
+
+    def test_combination_risk_config_returns_frozen_dataclass(self):
+        """验证返回的是 CombinationRiskConfig 实例（frozen dataclass）"""
+        from src.strategy.domain.value_object.combination import CombinationRiskConfig
+
+        config = _load_config("")
+        risk_config = ConfigLoader.load_combination_risk_config(config)
+
+        assert isinstance(risk_config, CombinationRiskConfig)
+        # 验证是 frozen dataclass（不可变）
+        with pytest.raises(AttributeError):
+            risk_config.delta_limit = 10.0

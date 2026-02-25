@@ -249,3 +249,48 @@ class ConfigLoader:
         }
         ao_cfg = config.get("advanced_orders", {})
         return {k: ao_cfg.get(k, v) for k, v in defaults.items()}
+
+    @staticmethod
+    def load_combination_risk_config(config: dict) -> "CombinationRiskConfig":
+        """
+        从策略配置中加载组合策略风控配置
+
+        Args:
+            config: 完整策略配置字典
+
+        Returns:
+            CombinationRiskConfig 实例，缺失字段使用默认值
+            默认值: delta_limit=2.0, gamma_limit=0.5, vega_limit=200.0
+        """
+        from src.strategy.domain.value_object.combination import CombinationRiskConfig
+
+        combination_risk = config.get("combination_risk", {})
+
+        return CombinationRiskConfig(
+            delta_limit=combination_risk.get("delta_limit", 2.0),
+            gamma_limit=combination_risk.get("gamma_limit", 0.5),
+            vega_limit=combination_risk.get("vega_limit", 200.0),
+        )
+
+@staticmethod
+def load_combination_risk_config(config: dict) -> "CombinationRiskConfig":
+    """
+    从策略配置中加载组合策略风控配置
+
+    Args:
+        config: 完整策略配置字典
+
+    Returns:
+        CombinationRiskConfig 实例，缺失字段使用默认值
+        默认值: delta_limit=2.0, gamma_limit=0.5, vega_limit=200.0
+    """
+    from src.strategy.domain.value_object.combination import CombinationRiskConfig
+
+    combination_risk = config.get("combination_risk", {})
+
+    return CombinationRiskConfig(
+        delta_limit=combination_risk.get("delta_limit", 2.0),
+        gamma_limit=combination_risk.get("gamma_limit", 0.5),
+        vega_limit=combination_risk.get("vega_limit", 200.0),
+    )
+
