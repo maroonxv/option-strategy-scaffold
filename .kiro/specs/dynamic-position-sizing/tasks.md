@@ -54,7 +54,7 @@
     - **Property 3: Greeks 预算计算正确性**
     - **Validates: Requirements 3.1, 3.2**
 
-  - [~] 3.9 实现 `compute_sizing` 纯计算方法
+  - [-] 3.9 实现 `compute_sizing` 纯计算方法
     - 调用 estimate_margin、_calc_margin_volume、_calc_usage_volume、_calc_greeks_volume
     - 取三维度最小值，clamp 到 [1, max_volume_per_order]
     - 处理所有拒绝场景（保证金 <= 0、资金不足、使用率超限、Greeks 超限、综合手数 < 1）

@@ -7,6 +7,7 @@ from typing import List, Optional, Tuple
 from ...value_object.order_instruction import OrderInstruction, Direction, Offset
 from ...value_object.greeks import GreeksResult
 from ...value_object.risk import PortfolioGreeks, RiskThresholds
+from ...value_object.sizing import SizingResult
 from ...entity.position import Position
 
 
@@ -124,6 +125,117 @@ class PositionSizingService:
             min_volume = min(min_volume, vol)
 
         return (min_volume, delta_budget, gamma_budget, vega_budget)
+
+    def compute_sizing(
+        self,
+        account_balance: float,
+        total_equity: float,
+        used_margin: float,
+        contract_price: float,
+        underlying_price: float,
+        strike_price: float,
+        option_type: str,
+        multiplier: float,
+        greeks: GreeksResult,
+        portfolio_greeks: PortfolioGreeks,
+        risk_thresholds: RiskThresholds,
+    ) -> SizingResult:
+        """纯计算方法：综合三维度计算最终手数，返回 SizingResult"""
+
+        def _rejected(
+            reject_reason: str,
+            margin_volume: int = 0,
+            usage_volume: int = 0,
+            greeks_volume: int = 0,
+            delta_budget: float = 0.0,
+            gamma_budget: float = 0.0,
+            vega_budget: float = 0.0,
+        ) -> SizingResult:
+            return SizingResult(
+                final_volume=0,
+                margin_volume=margin_volume,
+                usage_volume=usage_volume,
+                greeks_volume=greeks_volume,
+                delta_budget=delta_budget,
+                gamma_budget=gamma_budget,
+                vega_budget=vega_budget,
+                passed=False,
+                reject_reason=reject_reason,
+            )
+
+        # 1. 估算单手保证金
+        margin_per_lot = self.estimate_margin(
+            contract_price, underlying_price, strike_price, option_type, multiplier
+        )
+        if margin_per_lot <= 0:
+            return _rejected("保证金估算异常")
+
+        # 2. 保证金维度
+        margin_volume = self._calc_margin_volume(account_balance, margin_per_lot)
+        if margin_volume < 1:
+            return _rejected("可用资金不足", margin_volume=margin_volume)
+
+        # 3. 使用率维度
+        usage_volume = self._calc_usage_volume(total_equity, used_margin, margin_per_lot)
+        if usage_volume < 1:
+            return _rejected("保证金使用率超限", margin_volume=margin_volume, usage_volume=usage_volume)
+
+        # 4. Greeks 维度
+        greeks_volume, delta_budget, gamma_budget, vega_budget = self._calc_greeks_volume(
+            greeks, multiplier, portfolio_greeks, risk_thresholds
+        )
+        if greeks_volume < 1:
+            # 确定具体超限维度
+            bottlenecks = []
+            delta_per_lot = abs(greeks.delta * multiplier)
+            gamma_per_lot = abs(greeks.gamma * multiplier)
+            vega_per_lot = abs(greeks.vega * multiplier)
+            if delta_per_lot > 0 and math.floor(delta_budget / delta_per_lot) < 1:
+                bottlenecks.append("Delta")
+            if gamma_per_lot > 0 and math.floor(gamma_budget / gamma_per_lot) < 1:
+                bottlenecks.append("Gamma")
+            if vega_per_lot > 0 and math.floor(vega_budget / vega_per_lot) < 1:
+                bottlenecks.append("Vega")
+            dimension_str = "/".join(bottlenecks) if bottlenecks else "Delta"
+            return _rejected(
+                f"Greeks 超限: {dimension_str}",
+                margin_volume=margin_volume,
+                usage_volume=usage_volume,
+                greeks_volume=greeks_volume,
+                delta_budget=delta_budget,
+                gamma_budget=gamma_budget,
+                vega_budget=vega_budget,
+            )
+
+        # 5. 取三维度最小值
+        final_volume = min(margin_volume, usage_volume, greeks_volume)
+
+        # 6. 综合手数不足
+        if final_volume < 1:
+            return _rejected(
+                "综合计算手数不足",
+                margin_volume=margin_volume,
+                usage_volume=usage_volume,
+                greeks_volume=greeks_volume,
+                delta_budget=delta_budget,
+                gamma_budget=gamma_budget,
+                vega_budget=vega_budget,
+            )
+
+        # 7. Clamp 到 [1, max_volume_per_order]
+        final_volume = min(max(final_volume, 1), self.max_volume_per_order)
+
+        return SizingResult(
+            final_volume=final_volume,
+            margin_volume=margin_volume,
+            usage_volume=usage_volume,
+            greeks_volume=greeks_volume,
+            delta_budget=delta_budget,
+            gamma_budget=gamma_budget,
+            vega_budget=vega_budget,
+            passed=True,
+        )
+
 
     def calculate_open_volumn(
         self,
