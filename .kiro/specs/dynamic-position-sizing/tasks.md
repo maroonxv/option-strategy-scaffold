@@ -6,14 +6,14 @@
 
 ## Tasks
 
-- [ ] 1. 创建 SizingResult 值对象
-  - [-] 1.1 在 `src/strategy/domain/value_object/sizing.py` 创建 SizingResult frozen dataclass
+- [x] 1. 创建 SizingResult 值对象
+  - [x] 1.1 在 `src/strategy/domain/value_object/sizing.py` 创建 SizingResult frozen dataclass
     - 包含字段：final_volume, margin_volume, usage_volume, greeks_volume, delta_budget, gamma_budget, vega_budget, passed, reject_reason
     - 在 `src/strategy/domain/value_object/__init__.py` 中导出
     - _Requirements: 5.1, 5.2, 5.3_
 
 - [ ] 2. 扩展配置文件
-  - [~] 2.1 在 `config/strategy_config.yaml` 中新增 `position_sizing` 配置节
+  - [x] 2.1 在 `config/strategy_config.yaml` 中新增 `position_sizing` 配置节
     - 添加 margin_ratio (0.12), min_margin_ratio (0.07), margin_usage_limit (0.6), max_volume_per_order (10)
     - _Requirements: 6.1_
 

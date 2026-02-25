@@ -26,6 +26,13 @@ greeks_risk:
     gamma: 1.0
     vega: 500.0
 
+# ========== 动态仓位配置 ==========
+position_sizing:
+  margin_ratio: 0.12            # 保证金比例
+  min_margin_ratio: 0.07        # 最低保证金比例
+  margin_usage_limit: 0.6       # 保证金使用率上限
+  max_volume_per_order: 10      # 单笔最大手数
+
 # ========== 订单执行增强配置 ==========
 order_execution:
   timeout_seconds: 30            # 限价单超时秒数
