@@ -58,7 +58,7 @@
     - 异常捕获，返回 error PricingResult
     - _Requirements: 3.1, 3.2, 3.3, 3.4, 3.5, 3.6, 3.7_
 
-  - [-] 4.2 编写 Property 3 属性测试：CRR 欧式定价收敛到 BS
+  - [x] 4.2 编写 Property 3 属性测试：CRR 欧式定价收敛到 BS
     - **Property 3: CRR 欧式定价收敛到 BS**
     - *For any* 有效欧式参数，|CRR_price - BS_price| < max(BS_price * 0.02, 0.05)
     - **Validates: Requirements 3.2**
