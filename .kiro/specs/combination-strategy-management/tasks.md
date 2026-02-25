@@ -17,13 +17,13 @@
     - _Requirements: 1.5, 5.1, 8.2_
 
 - [ ] 2. 实现 Combination 实体
-  - [-] 2.1 创建 `src/strategy/domain/entity/combination.py`，实现 Combination dataclass，包含 validate()、update_status()、get_active_legs()、to_dict()、from_dict() 方法
+  - [x] 2.1 创建 `src/strategy/domain/entity/combination.py`，实现 Combination dataclass，包含 validate()、update_status()、get_active_legs()、to_dict()、from_dict() 方法
     - validate() 按 CombinationType 验证 Leg 数量和结构约束（STRADDLE: 2腿同标的同到期同行权价一Call一Put；STRANGLE: 2腿同标的同到期不同行权价一Call一Put；VERTICAL_SPREAD: 2腿同标的同到期同类型不同行权价；CALENDAR_SPREAD: 2腿同标的不同到期同行权价同类型；IRON_CONDOR: 4腿同标的同到期构成1个Put Spread+1个Call Spread；CUSTOM: 至少1腿无结构约束）
     - update_status() 接受 closed_vt_symbols 集合，判定状态转换
     - to_dict()/from_dict() 支持序列化往返
     - _Requirements: 1.1, 1.2, 1.3, 1.4, 6.3, 6.4, 9.1, 9.2, 9.3_
 
-  - [~] 2.2 编写 Combination 实体属性测试（Property 1: 组合结构验证）
+  - [x] 2.2 编写 Combination 实体属性测试（Property 1: 组合结构验证）
     - 文件：`tests/strategy/domain/entity/test_combination_properties.py`
     - **Property 1: 组合结构验证**
     - 使用 Hypothesis 生成随机 CombinationType 和 Leg 列表，验证满足约束时通过、不满足时抛出 ValueError
