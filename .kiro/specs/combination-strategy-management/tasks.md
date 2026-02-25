@@ -82,7 +82,7 @@
     - 使用 Hypothesis 生成随机 Combination 和价格，验证总盈亏等于各腿公式之和
     - **Validates: Requirements 4.1, 4.3**
 
-- [ ] 7. 实现 CombinationRiskChecker 服务
+- [x] 7. 实现 CombinationRiskChecker 服务
   - [x] 7.1 创建 `src/strategy/domain/domain_service/combination/combination_risk_checker.py`
     - 实现 check(greeks) 方法，返回 RiskCheckResult（复用现有值对象）
     - 通过条件：|delta| ≤ delta_limit 且 |gamma| ≤ gamma_limit 且 |vega| ≤ vega_limit
@@ -95,11 +95,11 @@
     - 使用 Hypothesis 生成随机 CombinationGreeks 和阈值，验证通过当且仅当所有 Greeks 绝对值在阈值内
     - **Validates: Requirements 5.2, 5.3**
 
-- [~] 8. Checkpoint - 确保领域服务测试通过
+- [x] 8. Checkpoint - 确保领域服务测试通过
   - 运行 `pytest tests/strategy/domain/domain_service/combination/ -v`，确保所有测试通过，有问题请询问用户。
 
 - [ ] 9. 实现 CombinationLifecycleService 服务
-  - [~] 9.1 创建 `src/strategy/domain/domain_service/combination/combination_lifecycle_service.py`
+  - [-] 9.1 创建 `src/strategy/domain/domain_service/combination/combination_lifecycle_service.py`
     - 实现 generate_open_instructions(combination, price_map)：为每个 Leg 生成开仓 OrderInstruction
     - 实现 generate_close_instructions(combination, price_map)：为所有活跃 Leg 生成平仓 OrderInstruction，已平仓 Leg 跳过
     - 实现 generate_adjust_instruction(combination, leg_vt_symbol, new_volume, current_price)：生成调整指令（增仓为开仓，减仓为平仓）
