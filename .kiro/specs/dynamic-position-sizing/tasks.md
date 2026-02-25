@@ -77,11 +77,11 @@
     - SizingResult.passed 为 True 时使用 final_volume 生成 OrderInstruction
     - _Requirements: 4.5, 1.3, 1.4, 2.3, 3.3_
 
-  - [-] 5.2 重命名 `calculate_close_volumn` 为 `calculate_close_volume`（修正拼写）
+  - [x] 5.2 重命名 `calculate_close_volumn` 为 `calculate_close_volume`（修正拼写）
     - 保持平仓逻辑不变
     - _Requirements: 设计决策 2_
 
-  - [~] 5.3 编写单元测试覆盖编排逻辑和边界条件
+  - [-] 5.3 编写单元测试覆盖编排逻辑和边界条件
     - 测试前置风控检查保留（最大持仓、日限额、重复合约）
     - 测试 compute_sizing 拒绝时 calculate_open_volume 返回 None
     - 测试保证金 <= 0、资金不足一手、使用率超限、Greeks 超限等边界条件
