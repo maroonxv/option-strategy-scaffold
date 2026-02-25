@@ -16,7 +16,7 @@
     - _Requirements: 1.1, 1.2, 1.3_
 
 - [ ] 2. 实现 BlackScholesPricer
-  - [-] 2.1 创建 `src/strategy/domain/domain_service/pricing/bs_pricer.py`
+  - [x] 2.1 创建 `src/strategy/domain/domain_service/pricing/bs_pricer.py`
     - 接收 GreeksCalculator 实例
     - 内部输入校验（spot_price, strike_price, volatility, time_to_expiry）
     - 将 PricingInput 转换为 GreeksInput 调用 bs_price
@@ -24,7 +24,7 @@
     - 返回 PricingResult(model_used="black_scholes")
     - _Requirements: 4.1, 4.2, 4.3, 4.4_
 
-  - [~] 2.2 编写 Property 4 属性测试：BS 委托一致性
+  - [x] 2.2 编写 Property 4 属性测试：BS 委托一致性
     - **Property 4: BS 委托一致性**
     - *For any* 有效欧式 PricingInput，BlackScholesPricer 结果应与 GreeksCalculator.bs_price 完全一致
     - **Validates: Requirements 4.1**

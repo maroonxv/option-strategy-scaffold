@@ -178,3 +178,79 @@ class TestBlackScholesPricerExceptionHandling:
         result = pricer.price(_make_input())
         assert not result.success
         assert "math domain error" in result.error_message
+
+
+# ---------------------------------------------------------------------------
+# Property-Based Tests (hypothesis)
+# Feature: option-pricing-engine, Property 4: BS 委托一致性
+# ---------------------------------------------------------------------------
+from hypothesis import given, settings, assume
+import hypothesis.strategies as st
+
+
+# 生成合理范围内的金融参数
+valid_spot = st.floats(min_value=0.01, max_value=10000, allow_nan=False, allow_infinity=False)
+valid_strike = st.floats(min_value=0.01, max_value=10000, allow_nan=False, allow_infinity=False)
+valid_vol = st.floats(min_value=0.01, max_value=5.0, allow_nan=False, allow_infinity=False)
+valid_time = st.floats(min_value=0.001, max_value=5.0, allow_nan=False, allow_infinity=False)
+valid_rate = st.floats(min_value=-0.5, max_value=1.0, allow_nan=False, allow_infinity=False)
+valid_option_type = st.sampled_from(["call", "put"])
+
+
+class TestBSPricerProperty4:
+    """
+    Property 4: BS 委托一致性
+
+    *For any* 有效欧式 PricingInput，BlackScholesPricer 结果应与
+    GreeksCalculator.bs_price 完全一致。
+
+    **Validates: Requirements 4.1**
+    """
+
+    @given(
+        spot=valid_spot,
+        strike=valid_strike,
+        vol=valid_vol,
+        t=valid_time,
+        rate=valid_rate,
+        opt_type=valid_option_type,
+    )
+    @settings(max_examples=200)
+    def test_bs_pricer_delegates_to_greeks_calculator(
+        self, spot, strike, vol, t, rate, opt_type
+    ):
+        """
+        BlackScholesPricer.price().price 应与 GreeksCalculator.bs_price() 完全一致。
+
+        **Validates: Requirements 4.1**
+        """
+        calculator = GreeksCalculator()
+        pricer = BlackScholesPricer(calculator)
+
+        pricing_input = PricingInput(
+            spot_price=spot,
+            strike_price=strike,
+            time_to_expiry=t,
+            risk_free_rate=rate,
+            volatility=vol,
+            option_type=opt_type,
+            exercise_style=ExerciseStyle.EUROPEAN,
+        )
+
+        greeks_input = GreeksInput(
+            spot_price=spot,
+            strike_price=strike,
+            time_to_expiry=t,
+            risk_free_rate=rate,
+            volatility=vol,
+            option_type=opt_type,
+        )
+
+        result = pricer.price(pricing_input)
+        expected_price = calculator.bs_price(greeks_input)
+
+        assert result.success, f"BlackScholesPricer 应成功: {result.error_message}"
+        assert result.price == expected_price, (
+            f"价格不一致: pricer={result.price}, direct={expected_price}"
+        )
+        assert result.model_used == "black_scholes"
