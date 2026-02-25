@@ -98,7 +98,7 @@
 - [x] 8. Checkpoint - 确保领域服务测试通过
   - 运行 `pytest tests/strategy/domain/domain_service/combination/ -v`，确保所有测试通过，有问题请询问用户。
 
-- [ ] 9. 实现 CombinationLifecycleService 服务
+- [x] 9. 实现 CombinationLifecycleService 服务
   - [x] 9.1 创建 `src/strategy/domain/domain_service/combination/combination_lifecycle_service.py`
     - 实现 generate_open_instructions(combination, price_map)：为每个 Leg 生成开仓 OrderInstruction
     - 实现 generate_close_instructions(combination, price_map)：为所有活跃 Leg 生成平仓 OrderInstruction，已平仓 Leg 跳过
@@ -112,14 +112,14 @@
     - 使用 Hypothesis 生成随机 Combination，验证 open_instructions 数量等于 Leg 数量，close_instructions 数量等于活跃 Leg 数量
     - **Validates: Requirements 6.1, 6.2, 6.6**
 
-  - [-] 9.3 编写 CombinationLifecycleService 属性测试（Property 8: 调整指令生成）
+  - [x] 9.3 编写 CombinationLifecycleService 属性测试（Property 8: 调整指令生成）
     - 文件：`tests/strategy/domain/domain_service/combination/test_combination_lifecycle_service.py`（追加）
     - **Property 8: 调整指令生成**
     - 使用 Hypothesis 生成随机调整参数，验证增仓生成开仓指令、减仓生成平仓指令
     - **Validates: Requirements 6.5**
 
 - [ ] 10. 实现 CombinationAggregate 聚合根
-  - [~] 10.1 创建 `src/strategy/domain/aggregate/combination_aggregate.py`
+  - [-] 10.1 创建 `src/strategy/domain/aggregate/combination_aggregate.py`
     - 实现 _combinations 字典、_symbol_index 反向索引、_domain_events 事件队列
     - 实现 register_combination()（调用 validate 后注册并建立反向索引）
     - 实现 get_combination()、get_combinations_by_underlying()、get_active_combinations()、get_combinations_by_symbol()

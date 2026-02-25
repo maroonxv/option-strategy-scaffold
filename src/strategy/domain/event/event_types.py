@@ -327,3 +327,32 @@ class VegaHedgeExecutedEvent(DomainEvent):
     gamma_impact: float = 0.0
     theta_impact: float = 0.0
 
+
+# ========== 组合策略事件 ==========
+@dataclass
+class CombinationStatusChangedEvent(DomainEvent):
+    """
+    组合状态变更事件
+    
+    触发时机: Combination 的状态发生变化（如从 ACTIVE 变为 PARTIALLY_CLOSED）。
+    """
+    combination_id: str = ""
+    old_status: str = ""
+    new_status: str = ""
+    combination_type: str = ""
+
+
+    # ========== 组合策略事件 ==========
+    @dataclass
+    class CombinationStatusChangedEvent(DomainEvent):
+        """
+        组合状态变更事件
+
+        触发时机: Combination 的状态发生变化（如从 ACTIVE 变为 PARTIALLY_CLOSED）。
+        """
+        combination_id: str = ""
+        old_status: str = ""
+        new_status: str = ""
+        combination_type: str = ""
+
+
