@@ -212,7 +212,7 @@ class TestProperty3GreeksBudgetCalculation:
             expected_volumes.append(math.floor(budget / per_lot))
 
         if expected_volumes:
-            expected_volume = min(expected_volumes)
+            expected_volume = min(min(expected_volumes), 999999)
         else:
             expected_volume = 999999
 

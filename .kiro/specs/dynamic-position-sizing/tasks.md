@@ -17,7 +17,7 @@
     - 添加 margin_ratio (0.12), min_margin_ratio (0.07), margin_usage_limit (0.6), max_volume_per_order (10)
     - _Requirements: 6.1_
 
-- [ ] 3. 重构 PositionSizingService
+- [x] 3. 重构 PositionSizingService
   - [x] 3.1 重构 `__init__` 方法，新增 margin_ratio, min_margin_ratio, margin_usage_limit, max_volume_per_order 参数
     - 保留现有 max_positions, global_daily_limit, contract_daily_limit 参数
     - 移除 position_ratio 参数（不再使用）
@@ -65,11 +65,11 @@
     - **Property 4: 综合决策不变量**
     - **Validates: Requirements 4.1, 4.2, 4.4**
 
-- [ ] 4. Checkpoint - 确保所有属性测试通过
+- [x] 4. Checkpoint - 确保所有属性测试通过
   - 确保所有测试通过，如有问题请询问用户。
 
-- [ ] 5. 重构开仓与平仓方法
-  - [~] 5.1 重构 `calculate_open_volume` 方法（修正拼写 volumn → volume）
+- [-] 5. 重构开仓与平仓方法
+  - [-] 5.1 重构 `calculate_open_volume` 方法（修正拼写 volumn → volume）
     - 保留现有风控前置检查（最大持仓、全局日限额、单合约日限额、重复合约）
     - 新增参数：total_equity, used_margin, underlying_price, strike_price, option_type, multiplier, greeks, portfolio_greeks, risk_thresholds
     - 调用 compute_sizing 获取 SizingResult
@@ -90,13 +90,13 @@
     - 测试 calculate_close_volume 保持不变
     - _Requirements: 1.3, 1.4, 2.3, 3.3, 3.4, 4.3, 4.5, 6.2_
 
-- [ ] 6. 更新调用方适配新接口
+- [~] 6. 更新调用方适配新接口
   - [~] 6.1 查找所有调用 `calculate_open_volumn` 和 `calculate_close_volumn` 的代码，更新为新方法签名
     - 传入新增参数（total_equity, used_margin, underlying_price, strike_price, option_type, multiplier, greeks, portfolio_greeks, risk_thresholds）
     - 更新 PositionSizingService 的初始化代码，从 strategy_config.yaml 读取 position_sizing 配置节
     - _Requirements: 6.1, 6.2_
 
-- [ ] 7. Final checkpoint - 确保所有测试通过
+- [~] 7. Final checkpoint - 确保所有测试通过
   - 确保所有测试通过，如有问题请询问用户。
 
 ## Notes

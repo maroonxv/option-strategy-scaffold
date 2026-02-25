@@ -237,44 +237,61 @@ class PositionSizingService:
         )
 
 
-    def calculate_open_volumn(
+    def calculate_open_volume(
         self,
         account_balance: float,
+        total_equity: float,
+        used_margin: float,
         signal: str,
         vt_symbol: str,
         contract_price: float,
+        underlying_price: float,
+        strike_price: float,
+        option_type: str,
+        multiplier: float,
+        greeks: GreeksResult,
+        portfolio_greeks: PortfolioGreeks,
+        risk_thresholds: RiskThresholds,
         current_positions: List[Position],
         current_daily_open_count: int = 0,
         current_contract_open_count: int = 0,
     ) -> Optional[OrderInstruction]:
         """
-        生成开仓指令
-        
+        生成开仓指令（动态仓位计算版本）
+
         流程:
-        1. 检查是否超过最大持仓限制
-        2. 检查每日开仓限额
-        3. 计算开仓数量 (目前策略固定为 1 手)
-        4. 生成 OrderInstruction
-        
+        1. 风控前置检查（最大持仓、全局日限额、单合约日限额、重复合约）
+        2. 调用 compute_sizing 综合三维度计算最终手数
+        3. SizingResult.passed 为 False 时返回 None
+        4. SizingResult.passed 为 True 时使用 final_volume 生成 OrderInstruction
+
         参数:
             account_balance: 可用资金
+            total_equity: 账户总权益
+            used_margin: 已用保证金
             signal: 信号类型
             vt_symbol: 合约代码
-            contract_price: 合约价格 (期权权利金)
-            current_positions: 当前持仓列表 (用于检查最大持仓限制)
-            current_daily_open_count: 当前全局已开仓数 (含预留)
-            current_contract_open_count: 当前合约已开仓数 (含预留)
-            
+            contract_price: 合约价格（期权权利金）
+            underlying_price: 标的价格
+            strike_price: 行权价
+            option_type: "call" | "put"
+            multiplier: 合约乘数
+            greeks: 单手 Greeks
+            portfolio_greeks: 当前组合 Greeks
+            risk_thresholds: Greeks 阈值
+            current_positions: 当前持仓列表
+            current_daily_open_count: 当前全局已开仓数（含预留）
+            current_contract_open_count: 当前合约已开仓数（含预留）
+
         Returns:
-            OrderInstruction (包含交易指令) 或 None (不交易)
+            OrderInstruction（包含交易指令）或 None（不交易）
         """
         # 1. 检查是否超过最大持仓限制
         active_positions = [p for p in current_positions if p.is_active]
         if len(active_positions) >= self.max_positions:
             return None
-        
+
         # 2. 风控检查: 每日开仓限额
-        # 预判开仓 1 手的情况
         if current_daily_open_count + 1 > self.global_daily_limit:
             return None
         if current_contract_open_count + 1 > self.contract_daily_limit:
@@ -284,24 +301,35 @@ class PositionSizingService:
         for pos in active_positions:
             if pos.vt_symbol == vt_symbol:
                 return None
-        
-        # 3. 资金管理规则计算
-        # 奥卡姆剃刀原则：直接固定 1 手，移除所有复杂资金计算
-        volume = 1
-        
-        if contract_price <= 0:
+
+        # 4. 调用 compute_sizing 综合计算
+        sizing_result = self.compute_sizing(
+            account_balance=account_balance,
+            total_equity=total_equity,
+            used_margin=used_margin,
+            contract_price=contract_price,
+            underlying_price=underlying_price,
+            strike_price=strike_price,
+            option_type=option_type,
+            multiplier=multiplier,
+            greeks=greeks,
+            portfolio_greeks=portfolio_greeks,
+            risk_thresholds=risk_thresholds,
+        )
+
+        if not sizing_result.passed:
             return None
-        
-        # 4. 生成指令
-        # 卖权策略: 卖出开仓 (Short Open)
+
+        # 5. 生成指令：卖权策略 - 卖出开仓 (Short Open)
         return OrderInstruction(
             vt_symbol=vt_symbol,
             direction=Direction.SHORT,
             offset=Offset.OPEN,
-            volume=volume,
+            volume=sizing_result.final_volume,
             price=contract_price,
-            signal=signal
+            signal=signal,
         )
+
     
     def calculate_close_volumn(
         self,
