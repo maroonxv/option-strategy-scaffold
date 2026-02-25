@@ -6,18 +6,18 @@
 
 ## 任务
 
-- [ ] 1. 新增值对象和领域事件
+- [x] 1. 新增值对象和领域事件
   - [x] 1.1 在 `src/strategy/domain/value_object/hedging.py` 中新增 `VegaHedgingConfig` 和 `VegaHedgeResult` 数据类
     - VegaHedgingConfig: target_vega, hedging_band, hedge_instrument_vt_symbol, hedge_instrument_vega, hedge_instrument_delta, hedge_instrument_gamma, hedge_instrument_theta, hedge_instrument_multiplier
     - VegaHedgeResult: should_hedge, hedge_volume, hedge_direction, instruction, delta_impact, gamma_impact, theta_impact, rejected, reject_reason, reason
     - _Requirements: 1.1, 3.1_
 
-  - [-] 1.2 在 `src/strategy/domain/event/event_types.py` 中新增 `VegaHedgeExecutedEvent` 数据类
+  - [x] 1.2 在 `src/strategy/domain/event/event_types.py` 中新增 `VegaHedgeExecutedEvent` 数据类
     - 字段: hedge_volume, hedge_direction, portfolio_vega_before, portfolio_vega_after, hedge_instrument, delta_impact, gamma_impact, theta_impact
     - _Requirements: 3.2, 6.1_
 
 - [ ] 2. 实现 VegaHedgingEngine
-  - [~] 2.1 创建 `src/strategy/domain/domain_service/hedging/vega_hedging_engine.py`
+  - [-] 2.1 创建 `src/strategy/domain/domain_service/hedging/vega_hedging_engine.py`
     - 实现 `__init__`、`from_yaml_config`、`check_and_hedge` 方法
     - 输入校验: 乘数 <= 0、Vega = 0、价格 <= 0 时返回 rejected
     - 对冲计算: 偏差判断、手数计算、方向确定、附带 Greeks 影响计算
