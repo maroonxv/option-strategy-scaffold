@@ -44,7 +44,7 @@
 - [x] 3. Checkpoint - 确保值对象和实体测试通过
   - 运行 `pytest tests/strategy/domain/value_object/test_combination_vo.py tests/strategy/domain/entity/ -v`，确保所有测试通过，有问题请询问用户。
 
-- [ ] 4. 实现 CombinationRecognizer 识别服务
+- [x] 4. 实现 CombinationRecognizer 识别服务
   - [x] 4.1 创建 `src/strategy/domain/domain_service/combination/__init__.py` 和 `src/strategy/domain/domain_service/combination/combination_recognizer.py`
     - 实现 recognize(positions, contracts) 方法，按优先级匹配：IRON_CONDOR → STRADDLE → STRANGLE → VERTICAL_SPREAD → CALENDAR_SPREAD → CUSTOM
     - 输入为 List[Position] 和 Dict[str, OptionContract]，复用现有 Position 和 OptionContract 类型
@@ -57,7 +57,7 @@
     - **Validates: Requirements 2.2, 2.3, 2.4, 2.5, 2.6, 2.7**
 
 - [ ] 5. 实现 CombinationGreeksCalculator 服务
-  - [~] 5.1 创建 `src/strategy/domain/domain_service/combination/combination_greeks_calculator.py`
+  - [-] 5.1 创建 `src/strategy/domain/domain_service/combination/combination_greeks_calculator.py`
     - 实现 calculate(combination, greeks_map, multiplier) 方法
     - 加权公式：greek_total += greek_per_unit × volume × multiplier × direction_sign（long=+1, short=-1）
     - 某个 Leg 的 GreeksResult.success 为 False 时，记入 failed_legs 并继续计算其余 Leg
