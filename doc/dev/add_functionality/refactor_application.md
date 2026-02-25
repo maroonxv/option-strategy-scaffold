@@ -36,8 +36,8 @@
 
 | 方法名 | 当前问题 | 建议去向 | 详细说明 |
 | :--- | :--- | :--- | :--- |
-| **`_get_option_contracts`** | 包含大量 Pandas 操作、正则解析、硬编码映射 (IF->IO)。属于**基础设施/数据清洗**逻辑。 | **Infrastructure**: `src/strategy/infrastructure/utils/contract_helper.py` | 封装为 `ContractHelper.get_option_chain(all_contracts, underlying_symbol)`，应用层负责传入全量合约列表。 |
-| **`_is_contract_of_product`** | 简单的字符串匹配工具。 | **Infrastructure**: `src/strategy/infrastructure/utils/contract_helper.py` | 封装为 `ContractHelper.is_contract_of_product(symbol, product_code)`。 |
+| **`_get_option_contracts`** | 包含大量 Pandas 操作、正则解析、硬编码映射 (IF->IO)。属于**基础设施/数据清洗**逻辑。 | **Infrastructure**: `src/strategy/infrastructure/parsing/contract_helper.py` | 封装为 `ContractHelper.get_option_chain(all_contracts, underlying_symbol)`，应用层负责传入全量合约列表。 |
+| **`_is_contract_of_product`** | 简单的字符串匹配工具。 | **Infrastructure**: `src/strategy/infrastructure/parsing/contract_helper.py` | 封装为 `ContractHelper.is_contract_of_product(symbol, product_code)`。 |
 | **`_ensure_daily_open_limit_state`** | 维护每日开仓限额状态。属于**风控领域业务规则**。 | **Domain**: `PositionAggregate` | 聚合根应维护其内部的不变性 (Invariants)。风控限额是开仓行为的约束，理应与持仓状态同在。 |
 | **`_update_open_limits_from_trade`** | 同上。 | **Domain**: `PositionAggregate` | 实现为 `record_open_usage(vt_symbol, volume)`。 |
 | **`_get_reserved_open_volume`** | 同上。 | **Domain**: `PositionAggregate` | 内部风控检查逻辑，无需暴露给应用层，只需暴露 `check_open_limit`。 |
@@ -133,7 +133,7 @@ class ContractHelper:
 2.  **Phase 2: 基础设施逻辑剥离 (Medium Priority)**
     - 目标：应用层不包含任何 Pandas 操作和正则解析。
     - 行动：
-        - 创建 `src/strategy/infrastructure/utils/contract_helper.py`。
+        - 创建 `src/strategy/infrastructure/parsing/contract_helper.py`。
         - 提取 `_get_option_contracts` 为 `ContractHelper.get_option_chain`。应用层先获取 `all_contracts` 再调用。
         - 提取 `_is_contract_of_product` 为 `ContractHelper.is_contract_of_product`。
 

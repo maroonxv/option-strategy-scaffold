@@ -63,7 +63,7 @@ from .infrastructure.persistence.auto_save_service import AutoSaveService
 from .infrastructure.persistence.exceptions import CorruptionError
 from .infrastructure.persistence.history_data_repository import HistoryDataRepository
 from src.main.bootstrap.database_factory import DatabaseFactory
-from .infrastructure.utils.contract_helper import ContractHelper
+from .infrastructure.parsing.contract_helper import ContractHelper
 
 
 class StrategyEntry(StrategyTemplate):

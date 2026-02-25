@@ -79,7 +79,7 @@ _leaf_mods = [
     "src.strategy.infrastructure.persistence.auto_save_service",
     "src.strategy.infrastructure.persistence.exceptions",
     "src.strategy.infrastructure.persistence.history_data_repository",
-    "src.strategy.infrastructure.utils.contract_helper",
+    "src.strategy.infrastructure.parsing.contract_helper",
 ]
 for _mod in _leaf_mods:
     if _mod not in sys.modules:
