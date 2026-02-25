@@ -17,6 +17,7 @@ Value Object Module
 - HedgingConfig / HedgeResult / GammaScalpConfig / ScalpResult: 对冲相关
 - VolQuote / VolQueryResult / VolSmile / TermStructure / VolSurfaceSnapshot: 波动率曲面相关
 - ExerciseStyle / PricingModel / PricingInput / PricingResult: 期权定价相关
+- SizingResult: 仓位计算综合结果
 """
 
 from .order_instruction import OrderInstruction, Direction, Offset, OrderType
@@ -35,6 +36,7 @@ from .advanced_order import (
 from .hedging import HedgingConfig, HedgeResult, GammaScalpConfig, ScalpResult
 from .vol_surface import VolQuote, VolQueryResult, VolSmile, TermStructure, VolSurfaceSnapshot
 from .pricing import ExerciseStyle, PricingModel, PricingInput, PricingResult
+from .sizing import SizingResult
 
 __all__ = [
     # 交易指令相关
@@ -86,4 +88,6 @@ __all__ = [
     "PricingModel",
     "PricingInput",
     "PricingResult",
+    # 仓位计算相关
+    "SizingResult",
 ]
