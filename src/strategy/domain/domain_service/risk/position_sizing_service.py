@@ -44,6 +44,37 @@ class PositionSizingService:
         self.min_margin_ratio = min_margin_ratio
         self.margin_usage_limit = margin_usage_limit
         self.max_volume_per_order = max_volume_per_order
+
+    def estimate_margin(
+        self,
+        contract_price: float,
+        underlying_price: float,
+        strike_price: float,
+        option_type: str,
+        multiplier: float,
+    ) -> float:
+        """
+        估算单手卖出期权保证金。
+
+        公式：权利金 × 合约乘数 + max(标的价格 × 合约乘数 × margin_ratio - 虚值额,
+                                        标的价格 × 合约乘数 × min_margin_ratio)
+
+        虚值额：
+          - put: max(行权价 - 标的价格, 0) × 合约乘数
+          - call: max(标的价格 - 行权价, 0) × 合约乘数
+        """
+        if option_type == "put":
+            out_of_money = max(strike_price - underlying_price, 0) * multiplier
+        else:
+            out_of_money = max(underlying_price - strike_price, 0) * multiplier
+
+        premium = contract_price * multiplier
+        margin = premium + max(
+            underlying_price * multiplier * self.margin_ratio - out_of_money,
+            underlying_price * multiplier * self.min_margin_ratio,
+        )
+        return margin
+
     
     def calculate_open_volumn(
         self,

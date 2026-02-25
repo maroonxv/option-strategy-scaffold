@@ -18,12 +18,12 @@
     - _Requirements: 6.1_
 
 - [ ] 3. 重构 PositionSizingService
-  - [-] 3.1 重构 `__init__` 方法，新增 margin_ratio, min_margin_ratio, margin_usage_limit, max_volume_per_order 参数
+  - [x] 3.1 重构 `__init__` 方法，新增 margin_ratio, min_margin_ratio, margin_usage_limit, max_volume_per_order 参数
     - 保留现有 max_positions, global_daily_limit, contract_daily_limit 参数
     - 移除 position_ratio 参数（不再使用）
     - _Requirements: 6.1, 6.2_
 
-  - [~] 3.2 实现 `estimate_margin` 方法
+  - [x] 3.2 实现 `estimate_margin` 方法
     - 公式：`权利金 × 合约乘数 + max(标的价格 × 合约乘数 × margin_ratio - 虚值额, 标的价格 × 合约乘数 × min_margin_ratio)`
     - 虚值额：put 为 `max(行权价 - 标的价格, 0) × 合约乘数`，call 为 `max(标的价格 - 行权价, 0) × 合约乘数`
     - _Requirements: 1.1_
