@@ -7,12 +7,12 @@
 ## Tasks
 
 - [ ] 1. 创建组合策略值对象和枚举
-  - [-] 1.1 创建 `src/strategy/domain/value_object/combination.py`，实现 CombinationType、CombinationStatus 枚举，Leg 值对象（frozen dataclass），CombinationGreeks 值对象（含 failed_legs），LegPnL 值对象，CombinationPnL 值对象（含 timestamp），CombinationRiskConfig 值对象（含默认值 delta_limit=2.0, gamma_limit=0.5, vega_limit=200.0）
+  - [x] 1.1 创建 `src/strategy/domain/value_object/combination.py`，实现 CombinationType、CombinationStatus 枚举，Leg 值对象（frozen dataclass），CombinationGreeks 值对象（含 failed_legs），LegPnL 值对象，CombinationPnL 值对象（含 timestamp），CombinationRiskConfig 值对象（含默认值 delta_limit=2.0, gamma_limit=0.5, vega_limit=200.0）
     - Leg 使用 OptionType（复用 `option_contract.py` 中的 Literal["call", "put"]）
     - direction 字段使用 "long" / "short" 字符串，与现有 Position 一致
     - _Requirements: 1.1, 1.5, 3.2, 4.2, 5.1, 8.2_
 
-  - [~] 1.2 编写值对象单元测试 `tests/strategy/domain/value_object/test_combination_vo.py`
+  - [-] 1.2 编写值对象单元测试 `tests/strategy/domain/value_object/test_combination_vo.py`
     - 测试枚举值完整性、Leg frozen 不可变性、CombinationRiskConfig 默认值
     - _Requirements: 1.5, 5.1, 8.2_
 
