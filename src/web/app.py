@@ -23,22 +23,6 @@ if load_dotenv:
     except Exception:
         pass
 
-try:
-    from vnpy.trader.setting import SETTINGS
-except Exception:
-    SETTINGS = None
-
-if SETTINGS is not None and os.getenv("VNPY_DATABASE_DRIVER"):
-    try:
-        SETTINGS["database.driver"] = os.getenv("VNPY_DATABASE_DRIVER")
-        SETTINGS["database.database"] = os.getenv("VNPY_DATABASE_DATABASE")
-        SETTINGS["database.host"] = os.getenv("VNPY_DATABASE_HOST")
-        SETTINGS["database.port"] = int(os.getenv("VNPY_DATABASE_PORT", 3306))
-        SETTINGS["database.user"] = os.getenv("VNPY_DATABASE_USER")
-        SETTINGS["database.password"] = os.getenv("VNPY_DATABASE_PASSWORD")
-    except Exception:
-        pass
-
 mysql_reader = MySQLSnapshotReader()
 state_reader = StrategyStateReader({
     "host": os.getenv("VNPY_DATABASE_HOST", ""),

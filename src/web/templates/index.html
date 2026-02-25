@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <title>策略监控 - 波动率策略</title>
+    <title>期权交易监控</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
@@ -19,23 +19,19 @@
             --danger-color: #ff453a;
             --warning-color: #ff9f0a;
         }
-
-        body { 
-            background-color: var(--bg-color); 
+        body {
+            background-color: var(--bg-color);
             color: var(--text-primary);
             font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             -webkit-font-smoothing: antialiased;
         }
-
-        /* 苹果风格卡片 */
-        .card { 
-            background-color: var(--card-bg); 
-            border: none; 
-            border-radius: 18px; 
+        .card {
+            background-color: var(--card-bg);
+            border: none;
+            border-radius: 18px;
             box-shadow: 0 4px 20px rgba(0,0,0,0.3);
             margin-bottom: 20px;
         }
-
         .card-header {
             background-color: transparent;
             border-bottom: 1px solid var(--border-color);
@@ -43,12 +39,7 @@
             font-weight: 600;
             color: var(--text-primary);
         }
-
-        .text-muted {
-            color: var(--text-secondary) !important;
-        }
-
-        /* 表单控件 */
+        .text-muted { color: var(--text-secondary) !important; }
         .form-select {
             background-color: #2c2c2e;
             border: 1px solid var(--border-color);
@@ -61,12 +52,7 @@
             border-color: var(--accent-color);
             box-shadow: 0 0 0 2px rgba(41, 151, 255, 0.3);
         }
-
-        /* 表格样式 */
-        .table {
-            color: var(--text-primary);
-            border-color: var(--border-color);
-        }
+        .table { color: var(--text-primary); border-color: var(--border-color); }
         .table-striped > tbody > tr:nth-of-type(odd) > * {
             color: var(--text-primary);
             box-shadow: inset 0 0 0 9999px rgba(255, 255, 255, 0.03);
@@ -75,87 +61,44 @@
             color: var(--text-primary);
             box-shadow: inset 0 0 0 9999px rgba(255, 255, 255, 0.08);
         }
-        .order-table th { 
-            font-size: 0.85rem; 
+        .order-table th {
+            font-size: 0.85rem;
             color: var(--text-secondary);
             font-weight: 500;
             border-bottom-color: var(--border-color);
         }
-        .order-table td { 
-            font-size: 0.85rem; 
-            vertical-align: middle; 
+        .order-table td {
+            font-size: 0.85rem;
+            vertical-align: middle;
             border-bottom-color: var(--border-color);
         }
-
-        /* 徽章与按钮 */
-        .badge {
-            font-weight: 500;
-            padding: 0.5em 0.8em;
-            border-radius: 6px;
-        }
+        .badge { font-weight: 500; padding: 0.5em 0.8em; border-radius: 6px; }
         .bg-primary { background-color: var(--accent-color) !important; }
         .bg-secondary { background-color: #3a3a3c !important; color: var(--text-primary); }
-        
-        .btn-outline-primary {
-            color: var(--accent-color);
-            border-color: var(--accent-color);
-        }
-        .btn-outline-primary:hover {
-            background-color: var(--accent-color);
-            border-color: var(--accent-color);
-        }
-
-        /* 颜色 */
+        .btn-outline-primary { color: var(--accent-color); border-color: var(--accent-color); }
+        .btn-outline-primary:hover { background-color: var(--accent-color); border-color: var(--accent-color); }
         .text-danger { color: var(--danger-color) !important; }
         .text-success { color: var(--success-color) !important; }
-        
-        /* 代码块 */
-        code {
-            color: var(--warning-color);
-            background: rgba(255, 159, 10, 0.1);
-            padding: 2px 6px;
-            border-radius: 4px;
-        }
-
-        /* 开关 */
-        .form-check-input {
-            background-color: #3a3a3c;
-            border-color: var(--border-color);
-        }
-        .form-check-input:checked {
-            background-color: var(--success-color);
-            border-color: var(--success-color);
-        }
-
-        /* 滚动条 */
-        ::-webkit-scrollbar {
-            width: 8px;
-            height: 8px;
-        }
-        ::-webkit-scrollbar-track {
-            background: var(--card-bg); 
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #48484a; 
-            border-radius: 4px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: #636366; 
-        }
+        code { color: var(--warning-color); background: rgba(255, 159, 10, 0.1); padding: 2px 6px; border-radius: 4px; }
+        .form-check-input { background-color: #3a3a3c; border-color: var(--border-color); }
+        .form-check-input:checked { background-color: var(--success-color); border-color: var(--success-color); }
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: var(--card-bg); }
+        ::-webkit-scrollbar-thumb { background: #48484a; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #636366; }
     </style>
 </head>
 <body>
 
 <div class="container-fluid py-4">
     <div class="row">
-        <!-- 主要内容：图表 -->
         <div class="col-lg-9">
             <div class="card">
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <div class="d-flex align-items-center">
                         <h5 class="mb-0 me-3">市场概览</h5>
                         <select id="strategy-select" class="form-select form-select-sm" style="width: 250px;">
-                            <option value="">加载策略中...</option>
+                            <option value="">加载中...</option>
                         </select>
                         <select id="month-select" class="form-select form-select-sm ms-2" style="width: 120px;">
                             <option value="all">所有月份</option>
@@ -172,38 +115,39 @@
             </div>
         </div>
 
-        <!-- 侧边栏：订单与状态 -->
         <div class="col-lg-3">
             <div class="card">
-                <div class="card-header">
-                    <h6 class="mb-0">活动订单</h6>
-                </div>
+                <div class="card-header"><h6 class="mb-0">活动订单</h6></div>
                 <div class="card-body p-0">
-                    <div class="table-responsive" style="max-height: 750px; overflow-y: auto;">
+                    <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
                         <table class="table table-striped table-hover mb-0 order-table">
                             <thead>
-                                <tr>
-                                    <th>ID</th>
-                                    <th>方向</th>
-                                    <th>价格</th>
-                                    <th>成交/总量</th>
-                                    <th>状态</th>
-                                </tr>
+                                <tr><th>ID</th><th>方向</th><th>价格</th><th>数量</th><th>状态</th></tr>
                             </thead>
-                            <tbody id="order-list">
-                                <!-- 订单将在此处注入 -->
-                            </tbody>
+                            <tbody id="order-list"></tbody>
                         </table>
                     </div>
                 </div>
             </div>
-            
+
             <div class="card">
-                <div class="card-header">
-                    <h6 class="mb-0">系统信息</h6>
+                <div class="card-header"><h6 class="mb-0">持仓</h6></div>
+                <div class="card-body p-0">
+                    <div class="table-responsive" style="max-height: 300px; overflow-y: auto;">
+                        <table class="table table-striped table-hover mb-0 order-table">
+                            <thead>
+                                <tr><th>标的</th><th>方向</th><th>数量</th><th>盈亏</th></tr>
+                            </thead>
+                            <tbody id="position-list"></tbody>
+                        </table>
+                    </div>
                 </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header"><h6 class="mb-0">系统信息</h6></div>
                 <div class="card-body">
-                    <p class="small mb-1 text-muted">当前变体:</p>
+                    <p class="small mb-1 text-muted">当前实例:</p>
                     <code id="variant-name" class="small d-block text-wrap mb-3">-</code>
                     <button class="btn btn-sm btn-outline-primary w-100 mb-2" onclick="fetchData()">立即刷新</button>
                     <div class="form-check form-switch d-flex align-items-center justify-content-between">
@@ -217,488 +161,330 @@
 </div>
 
 <script>
-    // 初始化 ECharts 暗色配置
     const chartDom = document.getElementById('chart-container');
-    const myChart = echarts.init(chartDom, 'dark', {
-        renderer: 'canvas',
-        useDirtyRect: false
-    });
-    let option;
+    const myChart = echarts.init(chartDom, 'dark', { renderer: 'canvas', useDirtyRect: false });
 
-    // 数据存储
     let currentData = null;
     let socket = null;
     let lastSnapshotAtMs = 0;
     window.INIT_VARIANT = "{{ (variant or '')|e }}";
     const FRONT_POLL_MS = Number("{{ (front_poll_ms or 3000)|int }}");
     const FRONT_STALE_MS = Number("{{ (front_stale_ms or 5000)|int }}");
+
     try {
         const label = document.getElementById('auto-refresh-label');
-        if (label) {
-            label.textContent = `自动刷新 (${Math.round(FRONT_POLL_MS / 100) / 10}s)`;
-        }
-    } catch (e) {
-    }
+        if (label) label.textContent = `自动刷新 (${Math.round(FRONT_POLL_MS / 100) / 10}s)`;
+    } catch (e) {}
 
-    function applySnapshot(rawData) {
-        if (!rawData || !rawData.instruments) {
-            return;
-        }
+    /* ---- 指标颜色池 ---- */
+    const INDICATOR_COLORS = [
+        '#ff9f0a', '#0a84ff', '#30d158', '#ff453a', '#bf5af2',
+        '#64d2ff', '#ffd60a', '#ff6482', '#ac8e68', '#5e5ce6'
+    ];
 
-        currentData = rawData;
-        lastSnapshotAtMs = Date.now();
+    /**
+     * 根据 indicators 数据动态构建 ECharts option。
+     *
+     * indicators 约定格式（由策略层自由填充）:
+     * {
+     *   "sub_charts": [                    // 可选，副图列表
+     *     {
+     *       "name": "MACD",                // 副图标题
+     *       "series": [
+     *         {"name": "MACD", "type": "bar", "data": [...]},
+     *         {"name": "DIF",  "type": "line", "data": [...]},
+     *         {"name": "DEA",  "type": "line", "data": [...]}
+     *       ]
+     *     }
+     *   ],
+     *   "overlays": [                      // 可选，主图叠加指标
+     *     {"name": "MA5",  "type": "line", "data": [...]},
+     *     {"name": "MA20", "type": "line", "data": [...]}
+     *   ],
+     *   "marks": [                         // 可选，主图标记点
+     *     {"coord": [idx, price], "value": "9", "position": "top", "type": "buy"},
+     *     ...
+     *   ]
+     * }
+     */
+    function buildChartOption(symbolData) {
+        const dates = symbolData.dates || [];
+        const ohlc = symbolData.ohlc || [];
+        const indicators = symbolData.indicators || {};
 
-        document.getElementById('update-time').textContent = '最后更新: ' + rawData.timestamp;
-        document.getElementById('variant-name').textContent = rawData.variant;
+        const subCharts = indicators.sub_charts || [];
+        const overlays = indicators.overlays || [];
+        const marks = indicators.marks || [];
 
-        updateMonthSelect(rawData.instruments);
-        updateSymbolSelect();
-        updateChartFromCache();
-        renderOrders(rawData.orders);
-    }
+        // 计算布局：主图 + N 个副图
+        const subCount = subCharts.length;
+        const mainHeight = subCount > 0 ? 55 : 80;
+        const subHeight = subCount > 0 ? Math.floor(30 / subCount) : 0;
+        const subGap = 5;
 
-    function subscribeCurrentVariant() {
-        if (!socket || !socket.connected) return;
-        const strategySelect = document.getElementById('strategy-select');
-        const selectedStrategy = strategySelect.value;
-        if (!selectedStrategy || selectedStrategy.includes('失败') || selectedStrategy.includes('未找到')) {
-            return;
-        }
-        try {
-            socket.emit('subscribe', { variant: selectedStrategy });
-        } catch (e) {
-        }
-    }
+        const grids = [{ left: '5%', right: '5%', top: '5%', height: mainHeight + '%', borderColor: '#38383a' }];
+        const xAxes = [{
+            type: 'category', data: dates, scale: true, boundaryGap: false,
+            axisLine: { onZero: false, lineStyle: { color: '#38383a' } },
+            axisLabel: { show: subCount === 0, color: '#86868b' },
+            splitLine: { show: false }, min: 'dataMin', max: 'dataMax', gridIndex: 0
+        }];
+        const yAxes = [{
+            scale: true, splitArea: { show: false },
+            splitLine: { show: true, lineStyle: { color: '#2c2c2e' } },
+            axisLabel: { color: '#86868b' }, gridIndex: 0
+        }];
 
-    function initSocket() {
-        if (typeof io === 'undefined') return;
-        try {
-            socket = io();
-        } catch (e) {
-            socket = null;
-            return;
-        }
-        socket.on('connect', () => {
-            subscribeCurrentVariant();
+        let topOffset = 5 + mainHeight + subGap;
+        subCharts.forEach((sub, i) => {
+            grids.push({ left: '5%', right: '5%', top: topOffset + '%', height: subHeight + '%', borderColor: '#38383a' });
+            xAxes.push({
+                type: 'category', data: dates, gridIndex: i + 1,
+                axisLabel: { show: i === subCount - 1, color: '#86868b' },
+                axisTick: { show: false }, axisLine: { lineStyle: { color: '#38383a' } }
+            });
+            yAxes.push({
+                scale: true, gridIndex: i + 1, splitNumber: 3,
+                axisLabel: { color: '#86868b', fontSize: 10 },
+                axisLine: { show: false }, axisTick: { show: false },
+                splitLine: { show: true, lineStyle: { color: '#2c2c2e', type: 'dashed' } }
+            });
+            topOffset += subHeight + subGap;
         });
-        socket.on('snapshot_update', (data) => {
-            const strategySelect = document.getElementById('strategy-select');
-            const selectedStrategy = strategySelect.value;
-            if (!selectedStrategy) return;
-            if (data && data.variant === selectedStrategy) {
-                applySnapshot(data);
+
+        // 系列：K线
+        const series = [{
+            name: 'K线', type: 'candlestick', xAxisIndex: 0, yAxisIndex: 0, data: ohlc,
+            itemStyle: {
+                color: '#ff453a', color0: '#30d158',
+                borderColor: '#ff453a', borderColor0: '#30d158'
             }
-        });
-    }
+        }];
 
-    function initChart() {
-        option = {
+        // 主图叠加指标
+        let colorIdx = 0;
+        overlays.forEach(ov => {
+            const c = INDICATOR_COLORS[colorIdx++ % INDICATOR_COLORS.length];
+            series.push({
+                name: ov.name || '', type: ov.type || 'line',
+                xAxisIndex: 0, yAxisIndex: 0, data: ov.data || [],
+                showSymbol: false, lineStyle: { width: 1, color: c }, itemStyle: { color: c }
+            });
+        });
+
+        // 主图标记点（散点）
+        if (marks.length > 0) {
+            const markData = marks.map(m => ({
+                value: [m.coord[0], m.coord[1]],
+                label: {
+                    show: true, position: m.position || 'top',
+                    formatter: String(m.value || ''), fontSize: 12, fontWeight: 'bold', color: '#f5f5f7'
+                },
+                itemStyle: { color: 'transparent' }, symbol: 'circle', symbolSize: 1
+            }));
+            series.push({
+                name: '标记', type: 'scatter', xAxisIndex: 0, yAxisIndex: 0,
+                data: markData, symbolSize: 1, z: 10
+            });
+        }
+
+        // 副图系列
+        subCharts.forEach((sub, i) => {
+            (sub.series || []).forEach(s => {
+                const c = INDICATOR_COLORS[colorIdx++ % INDICATOR_COLORS.length];
+                const seriesItem = {
+                    name: s.name || '', type: s.type || 'line',
+                    xAxisIndex: i + 1, yAxisIndex: i + 1,
+                    data: s.data || [], showSymbol: false,
+                    lineStyle: { width: 1, color: c }, itemStyle: { color: c }
+                };
+                // bar 类型根据正负着色
+                if (s.type === 'bar') {
+                    seriesItem.itemStyle = {
+                        color: function(params) { return params.value > 0 ? '#ff453a' : '#30d158'; }
+                    };
+                }
+                series.push(seriesItem);
+            });
+        });
+
+        const xAxisIndices = xAxes.map((_, i) => i);
+
+        return {
             backgroundColor: 'transparent',
             tooltip: {
                 trigger: 'axis',
                 axisPointer: { type: 'cross', label: { backgroundColor: '#2c2c2e' } },
                 backgroundColor: 'rgba(28, 28, 30, 0.9)',
-                borderColor: '#38383a',
-                borderWidth: 1,
-                padding: 10,
+                borderColor: '#38383a', borderWidth: 1, padding: 10,
                 textStyle: { color: '#f5f5f7' }
             },
-            axisPointer: {
-                link: [{ xAxisIndex: 'all' }],
-                label: { backgroundColor: '#777' }
-            },
+            axisPointer: { link: [{ xAxisIndex: 'all' }], label: { backgroundColor: '#777' } },
             toolbox: {
-                feature: {
-                    dataZoom: { yAxisIndex: 'none' },
-                    restore: {},
-                    saveAsImage: {}
-                },
-                iconStyle: {
-                    borderColor: '#86868b'
-                }
+                feature: { dataZoom: { yAxisIndex: 'none' }, restore: {}, saveAsImage: {} },
+                iconStyle: { borderColor: '#86868b' }
             },
-            // --- 主副图布局 ---
-            grid: [
-                // 主图 Grid (K线, TD, 信号) - 占 60%
-                { 
-                    left: '5%', 
-                    right: '5%', 
-                    top: '5%', 
-                    height: '60%', 
-                    borderColor: '#38383a' 
-                }, 
-                // 副图 Grid (MACD) - 占 20% (中间留 5% 间隙)
-                { 
-                    left: '5%', 
-                    right: '5%', 
-                    top: '70%', 
-                    height: '20%', 
-                    borderColor: '#38383a' 
-                } 
-            ],
-            xAxis: [
-                // 主图 X 轴
-                {
-                    type: 'category',
-                    data: [],
-                    scale: true,
-                    boundaryGap: false,
-                    axisLine: { onZero: false, lineStyle: { color: '#38383a' } },
-                    axisLabel: { show: false }, // 隐藏主图 X 轴标签，共用底部的
-                    splitLine: { show: false },
-                    splitNumber: 20,
-                    min: 'dataMin',
-                    max: 'dataMax',
-                    gridIndex: 0
-                },
-                // 副图 X 轴
-                {
-                    type: 'category',
-                    data: [],
-                    gridIndex: 1,
-                    axisLabel: { color: '#86868b' }, // 显示底部时间标签
-                    axisTick: { show: false },
-                    axisLine: { lineStyle: { color: '#38383a' } },
-                    position: 'bottom'
-                }
-            ],
-            yAxis: [
-                // 主图 Y 轴 (价格)
-                {
-                    scale: true,
-                    splitArea: { show: false },
-                    splitLine: { show: true, lineStyle: { color: '#2c2c2e' } },
-                    axisLabel: { color: '#86868b' },
-                    gridIndex: 0
-                },
-                // 副图 Y 轴 (MACD数值)
-                {
-                    scale: true,
-                    gridIndex: 1,
-                    splitNumber: 3,
-                    axisLabel: { color: '#86868b', fontSize: 10 }, // 缩小字体以免遮挡
-                    axisLine: { show: false },
-                    axisTick: { show: false },
-                    splitLine: { show: true, lineStyle: { color: '#2c2c2e', type: 'dashed' } } // 虚线分隔
-                }
-            ],
+            grid: grids, xAxis: xAxes, yAxis: yAxes, series: series,
             dataZoom: [
+                { type: 'inside', xAxisIndex: xAxisIndices, start: 80, end: 100 },
                 {
-                    type: 'inside',
-                    xAxisIndex: [0, 1], // 同时控制主副图
-                    start: 80,
-                    end: 100
-                },
-                {
-                    show: true,
-                    type: 'slider',
-                    xAxisIndex: [0, 1], // 同时控制主副图
-                    top: '93%',
-                    height: '5%',
-                    start: 80,
-                    end: 100,
-                    borderColor: '#38383a',
-                    fillerColor: 'rgba(41, 151, 255, 0.2)',
-                    textStyle: { color: '#86868b' },
-                    handleStyle: { color: '#2997ff' }
-                }
-            ],
-            series: [
-                {
-                    name: 'K线',
-                    type: 'candlestick',
-                    xAxisIndex: 0,
-                    yAxisIndex: 0,
-                    data: [],
-                    itemStyle: {
-                        color: '#ff453a',      
-                        color0: '#30d158',     
-                        borderColor: '#ff453a',
-                        borderColor0: '#30d158'
-                    },
-                },
-                {
-                    name: 'TD信号',
-                    type: 'scatter',
-                    xAxisIndex: 0,
-                    yAxisIndex: 0,
-                    data: [],
-                    symbol: 'pin',
-                    symbolSize: 1, 
-                    label: {
-                        show: true,
-                        formatter: function(param) { return param.name; },
-                        fontWeight: 'bold',
-                        color: '#f5f5f7'
-                    }
-                },
-                {
-                    name: 'MACD',
-                    type: 'bar',
-                    xAxisIndex: 1,
-                    yAxisIndex: 1,
-                    data: [],
-                    itemStyle: {
-                        color: function(params) {
-                            return params.value > 0 ? '#ff453a' : '#30d158';
-                        }
-                    }
-                },
-                {
-                    name: 'DIF',
-                    type: 'line',
-                    xAxisIndex: 1,
-                    yAxisIndex: 1,
-                    data: [],
-                    showSymbol: false,
-                    itemStyle: { color: '#ff9f0a' },
-                    lineStyle: { width: 1, color: '#ff9f0a' } 
-                },
-                {
-                    name: 'DEA',
-                    type: 'line',
-                    xAxisIndex: 1,
-                    yAxisIndex: 1,
-                    data: [],
-                    showSymbol: false,
-                    itemStyle: { color: '#0a84ff' },
-                    lineStyle: { width: 1, color: '#0a84ff' } 
+                    show: true, type: 'slider', xAxisIndex: xAxisIndices,
+                    top: '93%', height: '5%', start: 80, end: 100,
+                    borderColor: '#38383a', fillerColor: 'rgba(41, 151, 255, 0.2)',
+                    textStyle: { color: '#86868b' }, handleStyle: { color: '#2997ff' }
                 }
             ]
         };
-        myChart.setOption(option);
+    }
+
+    function applySnapshot(rawData) {
+        if (!rawData || !rawData.instruments) return;
+        currentData = rawData;
+        lastSnapshotAtMs = Date.now();
+        document.getElementById('update-time').textContent = '最后更新: ' + (rawData.timestamp || '-');
+        document.getElementById('variant-name').textContent = rawData.variant || '-';
+        updateMonthSelect(rawData.instruments);
+        updateSymbolSelect();
+        updateChartFromCache();
+        renderOrders(rawData.orders);
+        renderPositions(rawData.positions);
+    }
+
+    function subscribeCurrentVariant() {
+        if (!socket || !socket.connected) return;
+        const sel = document.getElementById('strategy-select');
+        const v = sel.value;
+        if (!v) return;
+        try { socket.emit('subscribe', { variant: v }); } catch (e) {}
+    }
+
+    function initSocket() {
+        if (typeof io === 'undefined') return;
+        try { socket = io(); } catch (e) { socket = null; return; }
+        socket.on('connect', subscribeCurrentVariant);
+        socket.on('snapshot_update', function(data) {
+            const sel = document.getElementById('strategy-select');
+            if (data && data.variant === sel.value) applySnapshot(data);
+        });
     }
 
     async function loadStrategies() {
         try {
-            const response = await axios.get('/api/strategies');
-            const strategies = response.data;
-            const select = document.getElementById('strategy-select');
-            
-            select.innerHTML = '';
-            
+            const resp = await axios.get('/api/strategies');
+            const strategies = resp.data;
+            const sel = document.getElementById('strategy-select');
+            sel.innerHTML = '';
             if (strategies.length === 0) {
-                const option = document.createElement('option');
-                option.text = "未找到策略文件";
-                select.add(option);
+                sel.innerHTML = '<option>未找到数据</option>';
                 return;
             }
-
             strategies.forEach(s => {
-                const option = document.createElement('option');
-                option.value = s;
-                option.text = s;
-                select.add(option);
+                const opt = document.createElement('option');
+                opt.value = s; opt.text = s;
+                sel.add(opt);
             });
-
-            if (window.INIT_VARIANT && strategies.includes(window.INIT_VARIANT)) {
-                select.value = window.INIT_VARIANT;
-            }
-            
-            // Initial fetch
+            if (window.INIT_VARIANT && strategies.includes(window.INIT_VARIANT)) sel.value = window.INIT_VARIANT;
             fetchData();
-
-            // 策略变更监听器
-            select.addEventListener('change', () => {
+            sel.addEventListener('change', () => {
                 document.getElementById('month-select').innerHTML = '<option value="all">所有月份</option>';
                 document.getElementById('symbol-select').innerHTML = '<option value="">所有标的</option>';
-                currentData = null; // 重置缓存
+                currentData = null;
                 fetchData();
             });
-
-            // 月份变更监听器
-            document.getElementById('month-select').addEventListener('change', () => {
-                updateSymbolSelect();
-                updateChartFromCache();
-            });
-
-            // 标的变更监听器
-            document.getElementById('symbol-select').addEventListener('change', () => {
-                updateChartFromCache();
-            });
-
-        } catch (error) {
-            console.error('加载策略错误:', error);
-            const select = document.getElementById('strategy-select');
-            select.innerHTML = '<option>策略加载失败</option>';
+            document.getElementById('month-select').addEventListener('change', () => { updateSymbolSelect(); updateChartFromCache(); });
+            document.getElementById('symbol-select').addEventListener('change', updateChartFromCache);
+        } catch (e) {
+            document.getElementById('strategy-select').innerHTML = '<option>加载失败</option>';
         }
     }
 
     async function fetchData() {
-        const strategySelect = document.getElementById('strategy-select');
-        const selectedStrategy = strategySelect.value;
-        
-        // 如果未选择有效项，则不获取
-        if (!selectedStrategy || selectedStrategy.includes('失败') || selectedStrategy.includes('未找到')) {
-            return;
-        }
-
-        const url = `/api/data/${selectedStrategy}`;
-
+        const sel = document.getElementById('strategy-select');
+        if (!sel.value) return;
         try {
-            const response = await axios.get(url);
-            const rawData = response.data;
-            
-            applySnapshot(rawData);
+            const resp = await axios.get(`/api/data/${sel.value}`);
+            applySnapshot(resp.data);
             subscribeCurrentVariant();
-
-        } catch (error) {
-            console.error('获取数据错误:', error);
-        }
+        } catch (e) { console.error('获取数据错误:', e); }
     }
 
     function updateMonthSelect(instruments) {
-        const monthSelect = document.getElementById('month-select');
-        const currentMonth = monthSelect.value;
-        
+        const ms = document.getElementById('month-select');
+        const cur = ms.value;
         const months = new Set();
-        Object.values(instruments).forEach(inst => {
-            if (inst.delivery_month) months.add(inst.delivery_month);
-        });
-        
-        const sortedMonths = Array.from(months).sort();
-        
-        // 检查是否有变化
-        const previousOpts = Array.from(monthSelect.options).map(o => o.value).filter(v => v !== "all");
-        if (JSON.stringify(previousOpts) === JSON.stringify(sortedMonths)) return;
-
-        monthSelect.innerHTML = '<option value="all">所有月份</option>';
-        sortedMonths.forEach(m => {
-            const opt = document.createElement('option');
-            opt.value = m;
-            opt.text = m;
-            monthSelect.add(opt);
-        });
-        
-        if (sortedMonths.includes(currentMonth)) {
-            monthSelect.value = currentMonth;
-        }
+        Object.values(instruments).forEach(inst => { if (inst.delivery_month) months.add(inst.delivery_month); });
+        const sorted = Array.from(months).sort();
+        const prev = Array.from(ms.options).map(o => o.value).filter(v => v !== 'all');
+        if (JSON.stringify(prev) === JSON.stringify(sorted)) return;
+        ms.innerHTML = '<option value="all">所有月份</option>';
+        sorted.forEach(m => { const o = document.createElement('option'); o.value = m; o.text = m; ms.add(o); });
+        if (sorted.includes(cur)) ms.value = cur;
     }
 
     function updateSymbolSelect() {
         if (!currentData || !currentData.instruments) return;
-
-        const monthFilter = document.getElementById('month-select').value;
-        const symbolSelect = document.getElementById('symbol-select');
-        const currentSymbol = symbolSelect.value;
-
-        // 过滤出符合月份的标的
-        const filteredSymbols = Object.keys(currentData.instruments).filter(sym => {
-            if (monthFilter === 'all') return true;
-            return currentData.instruments[sym].delivery_month === monthFilter;
-        }).sort();
-
-        // 仅在列表发生变化时更新 DOM
-        const previousOpts = Array.from(symbolSelect.options).map(o => o.value);
-        if (JSON.stringify(previousOpts) === JSON.stringify(filteredSymbols)) return;
-
-        symbolSelect.innerHTML = '';
-        if (filteredSymbols.length === 0) {
-            const opt = document.createElement('option');
-            opt.text = "无匹配标体";
-            symbolSelect.add(opt);
-            return;
-        }
-
-        filteredSymbols.forEach(sym => {
-            const opt = document.createElement('option');
-            opt.value = sym;
-            opt.text = sym;
-            symbolSelect.add(opt);
-        });
-
-        // 尝试恢复之前的选择
-        if (filteredSymbols.includes(currentSymbol)) {
-            symbolSelect.value = currentSymbol;
-        } else {
-            symbolSelect.value = filteredSymbols[0];
-        }
+        const mf = document.getElementById('month-select').value;
+        const ss = document.getElementById('symbol-select');
+        const cur = ss.value;
+        const filtered = Object.keys(currentData.instruments).filter(sym =>
+            mf === 'all' || currentData.instruments[sym].delivery_month === mf
+        ).sort();
+        const prev = Array.from(ss.options).map(o => o.value);
+        if (JSON.stringify(prev) === JSON.stringify(filtered)) return;
+        ss.innerHTML = '';
+        if (filtered.length === 0) { ss.innerHTML = '<option>无匹配标的</option>'; return; }
+        filtered.forEach(sym => { const o = document.createElement('option'); o.value = sym; o.text = sym; ss.add(o); });
+        ss.value = filtered.includes(cur) ? cur : filtered[0];
     }
 
     function updateChartFromCache() {
         if (!currentData || !currentData.instruments) return;
-
-        const symbolSelect = document.getElementById('symbol-select');
-        const selectedSymbol = symbolSelect.value;
-        
-        if (!selectedSymbol || !currentData.instruments[selectedSymbol]) return;
-
-        const symbolData = currentData.instruments[selectedSymbol];
-        
-        // ECharts 需要数据
-        // symbolData.dates
-        // symbolData.ohlc
-        // symbolData.macd (diff, dea, hist)
-        // symbolData.td_marks
-
-        myChart.setOption({
-            xAxis: [
-                { data: symbolData.dates },
-                { data: symbolData.dates }
-            ],
-            series: [
-                { data: symbolData.ohlc }, // Candlestick
-                { data: symbolData.td_marks },   // TD Marks
-                { data: symbolData.macd.hist }, // MACD Bar
-                { data: symbolData.macd.diff },  // DIF
-                { data: symbolData.macd.dea }   // DEA
-            ]
-        });
+        const sym = document.getElementById('symbol-select').value;
+        if (!sym || !currentData.instruments[sym]) return;
+        myChart.clear();
+        myChart.setOption(buildChartOption(currentData.instruments[sym]));
     }
 
     function renderOrders(orders) {
         const tbody = document.getElementById('order-list');
-        tbody.innerHTML = '';
-        
         if (!orders || orders.length === 0) {
             tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted">无活动订单</td></tr>';
             return;
         }
-        
-        // 如果需要，按当前标的筛选订单？
-        // 侧边栏通常显示策略的所有订单。保留所有。
-
+        tbody.innerHTML = '';
         orders.forEach(o => {
             const tr = document.createElement('tr');
-            // 苹果风格颜色：空头为红，多头为绿
-            const dirColor = o.direction.includes('Short') ? 'text-danger' : 'text-success';
-            // 如果可能，翻译方向/开平，否则保持原样
-            let dirText = o.direction;
-            if (dirText === 'Long') dirText = '多';
-            if (dirText === 'Short') dirText = '空';
-            
-            let offText = o.offset;
-            if (offText === 'Open') offText = '开';
-            if (offText === 'Close') offText = '平';
-            if (offText === 'CloseToday') offText = '平今';
-
-            tr.innerHTML = `
-                <td>${o.vt_orderid}</td>
-                <td class="${dirColor}">${dirText}/${offText}</td>
-                <td>${o.price}</td>
-                <td>${o.volume}</td>
-                <td><span class="badge bg-secondary status-badge">${o.status}</span></td>
-            `;
+            const dirColor = (o.direction || '').includes('Short') ? 'text-danger' : 'text-success';
+            let dir = o.direction === 'Long' ? '多' : o.direction === 'Short' ? '空' : o.direction;
+            let off = o.offset === 'Open' ? '开' : o.offset === 'Close' ? '平' : o.offset === 'CloseToday' ? '平今' : (o.offset || '');
+            tr.innerHTML = `<td>${o.vt_orderid || ''}</td><td class="${dirColor}">${dir}/${off}</td><td>${o.price}</td><td>${o.volume}</td><td><span class="badge bg-secondary">${o.status || ''}</span></td>`;
             tbody.appendChild(tr);
         });
     }
 
-    // Resize handler
+    function renderPositions(positions) {
+        const tbody = document.getElementById('position-list');
+        if (!positions || positions.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted">无持仓</td></tr>';
+            return;
+        }
+        tbody.innerHTML = '';
+        positions.forEach(p => {
+            const tr = document.createElement('tr');
+            const pnlClass = (p.pnl || 0) >= 0 ? 'text-success' : 'text-danger';
+            tr.innerHTML = `<td>${p.vt_symbol || ''}</td><td>${p.direction || ''}</td><td>${p.volume || 0}</td><td class="${pnlClass}">${(p.pnl || 0).toFixed(2)}</td>`;
+            tbody.appendChild(tr);
+        });
+    }
+
     window.addEventListener('resize', () => myChart.resize());
-    
-    // Init
-    initChart();
     loadStrategies();
     initSocket();
-
     setInterval(() => {
         if (document.getElementById('auto-refresh').checked) {
-            if (!socket || !socket.connected || (Date.now() - lastSnapshotAtMs > FRONT_STALE_MS)) {
-                fetchData();
-            }
+            if (!socket || !socket.connected || (Date.now() - lastSnapshotAtMs > FRONT_STALE_MS)) fetchData();
         }
     }, FRONT_POLL_MS);
-
 </script>
 </body>
 </html>

@@ -164,7 +164,6 @@ class SnapshotJsonTransformer:
                 "ohlc": ohlc,
                 "volumes": volumes,
                 "indicators": indicators,
-                "status": {},
                 "last_price": last_price,
                 "delivery_month": delivery_month,
             }
@@ -496,93 +495,56 @@ class SnapshotReader:
         return {
             "timestamp": raw_data["update_time"].strftime("%Y-%m-%d %H:%M:%S"),
             "variant": raw_data["variant"],
-            "instruments": self._parse_instruments(
-                raw_data["instruments"], 
-                raw_data.get("macd_history", {}), 
-                raw_data.get("dullness", {}), 
-                raw_data.get("divergence", {})
-            ),
+            "instruments": self._parse_instruments(raw_data["instruments"]),
             "positions": self._parse_positions(raw_data["positions"]),
             "orders": self._parse_orders(raw_data["positions"])
         }
 
-    def _parse_instruments(self, aggregate, macd_history, dullness_states, divergence_states):
-        """解析标的数据（兼容旧 pickle 格式参数，但不再使用 MACD/TD 专属逻辑）"""
+    def _parse_instruments(self, aggregate):
+        """解析标的数据（通用格式，不依赖具体策略逻辑）"""
         result = {}
-        # aggregate 是 InstrumentManager 对象
-        
+
         for symbol in aggregate.get_all_symbols():
             instrument = aggregate.get_instrument(symbol)
             if not instrument:
                 continue
-                
-            # 获取 K 线数据
-            # TargetInstrument 使用 DataFrame `bars`
-            # 但 pickle 转换脚本或旧 pickle 可能不同
-            # 让我们检查属性
+
+            # 获取 K 线数据 - 支持 DataFrame 和 deque 两种格式
+            ohlc = []
+            dates = []
+            volumes = []
+
             if hasattr(instrument, "bars") and isinstance(instrument.bars, pd.DataFrame):
-                # DataFrame 格式
                 bars_df = instrument.bars
                 if bars_df.empty:
                     continue
-                
-                # 转换为字典列表以便迭代
-                # 我们需要 时间、开盘价、最高价、最低价、收盘价、成交量
-                ohlc = []
-                dates = []
-                volumes = []
-                
-                # 遍历行
-                for idx, row in bars_df.iterrows():
+                for _idx, row in bars_df.iterrows():
                     dt = row.get("datetime")
-                    if isinstance(dt, str):
-                        dt_str = dt
-                    else:
-                        dt_str = dt.strftime("%Y-%m-%d %H:%M:%S") if dt else ""
-                        
+                    dt_str = dt if isinstance(dt, str) else (dt.strftime("%Y-%m-%d %H:%M:%S") if dt else "")
                     dates.append(dt_str)
-                    high = row.get("high")
-                    low = row.get("low")
-                    ohlc.append([
-                        row.get("open"),
-                        row.get("close"),
-                        low,
-                        high
-                    ])
+                    ohlc.append([row.get("open"), row.get("close"), row.get("low"), row.get("high")])
                     volumes.append(row.get("volume", 0))
-            
             elif hasattr(instrument, "bar_history"):
-                # 旧格式或 deque？
                 bars = list(instrument.bar_history)
                 if not bars:
                     continue
-                    
-                # 构建类 DataFrame 结构
-                ohlc = []
-                dates = []
-                volumes = []
-                
                 for bar in bars:
-                    # BarData 通常包含 datetime, open_price, high_price, low_price, close_price, volume
-                    dt_str = bar.datetime.strftime("%Y-%m-%d %H:%M:%S")
-                    dates.append(dt_str)
-                    # ECharts K线格式: [open, close, low, high]
+                    dates.append(bar.datetime.strftime("%Y-%m-%d %H:%M:%S"))
                     ohlc.append([bar.open_price, bar.close_price, bar.low_price, bar.high_price])
                     volumes.append(bar.volume)
             else:
                 continue
-            
-            # 指标数据和状态由具体策略实现决定
+
+            # 指标数据由具体策略实现决定，web 层不做假设
             indicator_data = getattr(instrument, "indicators", {})
-            
+
             result[symbol] = {
                 "dates": dates,
                 "ohlc": ohlc,
                 "volumes": volumes,
                 "indicators": indicator_data,
-                "status": {},
                 "last_price": instrument.latest_close,
-                "delivery_month": self.extract_delivery_month(symbol)
+                "delivery_month": self.extract_delivery_month(symbol),
             }
         return result
 
