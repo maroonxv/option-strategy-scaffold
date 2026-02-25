@@ -17,14 +17,14 @@
     - _Requirements: 3.2, 6.1_
 
 - [ ] 2. 实现 VegaHedgingEngine
-  - [-] 2.1 创建 `src/strategy/domain/domain_service/hedging/vega_hedging_engine.py`
+  - [x] 2.1 创建 `src/strategy/domain/domain_service/hedging/vega_hedging_engine.py`
     - 实现 `__init__`、`from_yaml_config`、`check_and_hedge` 方法
     - 输入校验: 乘数 <= 0、Vega = 0、价格 <= 0 时返回 rejected
     - 对冲计算: 偏差判断、手数计算、方向确定、附带 Greeks 影响计算
     - 生成 OrderInstruction 和 VegaHedgeExecutedEvent
     - _Requirements: 1.1, 1.2, 1.3, 2.1, 2.2, 2.3, 3.1, 3.2, 4.1, 4.2, 4.3, 5.1, 5.2, 6.1, 6.2_
 
-  - [~] 2.2 在 `src/strategy/domain/domain_service/hedging/__init__.py` 中导出 VegaHedgingEngine
+  - [-] 2.2 在 `src/strategy/domain/domain_service/hedging/__init__.py` 中导出 VegaHedgingEngine
     - _Requirements: 5.1_
 
 - [~] 3. 检查点 - 确保代码无语法错误
