@@ -28,7 +28,7 @@
     - 虚值额：put 为 `max(行权价 - 标的价格, 0) × 合约乘数`，call 为 `max(标的价格 - 行权价, 0) × 合约乘数`
     - _Requirements: 1.1_
 
-  - [~] 3.3 编写 estimate_margin 属性测试
+  - [x] 3.3 编写 estimate_margin 属性测试
     - **Property 1: 保证金估算公式正确性**
     - **Validates: Requirements 1.1**
 
