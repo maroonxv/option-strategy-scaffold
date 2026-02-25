@@ -5,6 +5,8 @@ BAWPricer 单元测试
 """
 import math
 import pytest
+from hypothesis import given, settings, assume
+from hypothesis import strategies as st
 
 from src.strategy.domain.domain_service.pricing.baw_pricer import BAWPricer
 from src.strategy.domain.domain_service.pricing.bs_pricer import BlackScholesPricer
@@ -210,3 +212,62 @@ class TestBAWPricerExceptionHandling:
         """极小到期时间不应崩溃"""
         result = pricer.price(_make_input(time_to_expiry=0.0001))
         assert result.success or (not result.success and result.error_message)
+
+
+# Feature: option-pricing-engine, Property 1: 美式期权价格不低于欧式 BS 价格
+class TestBAWProperty1AmericanGeEuropean:
+    """
+    Property 1: 美式期权价格不低于欧式 BS 价格
+
+    For any 有效参数，BAW 美式价格 >= BlackScholesPricer 欧式价格
+
+    **Validates: Requirements 2.2, 3.3**
+    """
+
+    @given(
+        spot_price=st.floats(min_value=0.01, max_value=10000.0, allow_nan=False, allow_infinity=False),
+        strike_price=st.floats(min_value=0.01, max_value=10000.0, allow_nan=False, allow_infinity=False),
+        volatility=st.floats(min_value=0.01, max_value=5.0, allow_nan=False, allow_infinity=False),
+        time_to_expiry=st.floats(min_value=0.001, max_value=5.0, allow_nan=False, allow_infinity=False),
+        risk_free_rate=st.floats(min_value=-0.5, max_value=1.0, allow_nan=False, allow_infinity=False),
+        option_type=st.sampled_from(["call", "put"]),
+    )
+    @settings(max_examples=200)
+    def test_american_price_ge_european_bs_price(
+        self, spot_price, strike_price, volatility, time_to_expiry, risk_free_rate, option_type
+    ):
+        """BAW 美式期权价格应不低于对应欧式 BS 价格"""
+        baw_pricer = BAWPricer()
+        bs_pricer = BlackScholesPricer(GreeksCalculator())
+
+        american_input = PricingInput(
+            spot_price=spot_price,
+            strike_price=strike_price,
+            time_to_expiry=time_to_expiry,
+            risk_free_rate=risk_free_rate,
+            volatility=volatility,
+            option_type=option_type,
+            exercise_style=ExerciseStyle.AMERICAN,
+        )
+        european_input = PricingInput(
+            spot_price=spot_price,
+            strike_price=strike_price,
+            time_to_expiry=time_to_expiry,
+            risk_free_rate=risk_free_rate,
+            volatility=volatility,
+            option_type=option_type,
+            exercise_style=ExerciseStyle.EUROPEAN,
+        )
+
+        baw_result = baw_pricer.price(american_input)
+        bs_result = bs_pricer.price(european_input)
+
+        # Skip cases where either pricer fails
+        assume(baw_result.success)
+        assume(bs_result.success)
+
+        assert baw_result.price >= bs_result.price - 1e-10, (
+            f"BAW price ({baw_result.price}) < BS price ({bs_result.price}) "
+            f"for {option_type} with S={spot_price}, K={strike_price}, "
+            f"T={time_to_expiry}, r={risk_free_rate}, σ={volatility}"
+        )

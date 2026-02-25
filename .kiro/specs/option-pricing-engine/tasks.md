@@ -38,7 +38,7 @@
     - 异常捕获，返回 error PricingResult
     - _Requirements: 2.1, 2.2, 2.3, 2.4, 2.5, 2.6_
 
-  - [~] 3.2 编写 Property 1 属性测试：美式期权价格不低于欧式 BS 价格
+  - [x] 3.2 编写 Property 1 属性测试：美式期权价格不低于欧式 BS 价格
     - **Property 1: 美式期权价格不低于欧式 BS 价格**
     - *For any* 有效参数，BAW 美式价格 >= BlackScholesPricer 欧式价格
     - **Validates: Requirements 2.2, 3.3**
