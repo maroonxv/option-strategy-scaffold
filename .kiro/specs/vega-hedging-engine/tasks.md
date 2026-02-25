@@ -35,7 +35,7 @@
     - **Property 1: 对冲手数公式正确性**
     - **Validates: Requirements 1.1, 1.3**
 
-  - [~] 4.2 编写属性测试: 容忍带内不对冲
+  - [-] 4.2 编写属性测试: 容忍带内不对冲
     - **Property 2: 容忍带内不对冲**
     - **Validates: Requirements 1.2**
 

@@ -87,3 +87,50 @@ class TestVegaHedgingProperty1:
             assert result.should_hedge is True
             assert result.hedge_volume == abs(expected_volume)
             assert len(events) == 1
+
+
+# ========== 生成器: 容忍带内 ==========
+
+
+def portfolio_greeks_within_band_st(config: VegaHedgingConfig) -> st.SearchStrategy:
+    """生成 total_vega 在容忍带内的 PortfolioGreeks: abs(total_vega - target_vega) <= hedging_band
+
+    使用 0.99 倍容忍带作为上界，避免浮点精度导致边界值溢出容忍带。
+    """
+    safe_band = config.hedging_band * 0.99
+    return st.floats(
+        min_value=-safe_band,
+        max_value=safe_band,
+        allow_nan=False,
+        allow_infinity=False,
+    ).map(lambda offset: PortfolioGreeks(total_vega=config.target_vega + offset))
+
+
+# ========== Property 2: 容忍带内不对冲 ==========
+
+
+class TestVegaHedgingProperty2:
+    """Property 2: 容忍带内不对冲
+
+    *For any* 有效的 VegaHedgingConfig 和任意 PortfolioGreeks，
+    当 abs(total_vega - target_vega) <= hedging_band 时，
+    返回的 should_hedge 应为 False，且事件列表为空。
+
+    **Validates: Requirements 1.2**
+    """
+
+    @settings(max_examples=100)
+    @given(config=vega_hedging_config_st, data=st.data())
+    def test_property2_within_band_no_hedge(self, config, data):
+        """容忍带内不触发对冲，should_hedge=False 且事件为空
+
+        **Validates: Requirements 1.2**
+        """
+        greeks = data.draw(portfolio_greeks_within_band_st(config))
+        current_price = 100.0
+
+        engine = VegaHedgingEngine(config)
+        result, events = engine.check_and_hedge(greeks, current_price)
+
+        assert result.should_hedge is False
+        assert len(events) == 0
