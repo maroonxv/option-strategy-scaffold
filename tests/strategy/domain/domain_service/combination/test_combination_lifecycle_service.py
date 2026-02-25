@@ -241,3 +241,166 @@ class TestGenerateAdjustInstruction:
         )
 
         assert result.price == 135.5
+
+
+# ---------------------------------------------------------------------------
+# Property-Based Tests
+# ---------------------------------------------------------------------------
+from hypothesis import given, settings
+from hypothesis import strategies as st
+
+# Hypothesis strategies for generating random CUSTOM Combinations
+_direction_st = st.sampled_from(["long", "short"])
+_option_type_st = st.sampled_from(["call", "put"])
+_volume_st = st.integers(min_value=0, max_value=100)
+_price_st = st.floats(min_value=0.01, max_value=10000.0, allow_nan=False, allow_infinity=False)
+_strike_st = st.floats(min_value=100.0, max_value=10000.0, allow_nan=False, allow_infinity=False)
+
+
+@st.composite
+def random_leg(draw, idx=0):
+    """生成随机 Leg，使用唯一的 vt_symbol。"""
+    option_type = draw(_option_type_st)
+    strike = draw(_strike_st)
+    direction = draw(_direction_st)
+    volume = draw(_volume_st)
+    open_price = draw(_price_st)
+    vt_symbol = f"m2509-{option_type[0].upper()}-{int(strike)}-{idx}.DCE"
+    return Leg(
+        vt_symbol=vt_symbol,
+        option_type=option_type,
+        strike_price=strike,
+        expiry_date="20250901",
+        direction=direction,
+        volume=volume,
+        open_price=open_price,
+    )
+
+
+@st.composite
+def random_custom_combination(draw):
+    """生成随机 CUSTOM Combination，包含 1~6 个 Leg，volume 可为 0 或 > 0。"""
+    num_legs = draw(st.integers(min_value=1, max_value=6))
+    legs = [draw(random_leg(idx=i)) for i in range(num_legs)]
+    return Combination(
+        combination_id=f"combo-{draw(st.uuids())}",
+        combination_type=CombinationType.CUSTOM,
+        underlying_vt_symbol="m2509.DCE",
+        legs=legs,
+        status=CombinationStatus.ACTIVE,
+        create_time=datetime(2025, 1, 15, 10, 30),
+    )
+
+
+@st.composite
+def random_price_map(draw, combination):
+    """为 Combination 的所有 Leg 生成随机价格映射。"""
+    price_map = {}
+    for leg in combination.legs:
+        price_map[leg.vt_symbol] = draw(_price_st)
+    return price_map
+
+
+# ---------------------------------------------------------------------------
+# Feature: combination-strategy-management, Property 6: 生命周期指令生成
+# ---------------------------------------------------------------------------
+
+class TestProperty6LifecycleInstructionGeneration:
+    """
+    Property 6: 生命周期指令生成
+
+    *For any* Combination，generate_open_instructions 应为每个 Leg 生成恰好一个
+    OrderInstruction（方向和偏移正确），generate_close_instructions 应为每个活跃 Leg
+    生成恰好一个平仓 OrderInstruction（已平仓 Leg 被跳过）。
+
+    **Validates: Requirements 6.1, 6.2, 6.6**
+    """
+
+    @given(data=st.data())
+    @settings(max_examples=100)
+    def test_open_instructions_count_equals_leg_count(self, data):
+        """Feature: combination-strategy-management, Property 6: 生命周期指令生成
+        open_instructions 数量等于 Leg 数量。
+        **Validates: Requirements 6.1**
+        """
+        combo = data.draw(random_custom_combination())
+        price_map = data.draw(random_price_map(combo))
+        svc = CombinationLifecycleService()
+
+        instructions = svc.generate_open_instructions(combo, price_map)
+
+        assert len(instructions) == len(combo.legs)
+
+    @given(data=st.data())
+    @settings(max_examples=100)
+    def test_open_instructions_direction_and_offset_correct(self, data):
+        """Feature: combination-strategy-management, Property 6: 生命周期指令生成
+        每个 open instruction 的方向与 Leg 方向一致，偏移为 OPEN。
+        **Validates: Requirements 6.1**
+        """
+        combo = data.draw(random_custom_combination())
+        price_map = data.draw(random_price_map(combo))
+        svc = CombinationLifecycleService()
+
+        instructions = svc.generate_open_instructions(combo, price_map)
+
+        for leg, instr in zip(combo.legs, instructions):
+            expected_dir = Direction.LONG if leg.direction == "long" else Direction.SHORT
+            assert instr.vt_symbol == leg.vt_symbol
+            assert instr.direction == expected_dir
+            assert instr.offset == Offset.OPEN
+            assert instr.volume == leg.volume
+
+    @given(data=st.data())
+    @settings(max_examples=100)
+    def test_close_instructions_count_equals_active_leg_count(self, data):
+        """Feature: combination-strategy-management, Property 6: 生命周期指令生成
+        close_instructions 数量等于活跃 Leg（volume > 0）数量。
+        **Validates: Requirements 6.2, 6.6**
+        """
+        combo = data.draw(random_custom_combination())
+        price_map = data.draw(random_price_map(combo))
+        svc = CombinationLifecycleService()
+
+        instructions = svc.generate_close_instructions(combo, price_map)
+        active_legs = [leg for leg in combo.legs if leg.volume > 0]
+
+        assert len(instructions) == len(active_legs)
+
+    @given(data=st.data())
+    @settings(max_examples=100)
+    def test_close_instructions_direction_reversed_and_offset_close(self, data):
+        """Feature: combination-strategy-management, Property 6: 生命周期指令生成
+        每个 close instruction 的方向与 Leg 方向相反，偏移为 CLOSE。
+        **Validates: Requirements 6.2, 6.6**
+        """
+        combo = data.draw(random_custom_combination())
+        price_map = data.draw(random_price_map(combo))
+        svc = CombinationLifecycleService()
+
+        instructions = svc.generate_close_instructions(combo, price_map)
+        active_legs = combo.get_active_legs()
+
+        for leg, instr in zip(active_legs, instructions):
+            expected_dir = Direction.SHORT if leg.direction == "long" else Direction.LONG
+            assert instr.vt_symbol == leg.vt_symbol
+            assert instr.direction == expected_dir
+            assert instr.offset == Offset.CLOSE
+            assert instr.volume == leg.volume
+
+    @given(data=st.data())
+    @settings(max_examples=100)
+    def test_closed_legs_skipped_in_close_instructions(self, data):
+        """Feature: combination-strategy-management, Property 6: 生命周期指令生成
+        volume == 0 的 Leg 不出现在 close_instructions 中。
+        **Validates: Requirements 6.6**
+        """
+        combo = data.draw(random_custom_combination())
+        price_map = data.draw(random_price_map(combo))
+        svc = CombinationLifecycleService()
+
+        instructions = svc.generate_close_instructions(combo, price_map)
+        closed_symbols = {leg.vt_symbol for leg in combo.legs if leg.volume == 0}
+
+        for instr in instructions:
+            assert instr.vt_symbol not in closed_symbols

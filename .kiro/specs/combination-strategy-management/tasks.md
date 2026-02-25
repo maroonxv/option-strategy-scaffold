@@ -99,14 +99,14 @@
   - 运行 `pytest tests/strategy/domain/domain_service/combination/ -v`，确保所有测试通过，有问题请询问用户。
 
 - [ ] 9. 实现 CombinationLifecycleService 服务
-  - [-] 9.1 创建 `src/strategy/domain/domain_service/combination/combination_lifecycle_service.py`
+  - [x] 9.1 创建 `src/strategy/domain/domain_service/combination/combination_lifecycle_service.py`
     - 实现 generate_open_instructions(combination, price_map)：为每个 Leg 生成开仓 OrderInstruction
     - 实现 generate_close_instructions(combination, price_map)：为所有活跃 Leg 生成平仓 OrderInstruction，已平仓 Leg 跳过
     - 实现 generate_adjust_instruction(combination, leg_vt_symbol, new_volume, current_price)：生成调整指令（增仓为开仓，减仓为平仓）
     - 复用现有 OrderInstruction、Direction、Offset 值对象
     - _Requirements: 6.1, 6.2, 6.5, 6.6_
 
-  - [~] 9.2 编写 CombinationLifecycleService 属性测试（Property 6: 生命周期指令生成）
+  - [x] 9.2 编写 CombinationLifecycleService 属性测试（Property 6: 生命周期指令生成）
     - 文件：`tests/strategy/domain/domain_service/combination/test_combination_lifecycle_service.py`
     - **Property 6: 生命周期指令生成**
     - 使用 Hypothesis 生成随机 Combination，验证 open_instructions 数量等于 Leg 数量，close_instructions 数量等于活跃 Leg 数量
