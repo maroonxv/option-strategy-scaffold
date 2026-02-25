@@ -43,7 +43,7 @@
     - *For any* 有效参数，BAW 美式价格 >= BlackScholesPricer 欧式价格
     - **Validates: Requirements 2.2, 3.3**
 
-  - [~] 3.3 编写 Property 2 属性测试：美式看跌价格不低于内在价值
+  - [x] 3.3 编写 Property 2 属性测试：美式看跌价格不低于内在价值
     - **Property 2: 美式看跌价格不低于内在价值**
     - *For any* 有效美式看跌参数，BAW 价格 >= max(K - S, 0)
     - **Validates: Requirements 2.3**

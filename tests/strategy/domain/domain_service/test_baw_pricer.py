@@ -271,3 +271,51 @@ class TestBAWProperty1AmericanGeEuropean:
             f"for {option_type} with S={spot_price}, K={strike_price}, "
             f"T={time_to_expiry}, r={risk_free_rate}, σ={volatility}"
         )
+
+
+# Feature: option-pricing-engine, Property 2: 美式看跌价格不低于内在价值
+class TestBAWProperty2PutGeIntrinsicValue:
+    """
+    Property 2: 美式看跌价格不低于内在价值
+
+    For any 有效美式看跌参数，BAW 价格 >= max(K - S, 0)
+
+    **Validates: Requirements 2.3**
+    """
+
+    @given(
+        spot_price=st.floats(min_value=0.01, max_value=10000.0, allow_nan=False, allow_infinity=False),
+        strike_price=st.floats(min_value=0.01, max_value=10000.0, allow_nan=False, allow_infinity=False),
+        volatility=st.floats(min_value=0.01, max_value=5.0, allow_nan=False, allow_infinity=False),
+        time_to_expiry=st.floats(min_value=0.001, max_value=5.0, allow_nan=False, allow_infinity=False),
+        risk_free_rate=st.floats(min_value=-0.5, max_value=1.0, allow_nan=False, allow_infinity=False),
+    )
+    @settings(max_examples=200)
+    def test_american_put_price_ge_intrinsic_value(
+        self, spot_price, strike_price, volatility, time_to_expiry, risk_free_rate
+    ):
+        """BAW 美式看跌期权价格应不低于内在价值 max(K - S, 0)"""
+        pricer = BAWPricer()
+
+        pricing_input = PricingInput(
+            spot_price=spot_price,
+            strike_price=strike_price,
+            time_to_expiry=time_to_expiry,
+            risk_free_rate=risk_free_rate,
+            volatility=volatility,
+            option_type="put",
+            exercise_style=ExerciseStyle.AMERICAN,
+        )
+
+        result = pricer.price(pricing_input)
+
+        # Skip cases where pricer returns failure
+        assume(result.success)
+
+        intrinsic_value = max(strike_price - spot_price, 0.0)
+
+        assert result.price >= intrinsic_value - 1e-10, (
+            f"BAW put price ({result.price}) < intrinsic value ({intrinsic_value}) "
+            f"for S={spot_price}, K={strike_price}, "
+            f"T={time_to_expiry}, r={risk_free_rate}, σ={volatility}"
+        )
