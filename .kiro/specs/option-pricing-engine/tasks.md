@@ -15,7 +15,7 @@
     - 更新 `src/strategy/domain/value_object/__init__.py` 导出新值对象
     - _Requirements: 1.1, 1.2, 1.3_
 
-- [ ] 2. 实现 BlackScholesPricer
+- [x] 2. 实现 BlackScholesPricer
   - [x] 2.1 创建 `src/strategy/domain/domain_service/pricing/bs_pricer.py`
     - 接收 GreeksCalculator 实例
     - 内部输入校验（spot_price, strike_price, volatility, time_to_expiry）
@@ -30,7 +30,7 @@
     - **Validates: Requirements 4.1**
 
 - [ ] 3. 实现 BAWPricer
-  - [~] 3.1 创建 `src/strategy/domain/domain_service/pricing/baw_pricer.py`
+  - [x] 3.1 创建 `src/strategy/domain/domain_service/pricing/baw_pricer.py`
     - 内部输入校验（spot_price, strike_price, volatility, time_to_expiry）
     - 实现 Barone-Adesi Whaley 近似解析算法
     - 处理 T=0 边界返回内在价值
