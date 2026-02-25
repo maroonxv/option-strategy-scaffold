@@ -313,3 +313,30 @@ class GammaScalpEvent(DomainEvent):
     portfolio_delta_before: float = 0.0
     portfolio_gamma: float = 0.0
     hedge_instrument: str = ""
+
+
+@dataclass
+class VegaHedgeExecutedEvent(DomainEvent):
+    """Vega 对冲执行事件"""
+    hedge_volume: int = 0
+    hedge_direction: str = ""
+    portfolio_vega_before: float = 0.0
+    portfolio_vega_after: float = 0.0
+    hedge_instrument: str = ""
+    delta_impact: float = 0.0
+    gamma_impact: float = 0.0
+    theta_impact: float = 0.0
+
+
+    @dataclass
+    class VegaHedgeExecutedEvent(DomainEvent):
+        """Vega 对冲执行事件"""
+        hedge_volume: int = 0
+        hedge_direction: str = ""
+        portfolio_vega_before: float = 0.0
+        portfolio_vega_after: float = 0.0
+        hedge_instrument: str = ""
+        delta_impact: float = 0.0
+        gamma_impact: float = 0.0
+        theta_impact: float = 0.0
+

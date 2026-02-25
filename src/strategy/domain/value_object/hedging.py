@@ -47,3 +47,31 @@ class ScalpResult:
     instruction: Optional[OrderInstruction] = None
     rejected: bool = False
     reject_reason: str = ""
+
+
+@dataclass(frozen=True)
+class VegaHedgingConfig:
+    """Vega 对冲配置"""
+    target_vega: float = 0.0                    # 目标 Vega
+    hedging_band: float = 50.0                  # Vega 容忍带
+    hedge_instrument_vt_symbol: str = ""        # 对冲工具合约代码
+    hedge_instrument_vega: float = 0.1          # 对冲工具每手 Vega
+    hedge_instrument_delta: float = 0.5         # 对冲工具每手 Delta
+    hedge_instrument_gamma: float = 0.01        # 对冲工具每手 Gamma
+    hedge_instrument_theta: float = -0.05       # 对冲工具每手 Theta
+    hedge_instrument_multiplier: float = 10.0   # 合约乘数
+
+
+@dataclass(frozen=True)
+class VegaHedgeResult:
+    """Vega 对冲计算结果"""
+    should_hedge: bool
+    hedge_volume: int = 0
+    hedge_direction: Optional[Direction] = None
+    instruction: Optional[OrderInstruction] = None
+    delta_impact: float = 0.0       # 对冲引入的 Delta 变化
+    gamma_impact: float = 0.0       # 对冲引入的 Gamma 变化
+    theta_impact: float = 0.0       # 对冲引入的 Theta 变化
+    rejected: bool = False
+    reject_reason: str = ""
+    reason: str = ""
