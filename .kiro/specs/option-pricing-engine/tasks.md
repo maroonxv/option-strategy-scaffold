@@ -29,7 +29,7 @@
     - *For any* 有效欧式 PricingInput，BlackScholesPricer 结果应与 GreeksCalculator.bs_price 完全一致
     - **Validates: Requirements 4.1**
 
-- [ ] 3. 实现 BAWPricer
+- [x] 3. 实现 BAWPricer
   - [x] 3.1 创建 `src/strategy/domain/domain_service/pricing/baw_pricer.py`
     - 内部输入校验（spot_price, strike_price, volatility, time_to_expiry）
     - 实现 Barone-Adesi Whaley 近似解析算法
@@ -49,7 +49,7 @@
     - **Validates: Requirements 2.3**
 
 - [ ] 4. 实现 CRRPricer
-  - [~] 4.1 创建 `src/strategy/domain/domain_service/pricing/crr_pricer.py`
+  - [-] 4.1 创建 `src/strategy/domain/domain_service/pricing/crr_pricer.py`
     - 内部输入校验（spot_price, strike_price, volatility, time_to_expiry）
     - 实现 Cox-Ross-Rubinstein 二叉树算法
     - 支持美式和欧式期权
