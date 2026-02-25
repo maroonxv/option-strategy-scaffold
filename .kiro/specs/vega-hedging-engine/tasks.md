@@ -43,7 +43,7 @@
     - **Property 3: 方向与指令正确性**
     - **Validates: Requirements 2.1, 2.2, 2.3**
 
-  - [~] 4.4 编写属性测试: 附带 Greeks 影响计算正确性
+  - [x] 4.4 编写属性测试: 附带 Greeks 影响计算正确性
     - **Property 4: 附带 Greeks 影响计算正确性**
     - **Validates: Requirements 3.1**
 

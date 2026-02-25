@@ -186,3 +186,58 @@ class TestVegaHedgingProperty3:
         assert isinstance(instr.volume, int)
         assert instr.vt_symbol == config.hedge_instrument_vt_symbol      # 合约代码一致
         assert instr.signal == "vega_hedge"                              # signal 固定
+
+
+# ========== Property 4: 附带 Greeks 影响计算正确性 ==========
+
+
+class TestVegaHedgingProperty4:
+    """Property 4: 附带 Greeks 影响计算正确性
+
+    *For any* 触发对冲的输入，VegaHedgeResult 中的 delta_impact 应等于
+    hedge_volume * hedge_instrument_delta * multiplier * direction_sign，
+    gamma_impact 和 theta_impact 同理。
+
+    **Validates: Requirements 3.1**
+    """
+
+    @settings(max_examples=100)
+    @given(config=vega_hedging_config_st, data=st.data())
+    def test_property4_greeks_impact_correctness(self, config, data):
+        """附带 Greeks 影响 = hedge_volume * instrument_greek * multiplier * direction_sign
+
+        **Validates: Requirements 3.1**
+        """
+        from src.strategy.domain.value_object.order_instruction import Direction
+
+        greeks = data.draw(portfolio_greeks_exceeding_band_st(config))
+        current_price = 100.0
+
+        raw_volume = (config.target_vega - greeks.total_vega) / (
+            config.hedge_instrument_vega * config.hedge_instrument_multiplier
+        )
+        # 只关注对冲确实触发的情况
+        assume(round(raw_volume) != 0)
+
+        engine = VegaHedgingEngine(config)
+        result, events = engine.check_and_hedge(greeks, current_price)
+
+        assert result.should_hedge is True
+
+        # 确定 direction_sign
+        direction_sign = 1 if result.hedge_direction == Direction.LONG else -1
+
+        multiplier = config.hedge_instrument_multiplier
+        vol = result.hedge_volume
+
+        # 验证 delta_impact
+        expected_delta = vol * config.hedge_instrument_delta * multiplier * direction_sign
+        assert result.delta_impact == pytest.approx(expected_delta)
+
+        # 验证 gamma_impact
+        expected_gamma = vol * config.hedge_instrument_gamma * multiplier * direction_sign
+        assert result.gamma_impact == pytest.approx(expected_gamma)
+
+        # 验证 theta_impact
+        expected_theta = vol * config.hedge_instrument_theta * multiplier * direction_sign
+        assert result.theta_impact == pytest.approx(expected_theta)
