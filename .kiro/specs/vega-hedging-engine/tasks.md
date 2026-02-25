@@ -59,7 +59,7 @@
     - **Property 7: YAML 配置加载一致性**
     - **Validates: Requirements 5.1, 5.2**
 
-  - [~] 4.8 编写属性测试: 事件列表与对冲结果一致性
+  - [x] 4.8 编写属性测试: 事件列表与对冲结果一致性
     - **Property 8: 事件列表与对冲结果一致性**
     - **Validates: Requirements 6.1, 6.2**
 

@@ -457,3 +457,56 @@ class TestVegaHedgingProperty7:
                 assert actual == expected, (
                     f"字段 {field}: 期望默认值 {expected}，实际 {actual}"
                 )
+
+
+# ========== Property 8: 事件列表与对冲结果一致性 ==========
+
+# 广泛配置生成器：包含有效和无效配置
+_broad_config_st = st.builds(
+    VegaHedgingConfig,
+    target_vega=st.floats(min_value=-500.0, max_value=500.0, allow_nan=False, allow_infinity=False),
+    hedging_band=st.floats(min_value=0.01, max_value=200.0, allow_nan=False, allow_infinity=False),
+    hedge_instrument_vt_symbol=st.just("IO2506-C-4000.CFFEX"),
+    hedge_instrument_vega=st.floats(min_value=-10.0, max_value=10.0, allow_nan=False, allow_infinity=False),  # 包含 0
+    hedge_instrument_delta=st.floats(min_value=-1.0, max_value=1.0, allow_nan=False, allow_infinity=False),
+    hedge_instrument_gamma=st.floats(min_value=-0.1, max_value=0.1, allow_nan=False, allow_infinity=False),
+    hedge_instrument_theta=st.floats(min_value=-1.0, max_value=0.0, allow_nan=False, allow_infinity=False),
+    hedge_instrument_multiplier=st.floats(min_value=-50.0, max_value=300.0, allow_nan=False, allow_infinity=False),  # 包含 <= 0
+)
+
+
+class TestVegaHedgingProperty8:
+    """Property 8: 事件列表与对冲结果一致性
+
+    *For any* 输入，事件列表非空当且仅当 should_hedge 为 True；
+    事件列表为空当且仅当 should_hedge 为 False 或 rejected 为 True。
+
+    **Validates: Requirements 6.1, 6.2**
+    """
+
+    @settings(max_examples=100)
+    @given(
+        config=_broad_config_st,
+        total_vega=st.floats(min_value=-1000.0, max_value=1000.0, allow_nan=False, allow_infinity=False),
+        current_price=st.floats(min_value=-100.0, max_value=500.0, allow_nan=False, allow_infinity=False),
+    )
+    def test_property8_events_consistent_with_hedge_result(self, config, total_vega, current_price):
+        """事件列表非空 ↔ should_hedge=True；事件列表为空 ↔ should_hedge=False 或 rejected=True
+
+        **Validates: Requirements 6.1, 6.2**
+        """
+        greeks = PortfolioGreeks(total_vega=total_vega)
+
+        engine = VegaHedgingEngine(config)
+        result, events = engine.check_and_hedge(greeks, current_price)
+
+        if result.should_hedge:
+            # 需求 6.1: 执行对冲时，事件列表非空
+            assert len(events) > 0, (
+                f"should_hedge=True 但事件列表为空"
+            )
+        else:
+            # 需求 6.2: 不需要对冲或被拒绝时，事件列表为空
+            assert len(events) == 0, (
+                f"should_hedge=False (rejected={result.rejected}) 但事件列表非空: {len(events)} 个事件"
+            )
