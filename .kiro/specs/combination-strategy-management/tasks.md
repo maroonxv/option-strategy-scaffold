@@ -118,7 +118,7 @@
     - 使用 Hypothesis 生成随机调整参数，验证增仓生成开仓指令、减仓生成平仓指令
     - **Validates: Requirements 6.5**
 
-- [ ] 10. 实现 CombinationAggregate 聚合根
+- [x] 10. 实现 CombinationAggregate 聚合根
   - [x] 10.1 创建 `src/strategy/domain/aggregate/combination_aggregate.py`
     - 实现 _combinations 字典、_symbol_index 反向索引、_domain_events 事件队列
     - 实现 register_combination()（调用 validate 后注册并建立反向索引）
@@ -146,7 +146,7 @@
     - 使用 Hypothesis 生成随机 CombinationAggregate 状态，验证 from_snapshot(to_snapshot(agg)) 恢复等价状态
     - **Validates: Requirements 7.1**
 
-  - [-] 10.5 编写 CombinationAggregate 属性测试（Property 13: 反向索引一致性）
+  - [x] 10.5 编写 CombinationAggregate 属性测试（Property 13: 反向索引一致性）
     - 文件：`tests/strategy/domain/aggregate/test_combination_aggregate_properties.py`（追加）
     - **Property 13: 反向索引一致性**
     - 使用 Hypothesis 生成随机 Combination 集合注册后，验证 _symbol_index 与 _combinations 的双向一致性
@@ -157,7 +157,7 @@
     - 继承 DomainEvent，包含 combination_id、old_status、new_status、combination_type 字段
     - _Requirements: 7.4_
 
-- [~] 12. Checkpoint - 确保聚合根和事件测试通过
+- [x] 12. Checkpoint - 确保聚合根和事件测试通过
   - 运行 `pytest tests/strategy/domain/aggregate/ tests/strategy/domain/entity/ -v`，确保所有测试通过，有问题请询问用户。
 
 - [ ] 13. 扩展 YAML 配置支持
