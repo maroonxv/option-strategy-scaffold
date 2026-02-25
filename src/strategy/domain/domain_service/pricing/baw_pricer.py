@@ -132,6 +132,8 @@ class BAWPricer:
         M: float, N: float, K_factor: float,
     ) -> float:
         """BAW 美式看涨期权定价"""
+        bs = self._bs_price(S, K, T, r, sigma, "call")
+
         # q₂ = (-(N-1) + √((N-1)² + 4M/K_factor)) / 2
         discriminant = (N - 1) ** 2 + 4.0 * M / K_factor
         q2 = (-(N - 1) + math.sqrt(discriminant)) / 2.0
@@ -140,20 +142,22 @@ class BAWPricer:
         S_star = self._find_critical_price_call(K, T, r, sigma, q2)
 
         if S >= S_star:
-            # S >= S*: 立即行权最优，价格 = 内在价值
-            return S - K
+            # S >= S*: 立即行权最优，价格 = max(内在价值, BS价格)
+            # 美式期权价格不应低于欧式价格
+            return max(S - K, bs)
         else:
             # S < S*: 美式价格 = BS价格 + 提前行权溢价
-            bs = self._bs_price(S, K, T, r, sigma, "call")
             A2 = (S_star / q2) * (1.0 - self._bs_d1_cdf(S_star, K, T, r, sigma))
             premium = A2 * (S / S_star) ** q2
-            return bs + premium
+            return max(bs + premium, bs)
 
     def _baw_put(
         self, S: float, K: float, T: float, r: float, sigma: float,
         M: float, N: float, K_factor: float,
     ) -> float:
         """BAW 美式看跌期权定价"""
+        bs = self._bs_price(S, K, T, r, sigma, "put")
+
         # q₁ = (-(N-1) - √((N-1)² + 4M/K_factor)) / 2
         discriminant = (N - 1) ** 2 + 4.0 * M / K_factor
         q1 = (-(N - 1) - math.sqrt(discriminant)) / 2.0
@@ -162,14 +166,14 @@ class BAWPricer:
         S_star = self._find_critical_price_put(K, T, r, sigma, q1)
 
         if S <= S_star:
-            # S <= S*: 立即行权最优，价格 = 内在价值
-            return K - S
+            # S <= S*: 立即行权最优，价格 = max(内在价值, BS价格)
+            # 美式期权价格不应低于欧式价格
+            return max(K - S, bs)
         else:
             # S > S*: 美式价格 = BS价格 + 提前行权溢价
-            bs = self._bs_price(S, K, T, r, sigma, "put")
             A1 = -(S_star / q1) * (1.0 - self._bs_d1_cdf_neg(S_star, K, T, r, sigma))
             premium = A1 * (S / S_star) ** q1
-            return bs + premium
+            return max(bs + premium, bs)
 
     def _find_critical_price_call(
         self, K: float, T: float, r: float, sigma: float, q2: float,
