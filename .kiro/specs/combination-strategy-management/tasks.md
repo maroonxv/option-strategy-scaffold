@@ -76,7 +76,7 @@
     - 价格不可用时 LegPnL.price_available = False，该腿盈亏计为 0
     - _Requirements: 4.1, 4.2, 4.3, 4.4_
 
-  - [~] 6.2 编写 CombinationPnLCalculator 属性测试（Property 4: 盈亏计算正确性）
+  - [x] 6.2 编写 CombinationPnLCalculator 属性测试（Property 4: 盈亏计算正确性）
     - 文件：`tests/strategy/domain/domain_service/combination/test_combination_pnl_calculator.py`
     - **Property 4: 盈亏计算正确性**
     - 使用 Hypothesis 生成随机 Combination 和价格，验证总盈亏等于各腿公式之和

@@ -208,3 +208,242 @@ class TestCombinationPnLCalculator:
 
         assert result.leg_details[0].vt_symbol == "A.DCE"
         assert result.leg_details[1].vt_symbol == "B.DCE"
+
+
+# ---------------------------------------------------------------------------
+# Property-Based Tests
+# ---------------------------------------------------------------------------
+import pytest
+from hypothesis import given, settings
+from hypothesis import strategies as st
+
+# Reusable Hypothesis strategies
+_option_type = st.sampled_from(["call", "put"])
+_strike_price = st.floats(min_value=100.0, max_value=10000.0, allow_nan=False, allow_infinity=False)
+_expiry_date = st.from_regex(r"20[2-3][0-9](0[1-9]|1[0-2])(0[1-9]|[12][0-9]|3[01])", fullmatch=True)
+_direction = st.sampled_from(["long", "short"])
+_volume = st.integers(min_value=1, max_value=100)
+_open_price = st.floats(min_value=0.01, max_value=5000.0, allow_nan=False, allow_infinity=False)
+_current_price = st.floats(min_value=0.01, max_value=5000.0, allow_nan=False, allow_infinity=False)
+_multiplier = st.floats(min_value=0.1, max_value=100.0, allow_nan=False, allow_infinity=False)
+
+_DIRECTION_SIGN = {"long": 1.0, "short": -1.0}
+
+
+def _unique_vt_symbols(n: int):
+    """生成 n 个唯一的 vt_symbol。"""
+    return st.lists(
+        st.from_regex(r"[a-z]{2}[0-9]{4}-[CP]-[0-9]{4}\.[A-Z]{3}", fullmatch=True),
+        min_size=n,
+        max_size=n,
+        unique=True,
+    )
+
+
+def _combination_with_prices_data():
+    """
+    生成随机 CUSTOM Combination、对应的 current_prices 映射和 multiplier。
+    所有 Leg 都有对应的当前价格。
+    """
+    return st.integers(min_value=1, max_value=6).flatmap(
+        lambda n: st.tuples(
+            _unique_vt_symbols(n),
+            st.lists(_option_type, min_size=n, max_size=n),
+            st.lists(_strike_price, min_size=n, max_size=n),
+            st.lists(_expiry_date, min_size=n, max_size=n),
+            st.lists(_direction, min_size=n, max_size=n),
+            st.lists(_volume, min_size=n, max_size=n),
+            st.lists(_open_price, min_size=n, max_size=n),
+            st.lists(_current_price, min_size=n, max_size=n),
+            _multiplier,
+        )
+    )
+
+
+def _combination_with_partial_prices():
+    """
+    生成随机 CUSTOM Combination，其中部分 Leg 的当前价格不可用。
+    返回 (symbols, ..., current_prices_list, multiplier, price_available_flags)。
+    """
+    return st.integers(min_value=1, max_value=6).flatmap(
+        lambda n: st.tuples(
+            _unique_vt_symbols(n),
+            st.lists(_option_type, min_size=n, max_size=n),
+            st.lists(_strike_price, min_size=n, max_size=n),
+            st.lists(_expiry_date, min_size=n, max_size=n),
+            st.lists(_direction, min_size=n, max_size=n),
+            st.lists(_volume, min_size=n, max_size=n),
+            st.lists(_open_price, min_size=n, max_size=n),
+            st.lists(_current_price, min_size=n, max_size=n),
+            _multiplier,
+            st.lists(st.booleans(), min_size=n, max_size=n),
+        )
+    )
+
+
+# ---------------------------------------------------------------------------
+# Feature: combination-strategy-management, Property 4: 盈亏计算正确性
+# ---------------------------------------------------------------------------
+
+class TestProperty4PnLCalculation:
+    """
+    Property 4: 盈亏计算正确性
+
+    *For any* Combination 及其每个 Leg 的当前市场价，CombinationPnLCalculator
+    计算的总未实现盈亏应等于所有 Leg 的
+    `(current_price - open_price) × volume × multiplier × direction_sign` 之和，
+    且每腿盈亏明细应与公式一致。
+
+    **Validates: Requirements 4.1, 4.3**
+    """
+
+    def setup_method(self) -> None:
+        self.calculator = CombinationPnLCalculator()
+
+    @given(data=_combination_with_prices_data())
+    @settings(max_examples=100)
+    def test_total_pnl_equals_sum_of_leg_formulas(self, data):
+        """Feature: combination-strategy-management, Property 4: 盈亏计算正确性
+        对于任意 Combination（所有价格可用），总盈亏应等于各腿公式之和。
+        **Validates: Requirements 4.1, 4.3**
+        """
+        symbols, opt_types, strikes, expiries, directions, volumes, open_prices, cur_prices, multiplier = data
+
+        n = len(symbols)
+        legs = [
+            Leg(
+                vt_symbol=symbols[i],
+                option_type=opt_types[i],
+                strike_price=strikes[i],
+                expiry_date=expiries[i],
+                direction=directions[i],
+                volume=volumes[i],
+                open_price=open_prices[i],
+            )
+            for i in range(n)
+        ]
+        combo = Combination(
+            combination_id="prop4-test",
+            combination_type=CombinationType.CUSTOM,
+            underlying_vt_symbol="underlying.EX",
+            legs=legs,
+            status=CombinationStatus.ACTIVE,
+            create_time=datetime(2025, 1, 1),
+        )
+        current_prices = {symbols[i]: cur_prices[i] for i in range(n)}
+
+        result = self.calculator.calculate(combo, current_prices, multiplier)
+
+        # 手动计算期望总盈亏
+        expected_total = 0.0
+        for i in range(n):
+            sign = _DIRECTION_SIGN[directions[i]]
+            expected_leg_pnl = (cur_prices[i] - open_prices[i]) * volumes[i] * multiplier * sign
+            expected_total += expected_leg_pnl
+
+        assert result.total_unrealized_pnl == pytest.approx(expected_total, abs=1e-6)
+        assert len(result.leg_details) == n
+        assert all(d.price_available for d in result.leg_details)
+
+    @given(data=_combination_with_prices_data())
+    @settings(max_examples=100)
+    def test_each_leg_pnl_matches_formula(self, data):
+        """Feature: combination-strategy-management, Property 4: 盈亏计算正确性
+        对于任意 Combination（所有价格可用），每腿盈亏明细应与公式一致。
+        **Validates: Requirements 4.1, 4.3**
+        """
+        symbols, opt_types, strikes, expiries, directions, volumes, open_prices, cur_prices, multiplier = data
+
+        n = len(symbols)
+        legs = [
+            Leg(
+                vt_symbol=symbols[i],
+                option_type=opt_types[i],
+                strike_price=strikes[i],
+                expiry_date=expiries[i],
+                direction=directions[i],
+                volume=volumes[i],
+                open_price=open_prices[i],
+            )
+            for i in range(n)
+        ]
+        combo = Combination(
+            combination_id="prop4-leg-detail",
+            combination_type=CombinationType.CUSTOM,
+            underlying_vt_symbol="underlying.EX",
+            legs=legs,
+            status=CombinationStatus.ACTIVE,
+            create_time=datetime(2025, 1, 1),
+        )
+        current_prices = {symbols[i]: cur_prices[i] for i in range(n)}
+
+        result = self.calculator.calculate(combo, current_prices, multiplier)
+
+        for i in range(n):
+            sign = _DIRECTION_SIGN[directions[i]]
+            expected_pnl = (cur_prices[i] - open_prices[i]) * volumes[i] * multiplier * sign
+            assert result.leg_details[i].vt_symbol == symbols[i]
+            assert result.leg_details[i].unrealized_pnl == pytest.approx(expected_pnl, abs=1e-6)
+            assert result.leg_details[i].price_available is True
+
+    @given(data=_combination_with_partial_prices())
+    @settings(max_examples=100)
+    def test_missing_prices_use_zero_pnl(self, data):
+        """Feature: combination-strategy-management, Property 4: 盈亏计算正确性
+        当部分 Leg 价格不可用时，缺失价格的腿盈亏为 0 且 price_available=False，
+        总盈亏仅包含有价格的腿。
+        **Validates: Requirements 4.1, 4.3**
+        """
+        symbols, opt_types, strikes, expiries, directions, volumes, open_prices, cur_prices, multiplier, avail_flags = data
+
+        n = len(symbols)
+        legs = [
+            Leg(
+                vt_symbol=symbols[i],
+                option_type=opt_types[i],
+                strike_price=strikes[i],
+                expiry_date=expiries[i],
+                direction=directions[i],
+                volume=volumes[i],
+                open_price=open_prices[i],
+            )
+            for i in range(n)
+        ]
+        combo = Combination(
+            combination_id="prop4-partial",
+            combination_type=CombinationType.CUSTOM,
+            underlying_vt_symbol="underlying.EX",
+            legs=legs,
+            status=CombinationStatus.ACTIVE,
+            create_time=datetime(2025, 1, 1),
+        )
+        # Only include prices for legs where avail_flags[i] is True
+        current_prices = {
+            symbols[i]: cur_prices[i]
+            for i in range(n)
+            if avail_flags[i]
+        }
+
+        result = self.calculator.calculate(combo, current_prices, multiplier)
+
+        # 手动计算期望总盈亏（仅有价格的腿）
+        expected_total = 0.0
+        for i in range(n):
+            if avail_flags[i]:
+                sign = _DIRECTION_SIGN[directions[i]]
+                expected_total += (cur_prices[i] - open_prices[i]) * volumes[i] * multiplier * sign
+
+        assert result.total_unrealized_pnl == pytest.approx(expected_total, abs=1e-6)
+        assert len(result.leg_details) == n
+
+        for i in range(n):
+            detail = result.leg_details[i]
+            assert detail.vt_symbol == symbols[i]
+            if avail_flags[i]:
+                sign = _DIRECTION_SIGN[directions[i]]
+                expected_pnl = (cur_prices[i] - open_prices[i]) * volumes[i] * multiplier * sign
+                assert detail.unrealized_pnl == pytest.approx(expected_pnl, abs=1e-6)
+                assert detail.price_available is True
+            else:
+                assert detail.unrealized_pnl == 0.0
+                assert detail.price_available is False
