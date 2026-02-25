@@ -12,13 +12,13 @@
     - 在 `src/strategy/domain/value_object/__init__.py` 中导出
     - _Requirements: 5.1, 5.2, 5.3_
 
-- [ ] 2. 扩展配置文件
+- [x] 2. 扩展配置文件
   - [x] 2.1 在 `config/strategy_config.yaml` 中新增 `position_sizing` 配置节
     - 添加 margin_ratio (0.12), min_margin_ratio (0.07), margin_usage_limit (0.6), max_volume_per_order (10)
     - _Requirements: 6.1_
 
 - [ ] 3. 重构 PositionSizingService
-  - [~] 3.1 重构 `__init__` 方法，新增 margin_ratio, min_margin_ratio, margin_usage_limit, max_volume_per_order 参数
+  - [-] 3.1 重构 `__init__` 方法，新增 margin_ratio, min_margin_ratio, margin_usage_limit, max_volume_per_order 参数
     - 保留现有 max_positions, global_daily_limit, contract_daily_limit 参数
     - 移除 position_ratio 参数（不再使用）
     - _Requirements: 6.1, 6.2_

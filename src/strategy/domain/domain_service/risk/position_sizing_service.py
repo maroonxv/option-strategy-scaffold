@@ -14,28 +14,36 @@ class PositionSizingService:
     
     # 默认配置
     DEFAULT_MAX_POSITIONS = 5           # 最大持仓数量
-    DEFAULT_POSITION_RATIO = 0.1        # 单次开仓使用资金比例
     
     def __init__(
         self,
         max_positions: int = 5,
-        position_ratio: float = 0.1,
         global_daily_limit: int = 50,
-        contract_daily_limit: int = 2
+        contract_daily_limit: int = 2,
+        margin_ratio: float = 0.12,
+        min_margin_ratio: float = 0.07,
+        margin_usage_limit: float = 0.6,
+        max_volume_per_order: int = 10,
     ):
         """
         初始化
         
         参数:
             max_positions: 最大持仓数量
-            position_ratio: 单次开仓使用资金比例
             global_daily_limit: 全局日开仓限制
             contract_daily_limit: 单合约日开仓限制
+            margin_ratio: 保证金比例（默认 0.12）
+            min_margin_ratio: 最低保证金比例（默认 0.07）
+            margin_usage_limit: 保证金使用率上限（默认 0.6）
+            max_volume_per_order: 单笔最大手数（默认 10）
         """
         self.max_positions = max_positions
-        self.position_ratio = position_ratio
         self.global_daily_limit = global_daily_limit
         self.contract_daily_limit = contract_daily_limit
+        self.margin_ratio = margin_ratio
+        self.min_margin_ratio = min_margin_ratio
+        self.margin_usage_limit = margin_usage_limit
+        self.max_volume_per_order = max_volume_per_order
     
     def calculate_open_volumn(
         self,
