@@ -48,7 +48,7 @@
     - *For any* 有效美式看跌参数，BAW 价格 >= max(K - S, 0)
     - **Validates: Requirements 2.3**
 
-- [ ] 4. 实现 CRRPricer
+- [x] 4. 实现 CRRPricer
   - [x] 4.1 创建 `src/strategy/domain/domain_service/pricing/crr_pricer.py`
     - 内部输入校验（spot_price, strike_price, volatility, time_to_expiry）
     - 实现 Cox-Ross-Rubinstein 二叉树算法
@@ -63,11 +63,11 @@
     - *For any* 有效欧式参数，|CRR_price - BS_price| < max(BS_price * 0.02, 0.05)
     - **Validates: Requirements 3.2**
 
-- [~] 5. Checkpoint - 确保各定价器独立测试通过
+- [x] 5. Checkpoint - 确保各定价器独立测试通过
   - 确保所有测试通过，如有问题请向用户确认。
 
 - [ ] 6. 编写跨定价器属性测试
-  - [~] 6.1 编写 Property 5 属性测试：无效输入返回错误
+  - [x] 6.1 编写 Property 5 属性测试：无效输入返回错误
     - **Property 5: 无效输入返回错误**
     - *For any* 包含无效参数的输入，BAWPricer、CRRPricer、BlackScholesPricer 均应返回 success=False
     - **Validates: Requirements 2.5, 3.6, 4.3**
