@@ -221,3 +221,92 @@ class TestProperty3GreeksBudgetCalculation:
             f"delta={delta}, gamma={gamma}, vega={vega}, multiplier={multiplier}, "
             f"budgets=({d_budget}, {g_budget}, {v_budget})"
         )
+
+
+# Feature: dynamic-position-sizing, Property 4: 综合决策不变量
+class TestProperty4ComputeSizingInvariant:
+    """
+    Property 4: 综合决策不变量
+
+    *For any* 有效输入使得三个维度手数均 >= 1，`compute_sizing` 返回的
+    `final_volume` 应等于 `min(margin_volume, usage_volume, greeks_volume)`
+    clamped 到 `[1, max_volume_per_order]`，且 `passed` 为 True，
+    且 SizingResult 中的 margin_volume、usage_volume、greeks_volume 字段
+    与各维度独立计算结果一致。
+
+    **Validates: Requirements 4.1, 4.2, 4.4**
+    """
+
+    @given(
+        account_balance=st.floats(min_value=50_000.0, max_value=10_000_000.0, allow_nan=False, allow_infinity=False),
+        total_equity=st.floats(min_value=100_000.0, max_value=10_000_000.0, allow_nan=False, allow_infinity=False),
+        used_margin_ratio=st.floats(min_value=0.0, max_value=0.3, allow_nan=False, allow_infinity=False),
+        contract_price=st.floats(min_value=10.0, max_value=500.0, allow_nan=False, allow_infinity=False),
+        underlying_price=st.floats(min_value=1000.0, max_value=10000.0, allow_nan=False, allow_infinity=False),
+        strike_price=st.floats(min_value=1000.0, max_value=10000.0, allow_nan=False, allow_infinity=False),
+        option_type=st.sampled_from(["call", "put"]),
+        multiplier=st.floats(min_value=1.0, max_value=100.0, allow_nan=False, allow_infinity=False),
+        max_volume_per_order=st.integers(min_value=1, max_value=50),
+    )
+    @settings(max_examples=200)
+    def test_compute_sizing_invariant(
+        self, account_balance, total_equity, used_margin_ratio, contract_price,
+        underlying_price, strike_price, option_type, multiplier, max_volume_per_order,
+    ):
+        """Feature: dynamic-position-sizing, Property 4: 综合决策不变量
+        **Validates: Requirements 4.1, 4.2, 4.4**
+        """
+        from hypothesis import assume
+
+        used_margin = total_equity * used_margin_ratio
+
+        # Use small greeks and generous limits to ensure all dimensions pass
+        greeks = GreeksResult(delta=-0.3, gamma=0.05, vega=10.0)
+        portfolio_greeks = PortfolioGreeks(total_delta=0.0, total_gamma=0.0, total_vega=0.0)
+        risk_thresholds = RiskThresholds(
+            portfolio_delta_limit=100.0, portfolio_gamma_limit=50.0, portfolio_vega_limit=5000.0
+        )
+
+        svc = PositionSizingService(
+            margin_usage_limit=0.6,
+            max_volume_per_order=max_volume_per_order,
+        )
+
+        # Pre-check: estimate margin and verify all dimensions >= 1
+        margin_per_lot = svc.estimate_margin(contract_price, underlying_price, strike_price, option_type, multiplier)
+        assume(margin_per_lot > 0)
+
+        margin_vol = svc._calc_margin_volume(account_balance, margin_per_lot)
+        usage_vol = svc._calc_usage_volume(total_equity, used_margin, margin_per_lot)
+        greeks_vol, _, _, _ = svc._calc_greeks_volume(greeks, multiplier, portfolio_greeks, risk_thresholds)
+
+        assume(margin_vol >= 1)
+        assume(usage_vol >= 1)
+        assume(greeks_vol >= 1)
+
+        result = svc.compute_sizing(
+            account_balance=account_balance,
+            total_equity=total_equity,
+            used_margin=used_margin,
+            contract_price=contract_price,
+            underlying_price=underlying_price,
+            strike_price=strike_price,
+            option_type=option_type,
+            multiplier=multiplier,
+            greeks=greeks,
+            portfolio_greeks=portfolio_greeks,
+            risk_thresholds=risk_thresholds,
+        )
+
+        # Property assertions
+        assert result.passed, f"Expected passed=True but got reject_reason={result.reject_reason}"
+
+        # final_volume == min(three dimensions) clamped to [1, max_volume_per_order]
+        expected_min = min(margin_vol, usage_vol, greeks_vol)
+        expected_final = min(max(expected_min, 1), max_volume_per_order)
+        assert result.final_volume == expected_final
+
+        # Individual dimension volumes match independent calculations
+        assert result.margin_volume == margin_vol
+        assert result.usage_volume == usage_vol
+        assert result.greeks_volume == greeks_vol
