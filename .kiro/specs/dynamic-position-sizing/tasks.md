@@ -69,7 +69,7 @@
   - 确保所有测试通过，如有问题请询问用户。
 
 - [-] 5. 重构开仓与平仓方法
-  - [-] 5.1 重构 `calculate_open_volume` 方法（修正拼写 volumn → volume）
+  - [x] 5.1 重构 `calculate_open_volume` 方法（修正拼写 volumn → volume）
     - 保留现有风控前置检查（最大持仓、全局日限额、单合约日限额、重复合约）
     - 新增参数：total_equity, used_margin, underlying_price, strike_price, option_type, multiplier, greeks, portfolio_greeks, risk_thresholds
     - 调用 compute_sizing 获取 SizingResult
@@ -77,7 +77,7 @@
     - SizingResult.passed 为 True 时使用 final_volume 生成 OrderInstruction
     - _Requirements: 4.5, 1.3, 1.4, 2.3, 3.3_
 
-  - [~] 5.2 重命名 `calculate_close_volumn` 为 `calculate_close_volume`（修正拼写）
+  - [-] 5.2 重命名 `calculate_close_volumn` 为 `calculate_close_volume`（修正拼写）
     - 保持平仓逻辑不变
     - _Requirements: 设计决策 2_
 
