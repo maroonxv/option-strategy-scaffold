@@ -6,7 +6,6 @@ VnpyTradeExecutionGateway - 交易执行网关
 from typing import Any, List, Optional
 from ...domain.value_object.order_instruction import OrderInstruction, Direction, Offset, OrderType
 from .vnpy_gateway_adapter import VnpyGatewayAdapter
-from ..notify_only.interceptor import NotifyOnlyInterceptor
 
 
 class VnpyTradeExecutionGateway(VnpyGatewayAdapter):
@@ -27,10 +26,6 @@ class VnpyTradeExecutionGateway(VnpyGatewayAdapter):
             strategy_context: VnPy 策略实例
         """
         super().__init__(strategy_context)
-        # 获取飞书处理器（如果可用）
-        feishu_handler = getattr(strategy_context, 'feishu_handler', None)
-        # 初始化仅通知模式拦截器，传入飞书处理器用于可选的拦截通知
-        self.interceptor = NotifyOnlyInterceptor(self.logger, feishu_handler)
     
     def send_order(self, instruction: OrderInstruction) -> List[str]:
         """
@@ -39,19 +34,12 @@ class VnpyTradeExecutionGateway(VnpyGatewayAdapter):
         VnPy 策略模板提供了 buy/sell/short/cover 方法。
         支持 LIMIT、MARKET、FAK、FOK 订单类型。
         
-        在仅通知模式下，开仓订单会被拦截并返回模拟订单号，
-        平仓订单不受影响，正常执行。
-        
         Args:
             instruction: 交易指令
             
         Returns:
             订单ID列表
         """
-        # 仅通知模式拦截检查（必须在所有其他逻辑之前）
-        if self.interceptor.should_intercept(instruction):
-            return self.interceptor.intercept_order(instruction)
-        
         if hasattr(self.context, "paper_trading") and self.context.paper_trading:
             self._log(f"[PAPER] 模拟下单: {instruction}")
             return ["PAPER_ORDER"]
