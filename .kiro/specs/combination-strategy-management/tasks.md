@@ -56,7 +56,7 @@
     - 使用 Hypothesis 生成满足特定类型结构的随机持仓，验证识别结果正确；不匹配时返回 CUSTOM
     - **Validates: Requirements 2.2, 2.3, 2.4, 2.5, 2.6, 2.7**
 
-- [ ] 5. 实现 CombinationGreeksCalculator 服务
+- [x] 5. 实现 CombinationGreeksCalculator 服务
   - [x] 5.1 创建 `src/strategy/domain/domain_service/combination/combination_greeks_calculator.py`
     - 实现 calculate(combination, greeks_map, multiplier) 方法
     - 加权公式：greek_total += greek_per_unit × volume × multiplier × direction_sign（long=+1, short=-1）
@@ -70,7 +70,7 @@
     - **Validates: Requirements 3.1, 3.4**
 
 - [ ] 6. 实现 CombinationPnLCalculator 服务
-  - [~] 6.1 创建 `src/strategy/domain/domain_service/combination/combination_pnl_calculator.py`
+  - [x] 6.1 创建 `src/strategy/domain/domain_service/combination/combination_pnl_calculator.py`
     - 实现 calculate(combination, current_prices, multiplier) 方法
     - 单腿公式：(current_price - open_price) × volume × multiplier × direction_sign
     - 价格不可用时 LegPnL.price_available = False，该腿盈亏计为 0
