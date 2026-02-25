@@ -6,8 +6,8 @@
 
 ## 任务
 
-- [ ] 1. 创建值对象定义
-  - [-] 1.1 创建 `src/strategy/domain/value_object/pricing.py`，定义 ExerciseStyle、PricingModel、PricingInput、PricingResult
+- [x] 1. 创建值对象定义
+  - [x] 1.1 创建 `src/strategy/domain/value_object/pricing.py`，定义 ExerciseStyle、PricingModel、PricingInput、PricingResult
     - ExerciseStyle 枚举: AMERICAN, EUROPEAN
     - PricingModel 枚举: BAW, CRR, BLACK_SCHOLES
     - PricingInput: frozen dataclass，包含 spot_price, strike_price, time_to_expiry, risk_free_rate, volatility, option_type, exercise_style
@@ -16,7 +16,7 @@
     - _Requirements: 1.1, 1.2, 1.3_
 
 - [ ] 2. 实现 BlackScholesPricer
-  - [~] 2.1 创建 `src/strategy/domain/domain_service/pricing/bs_pricer.py`
+  - [-] 2.1 创建 `src/strategy/domain/domain_service/pricing/bs_pricer.py`
     - 接收 GreeksCalculator 实例
     - 内部输入校验（spot_price, strike_price, volatility, time_to_expiry）
     - 将 PricingInput 转换为 GreeksInput 调用 bs_price
