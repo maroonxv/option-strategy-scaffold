@@ -69,7 +69,7 @@
     - 使用 Hypothesis 生成随机 Combination 和 GreeksResult，验证聚合结果等于手动加权求和
     - **Validates: Requirements 3.1, 3.4**
 
-- [ ] 6. 实现 CombinationPnLCalculator 服务
+- [x] 6. 实现 CombinationPnLCalculator 服务
   - [x] 6.1 创建 `src/strategy/domain/domain_service/combination/combination_pnl_calculator.py`
     - 实现 calculate(combination, current_prices, multiplier) 方法
     - 单腿公式：(current_price - open_price) × volume × multiplier × direction_sign
@@ -83,7 +83,7 @@
     - **Validates: Requirements 4.1, 4.3**
 
 - [ ] 7. 实现 CombinationRiskChecker 服务
-  - [~] 7.1 创建 `src/strategy/domain/domain_service/combination/combination_risk_checker.py`
+  - [-] 7.1 创建 `src/strategy/domain/domain_service/combination/combination_risk_checker.py`
     - 实现 check(greeks) 方法，返回 RiskCheckResult（复用现有值对象）
     - 通过条件：|delta| ≤ delta_limit 且 |gamma| ≤ gamma_limit 且 |vega| ≤ vega_limit
     - 失败时 reject_reason 包含超限的 Greek 名称和数值
