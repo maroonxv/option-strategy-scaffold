@@ -302,3 +302,91 @@ class TestVegaHedgingProperty5:
 
         # hedge_instrument == config.hedge_instrument_vt_symbol
         assert event.hedge_instrument == config.hedge_instrument_vt_symbol
+
+
+# ========== Property 6: 无效输入拒绝 ==========
+
+
+class TestVegaHedgingProperty6:
+    """Property 6: 无效输入拒绝
+
+    *For any* 配置中 hedge_instrument_multiplier ≤ 0 或 hedge_instrument_vega = 0 的输入，
+    或 current_price ≤ 0 的输入，返回的 rejected 应为 True、should_hedge 为 False，且事件列表为空。
+
+    **Validates: Requirements 4.1, 4.2, 4.3**
+    """
+
+    @settings(max_examples=100)
+    @given(
+        multiplier=st.floats(min_value=-100.0, max_value=0.0, allow_nan=False, allow_infinity=False),
+        target_vega=st.floats(min_value=-500.0, max_value=500.0, allow_nan=False, allow_infinity=False),
+        hedging_band=st.floats(min_value=0.01, max_value=200.0, allow_nan=False, allow_infinity=False),
+        hedge_vega=st.floats(min_value=0.01, max_value=10.0, allow_nan=False, allow_infinity=False),
+        total_vega=st.floats(min_value=-1000.0, max_value=1000.0, allow_nan=False, allow_infinity=False),
+    )
+    def test_multiplier_le_zero_rejected(self, multiplier, target_vega, hedging_band, hedge_vega, total_vega):
+        """乘数 <= 0 时应拒绝: rejected=True, should_hedge=False, 事件为空
+
+        **Validates: Requirements 4.1**
+        """
+        config = VegaHedgingConfig(
+            target_vega=target_vega,
+            hedging_band=hedging_band,
+            hedge_instrument_vega=hedge_vega,
+            hedge_instrument_multiplier=multiplier,
+        )
+        greeks = PortfolioGreeks(total_vega=total_vega)
+
+        engine = VegaHedgingEngine(config)
+        result, events = engine.check_and_hedge(greeks, current_price=100.0)
+
+        assert result.rejected is True
+        assert result.should_hedge is False
+        assert len(events) == 0
+
+    @settings(max_examples=100)
+    @given(
+        target_vega=st.floats(min_value=-500.0, max_value=500.0, allow_nan=False, allow_infinity=False),
+        hedging_band=st.floats(min_value=0.01, max_value=200.0, allow_nan=False, allow_infinity=False),
+        multiplier=st.floats(min_value=1.0, max_value=300.0, allow_nan=False, allow_infinity=False),
+        total_vega=st.floats(min_value=-1000.0, max_value=1000.0, allow_nan=False, allow_infinity=False),
+    )
+    def test_hedge_vega_zero_rejected(self, target_vega, hedging_band, multiplier, total_vega):
+        """对冲工具 Vega = 0 时应拒绝: rejected=True, should_hedge=False, 事件为空
+
+        **Validates: Requirements 4.2**
+        """
+        config = VegaHedgingConfig(
+            target_vega=target_vega,
+            hedging_band=hedging_band,
+            hedge_instrument_vega=0.0,
+            hedge_instrument_multiplier=multiplier,
+        )
+        greeks = PortfolioGreeks(total_vega=total_vega)
+
+        engine = VegaHedgingEngine(config)
+        result, events = engine.check_and_hedge(greeks, current_price=100.0)
+
+        assert result.rejected is True
+        assert result.should_hedge is False
+        assert len(events) == 0
+
+    @settings(max_examples=100)
+    @given(
+        config=vega_hedging_config_st,
+        total_vega=st.floats(min_value=-1000.0, max_value=1000.0, allow_nan=False, allow_infinity=False),
+        current_price=st.floats(min_value=-100.0, max_value=0.0, allow_nan=False, allow_infinity=False),
+    )
+    def test_current_price_le_zero_rejected(self, config, total_vega, current_price):
+        """当前价格 <= 0 时应拒绝: rejected=True, should_hedge=False, 事件为空
+
+        **Validates: Requirements 4.3**
+        """
+        greeks = PortfolioGreeks(total_vega=total_vega)
+
+        engine = VegaHedgingEngine(config)
+        result, events = engine.check_and_hedge(greeks, current_price)
+
+        assert result.rejected is True
+        assert result.should_hedge is False
+        assert len(events) == 0

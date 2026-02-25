@@ -51,7 +51,7 @@
     - **Property 5: 事件数据一致性**
     - **Validates: Requirements 3.2**
 
-  - [~] 4.6 编写属性测试: 无效输入拒绝
+  - [x] 4.6 编写属性测试: 无效输入拒绝
     - **Property 6: 无效输入拒绝**
     - **Validates: Requirements 4.1, 4.2, 4.3**
 
