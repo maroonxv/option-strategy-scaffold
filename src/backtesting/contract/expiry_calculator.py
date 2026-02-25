@@ -12,13 +12,7 @@ from typing import List
 from src.backtesting.config import MANUAL_EXPIRY_CONFIG
 from src.backtesting.contract.exchange_resolver import ExchangeResolver
 
-# 尝试导入 chinese_calendar，缺失时降级处理
-try:
-    import chinese_calendar
-
-    HAS_CHINESE_CALENDAR = True
-except ImportError:
-    HAS_CHINESE_CALENDAR = False
+import chinese_calendar
 
 logger = logging.getLogger(__name__)
 
@@ -35,8 +29,7 @@ class ExpiryCalculator:
             d = date(year, month, day)
             if d.weekday() >= 5:
                 continue
-            if HAS_CHINESE_CALENDAR:
-                if chinese_calendar.is_holiday(d):
+            if chinese_calendar.is_holiday(d):
                     continue
             days.append(d)
         return days
@@ -86,8 +79,7 @@ class ExpiryCalculator:
         fridays = [week[4] for week in c_days if week[4] != 0]
         if len(fridays) >= 3:
             expiry = date(year, month, fridays[2])
-            if HAS_CHINESE_CALENDAR:
-                while chinese_calendar.is_holiday(expiry):
+            while chinese_calendar.is_holiday(expiry):
                     expiry += timedelta(days=1)
             return expiry
         return date(year, month, 15)

@@ -3,25 +3,13 @@ from reader import MySQLSnapshotReader, StrategyStateReader
 import os
 import json
 
-try:
-    from dotenv import load_dotenv
-except Exception:
-    load_dotenv = None
-
-try:
-    from flask_socketio import SocketIO, join_room
-except Exception:
-    SocketIO = None
-    join_room = None
+from dotenv import load_dotenv
+from flask_socketio import SocketIO, join_room
 
 app = Flask(__name__, template_folder='templates', static_folder='static')
 app.config['TEMPLATES_AUTO_RELOAD'] = True
 
-if load_dotenv:
-    try:
-        load_dotenv()
-    except Exception:
-        pass
+load_dotenv()
 
 mysql_reader = MySQLSnapshotReader()
 state_reader = StrategyStateReader({

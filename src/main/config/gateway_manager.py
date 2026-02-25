@@ -77,11 +77,8 @@ class GatewayManager:
     
     def _load_gateway_classes(self) -> None:
         """动态加载网关类"""
-        try:
-            from vnpy_ctp import CtpGateway
-            self.GATEWAY_CLASS_MAP["ctp"] = CtpGateway
-        except ImportError:
-            self.logger.warning("vnpy_ctp 模块未安装")
+        from vnpy_ctp import CtpGateway
+        self.GATEWAY_CLASS_MAP["ctp"] = CtpGateway
     
     def set_config(self, config: Dict[str, Any]) -> None:
         """

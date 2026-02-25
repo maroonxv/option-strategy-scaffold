@@ -151,16 +151,13 @@ class DatabaseFactory:
     @staticmethod
     def _configure_table_names() -> None:
         """配置 vnpy_mysql 表名。"""
-        try:
-            import vnpy_mysql
-            vnpy_mysql.DbBarData = getattr(vnpy_mysql, "DbBarData", None)
-            # 设置表名配置
-            if hasattr(vnpy_mysql, "DbBarData") and vnpy_mysql.DbBarData is not None:
-                vnpy_mysql.DbBarData._meta.table_name = "dbbardata"
-            if hasattr(vnpy_mysql, "DbTickData") and vnpy_mysql.DbTickData is not None:
-                vnpy_mysql.DbTickData._meta.table_name = "dbtickdata"
-        except ImportError:
-            logger.debug("vnpy_mysql 未安装，跳过表名配置")
+        import vnpy_mysql
+        vnpy_mysql.DbBarData = getattr(vnpy_mysql, "DbBarData", None)
+        # 设置表名配置
+        if hasattr(vnpy_mysql, "DbBarData") and vnpy_mysql.DbBarData is not None:
+            vnpy_mysql.DbBarData._meta.table_name = "dbbardata"
+        if hasattr(vnpy_mysql, "DbTickData") and vnpy_mysql.DbTickData is not None:
+            vnpy_mysql.DbTickData._meta.table_name = "dbtickdata"
 
     def _create_connections(self, timeout: float = 5.0) -> None:
         """创建数据库连接。"""
@@ -177,12 +174,9 @@ class DatabaseFactory:
                 self._peewee_db = self._db.db
             else:
                 # 尝试从 vnpy_mysql 获取
-                try:
-                    import vnpy_mysql
-                    if hasattr(vnpy_mysql, "db"):
-                        self._peewee_db = vnpy_mysql.db
-                except ImportError:
-                    pass
+                import vnpy_mysql
+                if hasattr(vnpy_mysql, "db"):
+                    self._peewee_db = vnpy_mysql.db
 
             # 验证连接
             if self._peewee_db is not None:

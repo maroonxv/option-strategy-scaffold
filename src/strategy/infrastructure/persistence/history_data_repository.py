@@ -28,12 +28,8 @@ class HistoryDataRepository:
         Returns:
             bool: 是否成功
         """
-        try:
-            from vnpy.trader.database import get_database
-            from vnpy.trader.constant import Interval, Exchange
-        except ImportError:
-            self.logger.error("MySQL warmup 回放失败: 无法导入 vn.py 数据库模块", exc_info=True)
-            return False
+        from vnpy.trader.database import get_database
+        from vnpy.trader.constant import Interval, Exchange
 
         # 过滤无效 symbol
         vt_symbols = [s for s in vt_symbols if isinstance(s, str) and s]

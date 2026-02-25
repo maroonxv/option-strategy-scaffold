@@ -4,6 +4,8 @@ import glob
 import pickle
 import json
 import re
+import pymysql
+import pymysql.cursors
 import pandas as pd
 from datetime import datetime
 from typing import Any, Dict, List, Optional, Tuple
@@ -305,10 +307,6 @@ class StrategyStateReader:
         if not self._db_available():
             return None
         try:
-            import pymysql
-        except Exception:
-            return None
-        try:
             return pymysql.connect(
                 host=self._db_config["host"],
                 port=int(self._db_config.get("port", 3306)),
@@ -608,10 +606,6 @@ class MySQLSnapshotReader:
         if not self._db_available():
             return None
         try:
-            import pymysql
-        except Exception:
-            return None
-        try:
             return pymysql.connect(
                 host=self._db_config["host"],
                 port=int(self._db_config["port"]),
@@ -840,11 +834,8 @@ class MySQLSnapshotReader:
         end_dt = self._parse_dt(end)
         if not start_dt or not end_dt:
             return []
-        try:
-            from vnpy.trader.database import get_database
-            from vnpy.trader.constant import Interval, Exchange
-        except Exception:
-            return []
+        from vnpy.trader.database import get_database
+        from vnpy.trader.constant import Interval, Exchange
         interval_enum = self._map_interval(interval, Interval)
         if interval_enum is None:
             interval_enum = Interval.MINUTE

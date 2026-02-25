@@ -7,6 +7,8 @@ from typing import List, Optional, Any
 from ...domain.value_object.quote_request import QuoteRequest
 from ...domain.value_object.order_instruction import Offset
 from .vnpy_gateway_adapter import VnpyGatewayAdapter
+from vnpy.trader.object import QuoteRequest as VnQuoteRequest, CancelRequest
+from vnpy.trader.constant import Offset as VnOffset
 
 
 class VnpyQuoteGateway(VnpyGatewayAdapter):
@@ -34,9 +36,6 @@ class VnpyQuoteGateway(VnpyGatewayAdapter):
             return ""
         
         try:
-            from vnpy.trader.object import QuoteRequest as VnQuoteRequest
-            from vnpy.trader.constant import Offset as VnOffset
-            
             # 获取合约信息
             contract = self.main_engine.get_contract(quote_request.vt_symbol)
             if not contract:
@@ -93,8 +92,6 @@ class VnpyQuoteGateway(VnpyGatewayAdapter):
                 return
             
             # 创建撤销请求
-            from vnpy.trader.object import CancelRequest
-            
             req = CancelRequest(
                 orderid=quote.quoteid,
                 symbol=quote.symbol,

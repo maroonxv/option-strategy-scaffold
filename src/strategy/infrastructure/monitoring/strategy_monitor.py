@@ -1,6 +1,7 @@
 import json
 import os
 import pickle
+import pymysql
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 from pathlib import Path
@@ -42,10 +43,6 @@ class StrategyMonitor:
         return bool(cfg.get("host") and cfg.get("user") and cfg.get("database"))
 
     def _monitor_db_connect(self):
-        try:
-            import pymysql
-        except Exception:
-            return None
         if not self._monitor_db_available():
             return None
         try:

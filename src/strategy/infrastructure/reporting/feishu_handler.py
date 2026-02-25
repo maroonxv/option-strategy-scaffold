@@ -148,9 +148,9 @@ class FeishuEventHandler:
             if elapsed < self._min_interval_seconds:
                 return False
         
+        import requests
+
         try:
-            import requests
-            
             payload = {
                 "msg_type": "text",
                 "content": {
@@ -168,9 +168,6 @@ class FeishuEventHandler:
             
             return response.status_code == 200
             
-        except ImportError:
-            self.logger.warning("[飞书处理] requests 库未安装")
-            return False
         except Exception as e:
             self.logger.error(f"[飞书处理] 发送失败: {e}")
             return False

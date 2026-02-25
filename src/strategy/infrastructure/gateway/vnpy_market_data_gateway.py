@@ -26,10 +26,7 @@ class VnpyMarketDataGateway(VnpyGatewayAdapter):
         if not self.main_engine or not hasattr(self.main_engine, "get_engine"):
             return
 
-        try:
-            from vnpy_datarecorder import APP_NAME
-        except Exception:
-            return
+        from vnpy_datarecorder import APP_NAME
 
         try:
             recorder_engine = self.main_engine.get_engine(APP_NAME)
@@ -338,9 +335,9 @@ class VnpyMarketDataGateway(VnpyGatewayAdapter):
             self._log(f"MainEngine 不可用，无法查询历史数据: {vt_symbol}")
             return []
         
+        from vnpy.trader.object import HistoryRequest
+
         try:
-            from vnpy.trader.object import HistoryRequest
-            
             # 获取合约信息
             contract = self.get_contract(vt_symbol)
             if not contract:

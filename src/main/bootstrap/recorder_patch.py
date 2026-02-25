@@ -19,11 +19,7 @@ def patch_data_recorder_setting_path() -> None:
     将 VnPy 的 data_recorder_setting.json 路径重定向到项目 config/general/ 目录。
     如果目标文件不存在，自动创建空 JSON 文件。
     """
-    try:
-        import vnpy.trader.utility as vnpy_utility
-    except Exception as e:
-        logger.warning(f"加载 vn.py utility 失败: {e}")
-        return
+    import vnpy.trader.utility as vnpy_utility
 
     original_get_file_path = vnpy_utility.get_file_path
     config_path = PROJECT_ROOT / "config" / "general" / "data_recorder_setting.json"

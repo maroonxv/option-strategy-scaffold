@@ -6,6 +6,8 @@ VnpyTradeExecutionGateway - 交易执行网关
 from typing import Any, List, Optional
 from ...domain.value_object.order_instruction import OrderInstruction, Direction, Offset, OrderType
 from .vnpy_gateway_adapter import VnpyGatewayAdapter
+from vnpy.trader.object import OrderRequest
+from vnpy.trader.constant import Direction as VnDirection, Offset as VnOffset, OrderType as VnOrderType
 
 
 class VnpyTradeExecutionGateway(VnpyGatewayAdapter):
@@ -121,9 +123,6 @@ class VnpyTradeExecutionGateway(VnpyGatewayAdapter):
             return []
         
         try:
-            from vnpy.trader.object import OrderRequest
-            from vnpy.trader.constant import Direction as VnDirection, Offset as VnOffset, OrderType as VnOrderType
-            
             # 获取合约信息
             contract = self.main_engine.get_contract(instruction.vt_symbol)
             if not contract:

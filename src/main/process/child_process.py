@@ -237,12 +237,7 @@ class ChildProcess:
             self.recorder_enabled = False
             return
 
-        try:
-            from vnpy_datarecorder import DataRecorderApp, APP_NAME
-        except Exception as e:
-            self.logger.warning(f"加载 vnpy_datarecorder 失败，数据录制将降级关闭: {e}")
-            self.recorder_enabled = False
-            return
+        from vnpy_datarecorder import DataRecorderApp, APP_NAME
 
         try:
             self.main_engine.add_app(DataRecorderApp)
@@ -495,10 +490,7 @@ class ChildProcess:
         if not contract:
             return
 
-        try:
-            from vnpy.trader.object import SubscribeRequest
-        except Exception:
-            return
+        from vnpy.trader.object import SubscribeRequest
 
         try:
             if register_to_strategy:
