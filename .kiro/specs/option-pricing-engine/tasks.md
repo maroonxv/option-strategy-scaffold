@@ -72,12 +72,12 @@
     - *For any* 包含无效参数的输入，BAWPricer、CRRPricer、BlackScholesPricer 均应返回 success=False
     - **Validates: Requirements 2.5, 3.6, 4.3**
 
-- [-] 7. 更新模块导出
+- [x] 7. 更新模块导出
   - 更新 `src/strategy/domain/domain_service/pricing/__init__.py` 导出各定价器
   - 更新 `src/strategy/domain/value_object/__init__.py` 导出新增值对象（如 1.1 中未完成）
   - _Requirements: 4.2_
 
-- [~] 8. Final checkpoint - 确保所有测试通过
+- [x] 8. Final checkpoint - 确保所有测试通过
   - 确保所有测试通过，如有问题请向用户确认。
 
 ## 备注
