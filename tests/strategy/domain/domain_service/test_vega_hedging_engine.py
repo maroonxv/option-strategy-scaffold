@@ -134,3 +134,55 @@ class TestVegaHedgingProperty2:
 
         assert result.should_hedge is False
         assert len(events) == 0
+
+
+# ========== Property 3: 方向与指令正确性 ==========
+
+
+class TestVegaHedgingProperty3:
+    """Property 3: 方向与指令正确性
+
+    *For any* 触发对冲的输入，当 (target_vega - total_vega) 与
+    (hedge_instrument_vega * multiplier) 同号时方向为 LONG，异号时方向为 SHORT；
+    且 OrderInstruction 的 volume 为正整数、vt_symbol 与配置一致、signal 为 "vega_hedge"。
+
+    **Validates: Requirements 2.1, 2.2, 2.3**
+    """
+
+    @settings(max_examples=100)
+    @given(config=vega_hedging_config_st, data=st.data())
+    def test_property3_direction_and_instruction(self, config, data):
+        """方向由 raw_volume 符号决定，指令字段正确
+
+        **Validates: Requirements 2.1, 2.2, 2.3**
+        """
+        from src.strategy.domain.value_object.order_instruction import Direction
+
+        greeks = data.draw(portfolio_greeks_exceeding_band_st(config))
+        current_price = 100.0
+
+        raw_volume = (config.target_vega - greeks.total_vega) / (
+            config.hedge_instrument_vega * config.hedge_instrument_multiplier
+        )
+        # 只关注对冲确实触发的情况（四舍五入后非零）
+        assume(round(raw_volume) != 0)
+
+        engine = VegaHedgingEngine(config)
+        result, events = engine.check_and_hedge(greeks, current_price)
+
+        assert result.should_hedge is True
+
+        # 需求 2.2: raw_volume > 0 → LONG
+        # 需求 2.3: raw_volume < 0 → SHORT（手数取绝对值）
+        if raw_volume > 0:
+            assert result.hedge_direction == Direction.LONG
+        else:
+            assert result.hedge_direction == Direction.SHORT
+
+        # OrderInstruction 验证
+        instr = result.instruction
+        assert instr is not None
+        assert instr.volume > 0                                          # volume 为正整数
+        assert isinstance(instr.volume, int)
+        assert instr.vt_symbol == config.hedge_instrument_vt_symbol      # 合约代码一致
+        assert instr.signal == "vega_hedge"                              # signal 固定

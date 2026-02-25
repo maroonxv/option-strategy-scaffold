@@ -35,11 +35,11 @@
     - **Property 1: 对冲手数公式正确性**
     - **Validates: Requirements 1.1, 1.3**
 
-  - [-] 4.2 编写属性测试: 容忍带内不对冲
+  - [x] 4.2 编写属性测试: 容忍带内不对冲
     - **Property 2: 容忍带内不对冲**
     - **Validates: Requirements 1.2**
 
-  - [~] 4.3 编写属性测试: 方向与指令正确性
+  - [x] 4.3 编写属性测试: 方向与指令正确性
     - **Property 3: 方向与指令正确性**
     - **Validates: Requirements 2.1, 2.2, 2.3**
 
