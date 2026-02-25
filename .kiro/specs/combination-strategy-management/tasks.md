@@ -57,13 +57,13 @@
     - **Validates: Requirements 2.2, 2.3, 2.4, 2.5, 2.6, 2.7**
 
 - [ ] 5. 实现 CombinationGreeksCalculator 服务
-  - [-] 5.1 创建 `src/strategy/domain/domain_service/combination/combination_greeks_calculator.py`
+  - [x] 5.1 创建 `src/strategy/domain/domain_service/combination/combination_greeks_calculator.py`
     - 实现 calculate(combination, greeks_map, multiplier) 方法
     - 加权公式：greek_total += greek_per_unit × volume × multiplier × direction_sign（long=+1, short=-1）
     - 某个 Leg 的 GreeksResult.success 为 False 时，记入 failed_legs 并继续计算其余 Leg
     - _Requirements: 3.1, 3.3, 3.4_
 
-  - [~] 5.2 编写 CombinationGreeksCalculator 属性测试（Property 3: Greeks 加权求和）
+  - [x] 5.2 编写 CombinationGreeksCalculator 属性测试（Property 3: Greeks 加权求和）
     - 文件：`tests/strategy/domain/domain_service/combination/test_combination_greeks_calculator.py`
     - **Property 3: Greeks 加权求和**
     - 使用 Hypothesis 生成随机 Combination 和 GreeksResult，验证聚合结果等于手动加权求和
