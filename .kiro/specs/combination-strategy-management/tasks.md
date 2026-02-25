@@ -134,7 +134,7 @@
     - 使用 Hypothesis 生成随机 Combination 集合注册后，验证按 id/underlying/vt_symbol 查询的一致性
     - **Validates: Requirements 7.2, 7.5**
 
-  - [~] 10.3 编写 CombinationAggregate 属性测试（Property 10: 跨聚合根状态同步）
+  - [x] 10.3 编写 CombinationAggregate 属性测试（Property 10: 跨聚合根状态同步）
     - 文件：`tests/strategy/domain/aggregate/test_combination_aggregate_properties.py`（追加）
     - **Property 10: 跨聚合根状态同步**
     - 使用 Hypothesis 生成随机 Combination 和平仓事件序列，验证 sync_combination_status 正确更新状态并产生事件
