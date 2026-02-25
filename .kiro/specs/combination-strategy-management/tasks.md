@@ -12,12 +12,12 @@
     - direction 字段使用 "long" / "short" 字符串，与现有 Position 一致
     - _Requirements: 1.1, 1.5, 3.2, 4.2, 5.1, 8.2_
 
-  - [-] 1.2 编写值对象单元测试 `tests/strategy/domain/value_object/test_combination_vo.py`
+  - [x] 1.2 编写值对象单元测试 `tests/strategy/domain/value_object/test_combination_vo.py`
     - 测试枚举值完整性、Leg frozen 不可变性、CombinationRiskConfig 默认值
     - _Requirements: 1.5, 5.1, 8.2_
 
 - [ ] 2. 实现 Combination 实体
-  - [~] 2.1 创建 `src/strategy/domain/entity/combination.py`，实现 Combination dataclass，包含 validate()、update_status()、get_active_legs()、to_dict()、from_dict() 方法
+  - [-] 2.1 创建 `src/strategy/domain/entity/combination.py`，实现 Combination dataclass，包含 validate()、update_status()、get_active_legs()、to_dict()、from_dict() 方法
     - validate() 按 CombinationType 验证 Leg 数量和结构约束（STRADDLE: 2腿同标的同到期同行权价一Call一Put；STRANGLE: 2腿同标的同到期不同行权价一Call一Put；VERTICAL_SPREAD: 2腿同标的同到期同类型不同行权价；CALENDAR_SPREAD: 2腿同标的不同到期同行权价同类型；IRON_CONDOR: 4腿同标的同到期构成1个Put Spread+1个Call Spread；CUSTOM: 至少1腿无结构约束）
     - update_status() 接受 closed_vt_symbols 集合，判定状态转换
     - to_dict()/from_dict() 支持序列化往返
