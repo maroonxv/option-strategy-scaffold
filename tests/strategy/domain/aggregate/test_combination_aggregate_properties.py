@@ -4,7 +4,7 @@ CombinationAggregate 聚合根属性测试
 Feature: combination-strategy-management
 """
 from datetime import datetime
-from typing import List, Set
+from typing import Dict, List, Set
 
 import pytest
 from hypothesis import given, settings, assume
@@ -1181,3 +1181,226 @@ class TestProperty12AggregateSnapshotRoundTrip:
             assert isinstance(combo_ids, list)
             for cid in combo_ids:
                 assert isinstance(cid, str)
+
+
+# ---------------------------------------------------------------------------
+# Feature: combination-strategy-management, Property 13: 反向索引一致性
+# ---------------------------------------------------------------------------
+
+class TestProperty13ReverseIndexConsistency:
+    """
+    Property 13: 反向索引一致性
+
+    *For any* CombinationAggregate，注册 Combination 后，_symbol_index 中每个 Leg 的
+    vt_symbol 都应映射到该 Combination 的 combination_id；且 _symbol_index 中不存在
+    未被任何 Combination 引用的 vt_symbol 条目。
+
+    **Validates: Requirements 7.2**
+    """
+
+    @given(combinations=_multiple_combinations_strategy(min_combos=1, max_combos=5))
+    @settings(max_examples=100)
+    def test_every_leg_vt_symbol_maps_to_combination_id(self, combinations: List[Combination]):
+        """Feature: combination-strategy-management, Property 13: 反向索引一致性
+        注册 Combination 后，每个 Leg 的 vt_symbol 都应在 _symbol_index 中映射到该 Combination 的 combination_id。
+        **Validates: Requirements 7.2**
+        """
+        aggregate = CombinationAggregate()
+        for combo in combinations:
+            aggregate.register_combination(combo)
+
+        # 验证：对于每个 Combination 的每个 Leg，_symbol_index 应包含该映射
+        for combo in combinations:
+            for leg in combo.legs:
+                # _symbol_index 应包含该 vt_symbol
+                assert leg.vt_symbol in aggregate._symbol_index, (
+                    f"vt_symbol {leg.vt_symbol} not found in _symbol_index"
+                )
+                # 该 vt_symbol 应映射到该 Combination 的 combination_id
+                assert combo.combination_id in aggregate._symbol_index[leg.vt_symbol], (
+                    f"combination_id {combo.combination_id} not found in "
+                    f"_symbol_index[{leg.vt_symbol}]"
+                )
+
+    @given(combinations=_multiple_combinations_strategy(min_combos=1, max_combos=5))
+    @settings(max_examples=100)
+    def test_no_orphan_vt_symbol_entries_in_symbol_index(self, combinations: List[Combination]):
+        """Feature: combination-strategy-management, Property 13: 反向索引一致性
+        _symbol_index 中不存在未被任何 Combination 引用的 vt_symbol 条目。
+        **Validates: Requirements 7.2**
+        """
+        aggregate = CombinationAggregate()
+        for combo in combinations:
+            aggregate.register_combination(combo)
+
+        # 收集所有 Combination 中实际引用的 vt_symbol
+        all_referenced_symbols: Set[str] = set()
+        for combo in aggregate._combinations.values():
+            for leg in combo.legs:
+                all_referenced_symbols.add(leg.vt_symbol)
+
+        # 验证：_symbol_index 中的每个 vt_symbol 都被至少一个 Combination 引用
+        for vt_symbol in aggregate._symbol_index.keys():
+            assert vt_symbol in all_referenced_symbols, (
+                f"vt_symbol {vt_symbol} in _symbol_index is not referenced by any Combination"
+            )
+
+    @given(combinations=_multiple_combinations_strategy(min_combos=1, max_combos=5))
+    @settings(max_examples=100)
+    def test_symbol_index_combination_ids_are_valid(self, combinations: List[Combination]):
+        """Feature: combination-strategy-management, Property 13: 反向索引一致性
+        _symbol_index 中的每个 combination_id 都应对应一个实际存在的 Combination。
+        **Validates: Requirements 7.2**
+        """
+        aggregate = CombinationAggregate()
+        for combo in combinations:
+            aggregate.register_combination(combo)
+
+        # 验证：_symbol_index 中的每个 combination_id 都存在于 _combinations 中
+        for vt_symbol, combo_ids in aggregate._symbol_index.items():
+            for combo_id in combo_ids:
+                assert combo_id in aggregate._combinations, (
+                    f"combination_id {combo_id} in _symbol_index[{vt_symbol}] "
+                    f"does not exist in _combinations"
+                )
+
+    @given(combinations=_multiple_combinations_strategy(min_combos=1, max_combos=5))
+    @settings(max_examples=100)
+    def test_bidirectional_consistency_combinations_to_index(self, combinations: List[Combination]):
+        """Feature: combination-strategy-management, Property 13: 反向索引一致性
+        双向一致性验证：从 _combinations 到 _symbol_index 的映射正确。
+        **Validates: Requirements 7.2**
+        """
+        aggregate = CombinationAggregate()
+        for combo in combinations:
+            aggregate.register_combination(combo)
+
+        # 从 _combinations 构建预期的 symbol_index
+        expected_symbol_index: Dict[str, Set[str]] = {}
+        for combo_id, combo in aggregate._combinations.items():
+            for leg in combo.legs:
+                if leg.vt_symbol not in expected_symbol_index:
+                    expected_symbol_index[leg.vt_symbol] = set()
+                expected_symbol_index[leg.vt_symbol].add(combo_id)
+
+        # 验证实际的 _symbol_index 与预期一致
+        assert set(aggregate._symbol_index.keys()) == set(expected_symbol_index.keys()), (
+            f"symbol_index keys mismatch: "
+            f"actual={set(aggregate._symbol_index.keys())}, "
+            f"expected={set(expected_symbol_index.keys())}"
+        )
+
+        for vt_symbol, expected_ids in expected_symbol_index.items():
+            actual_ids = aggregate._symbol_index.get(vt_symbol, set())
+            assert actual_ids == expected_ids, (
+                f"symbol_index[{vt_symbol}] mismatch: "
+                f"actual={actual_ids}, expected={expected_ids}"
+            )
+
+    @given(combinations=_multiple_combinations_strategy(min_combos=1, max_combos=5))
+    @settings(max_examples=100)
+    def test_bidirectional_consistency_index_to_combinations(self, combinations: List[Combination]):
+        """Feature: combination-strategy-management, Property 13: 反向索引一致性
+        双向一致性验证：从 _symbol_index 到 _combinations 的映射正确。
+        **Validates: Requirements 7.2**
+        """
+        aggregate = CombinationAggregate()
+        for combo in combinations:
+            aggregate.register_combination(combo)
+
+        # 验证：_symbol_index 中的每个映射都能在 _combinations 中找到对应的 Leg
+        for vt_symbol, combo_ids in aggregate._symbol_index.items():
+            for combo_id in combo_ids:
+                combo = aggregate._combinations.get(combo_id)
+                assert combo is not None, (
+                    f"combination_id {combo_id} not found in _combinations"
+                )
+                leg_symbols = {leg.vt_symbol for leg in combo.legs}
+                assert vt_symbol in leg_symbols, (
+                    f"vt_symbol {vt_symbol} not found in legs of combination {combo_id}"
+                )
+
+    @given(data=st.data())
+    @settings(max_examples=100)
+    def test_shared_vt_symbol_maps_to_all_combinations(self, data):
+        """Feature: combination-strategy-management, Property 13: 反向索引一致性
+        当多个 Combination 共享同一个 vt_symbol 时，_symbol_index 应包含所有这些 Combination 的 id。
+        **Validates: Requirements 7.2**
+        """
+        shared_vt_symbol, combinations = data.draw(
+            _combinations_with_shared_vt_symbol_strategy(),
+            label="combinations_with_shared_vt_symbol",
+        )
+
+        aggregate = CombinationAggregate()
+        for combo in combinations:
+            aggregate.register_combination(combo)
+
+        # 验证共享的 vt_symbol 映射到所有相关的 Combination
+        assert shared_vt_symbol in aggregate._symbol_index
+        expected_combo_ids = {combo.combination_id for combo in combinations}
+        actual_combo_ids = aggregate._symbol_index[shared_vt_symbol]
+        assert actual_combo_ids == expected_combo_ids, (
+            f"shared vt_symbol {shared_vt_symbol} should map to all combinations: "
+            f"expected={expected_combo_ids}, actual={actual_combo_ids}"
+        )
+
+    @given(combo=_single_combination_strategy())
+    @settings(max_examples=100)
+    def test_single_combination_index_consistency(self, combo: Combination):
+        """Feature: combination-strategy-management, Property 13: 反向索引一致性
+        单个 Combination 注册后，_symbol_index 应精确包含其所有 Leg 的 vt_symbol。
+        **Validates: Requirements 7.2**
+        """
+        aggregate = CombinationAggregate()
+        aggregate.register_combination(combo)
+
+        # 收集该 Combination 的所有 Leg vt_symbol
+        expected_symbols = {leg.vt_symbol for leg in combo.legs}
+
+        # 验证 _symbol_index 的 key 集合与预期一致
+        assert set(aggregate._symbol_index.keys()) == expected_symbols
+
+        # 验证每个 vt_symbol 都只映射到这一个 Combination
+        for vt_symbol in expected_symbols:
+            assert aggregate._symbol_index[vt_symbol] == {combo.combination_id}
+
+    @given(combinations=_multiple_combinations_strategy(min_combos=2, max_combos=5))
+    @settings(max_examples=100)
+    def test_index_count_matches_leg_references(self, combinations: List[Combination]):
+        """Feature: combination-strategy-management, Property 13: 反向索引一致性
+        _symbol_index 中每个 vt_symbol 映射的 combination_id 数量应等于引用该 vt_symbol 的 Combination 数量。
+        **Validates: Requirements 7.2**
+        """
+        aggregate = CombinationAggregate()
+        for combo in combinations:
+            aggregate.register_combination(combo)
+
+        # 统计每个 vt_symbol 被多少个 Combination 引用
+        symbol_reference_count: Dict[str, int] = {}
+        for combo in aggregate._combinations.values():
+            for leg in combo.legs:
+                symbol_reference_count[leg.vt_symbol] = (
+                    symbol_reference_count.get(leg.vt_symbol, 0) + 1
+                )
+
+        # 验证 _symbol_index 中的映射数量与引用数量一致
+        for vt_symbol, expected_count in symbol_reference_count.items():
+            actual_count = len(aggregate._symbol_index.get(vt_symbol, set()))
+            assert actual_count == expected_count, (
+                f"vt_symbol {vt_symbol} reference count mismatch: "
+                f"expected={expected_count}, actual={actual_count}"
+            )
+
+    @settings(max_examples=100)
+    @given(st.data())
+    def test_empty_aggregate_has_empty_symbol_index(self, data):
+        """Feature: combination-strategy-management, Property 13: 反向索引一致性
+        空聚合根的 _symbol_index 应为空。
+        **Validates: Requirements 7.2**
+        """
+        aggregate = CombinationAggregate()
+
+        # 验证空聚合根的 _symbol_index 为空
+        assert len(aggregate._symbol_index) == 0
+        assert aggregate._symbol_index == {}

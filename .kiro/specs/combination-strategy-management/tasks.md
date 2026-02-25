@@ -146,7 +146,7 @@
     - 使用 Hypothesis 生成随机 CombinationAggregate 状态，验证 from_snapshot(to_snapshot(agg)) 恢复等价状态
     - **Validates: Requirements 7.1**
 
-  - [~] 10.5 编写 CombinationAggregate 属性测试（Property 13: 反向索引一致性）
+  - [-] 10.5 编写 CombinationAggregate 属性测试（Property 13: 反向索引一致性）
     - 文件：`tests/strategy/domain/aggregate/test_combination_aggregate_properties.py`（追加）
     - **Property 13: 反向索引一致性**
     - 使用 Hypothesis 生成随机 Combination 集合注册后，验证 _symbol_index 与 _combinations 的双向一致性
