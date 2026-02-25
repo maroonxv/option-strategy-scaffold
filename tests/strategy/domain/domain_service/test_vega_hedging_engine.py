@@ -510,3 +510,153 @@ class TestVegaHedgingProperty8:
             assert len(events) == 0, (
                 f"should_hedge=False (rejected={result.rejected}) 但事件列表非空: {len(events)} 个事件"
             )
+
+
+# ========== 单元测试: 典型场景和边界条件 ==========
+
+
+class TestVegaHedgingUnitScenarios:
+    """单元测试: 典型对冲场景和边界条件
+
+    **Validates: Requirements 1.1, 1.2, 1.3, 4.1, 4.2, 4.3**
+    """
+
+    def test_vega_too_high_should_short(self):
+        """Vega 偏高 → 卖出期权 (SHORT)
+
+        Config: target_vega=0, hedging_band=50, hedge_instrument_vega=0.1, multiplier=10
+        Portfolio: total_vega=200 (偏高200, 超过band 50)
+        Expected: should_hedge=True, direction=SHORT, volume=200
+
+        raw_volume = (0 - 200) / (0.1 * 10) = -200 → round(-200) = -200
+        direction = SHORT, volume = abs(-200) = 200
+
+        **Validates: Requirements 1.1**
+        """
+        from src.strategy.domain.value_object.order_instruction import Direction
+
+        config = VegaHedgingConfig(
+            target_vega=0.0,
+            hedging_band=50.0,
+            hedge_instrument_vt_symbol="IO2506-C-4000.CFFEX",
+            hedge_instrument_vega=0.1,
+            hedge_instrument_multiplier=10.0,
+        )
+        engine = VegaHedgingEngine(config)
+        greeks = PortfolioGreeks(total_vega=200.0)
+
+        result, events = engine.check_and_hedge(greeks, current_price=100.0)
+
+        assert result.should_hedge is True
+        assert result.hedge_direction == Direction.SHORT
+        assert result.hedge_volume == 200
+        assert result.rejected is False
+        assert len(events) == 1
+
+    def test_vega_too_low_should_long(self):
+        """Vega 偏低 → 买入期权 (LONG)
+
+        Config: target_vega=100, hedging_band=50, hedge_instrument_vega=0.1, multiplier=10
+        Portfolio: total_vega=-50 (偏低150, 超过band 50)
+        Expected: should_hedge=True, direction=LONG, volume=150
+
+        raw_volume = (100 - (-50)) / (0.1 * 10) = 150 → round(150) = 150
+        direction = LONG, volume = 150
+
+        **Validates: Requirements 1.1**
+        """
+        from src.strategy.domain.value_object.order_instruction import Direction
+
+        config = VegaHedgingConfig(
+            target_vega=100.0,
+            hedging_band=50.0,
+            hedge_instrument_vt_symbol="IO2506-C-4000.CFFEX",
+            hedge_instrument_vega=0.1,
+            hedge_instrument_multiplier=10.0,
+        )
+        engine = VegaHedgingEngine(config)
+        greeks = PortfolioGreeks(total_vega=-50.0)
+
+        result, events = engine.check_and_hedge(greeks, current_price=100.0)
+
+        assert result.should_hedge is True
+        assert result.hedge_direction == Direction.LONG
+        assert result.hedge_volume == 150
+        assert result.rejected is False
+        assert len(events) == 1
+
+    def test_deviation_exactly_at_band_no_hedge(self):
+        """偏差恰好等于容忍带 → 不对冲
+
+        Config: target_vega=0, hedging_band=50
+        Portfolio: total_vega=50 (偏差=|50-0|=50, 等于band)
+        abs(vega_diff) <= hedging_band → should_hedge=False
+
+        **Validates: Requirements 1.2**
+        """
+        config = VegaHedgingConfig(
+            target_vega=0.0,
+            hedging_band=50.0,
+            hedge_instrument_vt_symbol="IO2506-C-4000.CFFEX",
+            hedge_instrument_vega=0.1,
+            hedge_instrument_multiplier=10.0,
+        )
+        engine = VegaHedgingEngine(config)
+        greeks = PortfolioGreeks(total_vega=50.0)
+
+        result, events = engine.check_and_hedge(greeks, current_price=100.0)
+
+        assert result.should_hedge is False
+        assert result.rejected is False
+        assert len(events) == 0
+
+    def test_deviation_exactly_at_negative_band_no_hedge(self):
+        """偏差恰好等于负容忍带 → 不对冲
+
+        Config: target_vega=0, hedging_band=50
+        Portfolio: total_vega=-50 (偏差=|-50-0|=50, 等于band)
+
+        **Validates: Requirements 1.2**
+        """
+        config = VegaHedgingConfig(
+            target_vega=0.0,
+            hedging_band=50.0,
+            hedge_instrument_vt_symbol="IO2506-C-4000.CFFEX",
+            hedge_instrument_vega=0.1,
+            hedge_instrument_multiplier=10.0,
+        )
+        engine = VegaHedgingEngine(config)
+        greeks = PortfolioGreeks(total_vega=-50.0)
+
+        result, events = engine.check_and_hedge(greeks, current_price=100.0)
+
+        assert result.should_hedge is False
+        assert result.rejected is False
+        assert len(events) == 0
+
+    def test_rounding_to_zero_no_hedge(self):
+        """四舍五入为零 → 不对冲
+
+        Config: target_vega=0, hedging_band=0.01, hedge_instrument_vega=1, multiplier=1000
+        Portfolio: total_vega=0.02 (偏差=0.02 > band=0.01)
+        raw_volume = (0 - 0.02) / (1 * 1000) = -0.00002 → round(-0.00002) = 0
+        hedge_volume == 0 → should_hedge=False
+
+        **Validates: Requirements 1.3**
+        """
+        config = VegaHedgingConfig(
+            target_vega=0.0,
+            hedging_band=0.01,
+            hedge_instrument_vt_symbol="IO2506-C-4000.CFFEX",
+            hedge_instrument_vega=1.0,
+            hedge_instrument_multiplier=1000.0,
+        )
+        engine = VegaHedgingEngine(config)
+        greeks = PortfolioGreeks(total_vega=0.02)
+
+        result, events = engine.check_and_hedge(greeks, current_price=100.0)
+
+        assert result.should_hedge is False
+        assert result.rejected is False
+        assert result.hedge_volume == 0
+        assert len(events) == 0
