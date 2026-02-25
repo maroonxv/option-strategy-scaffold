@@ -32,11 +32,11 @@
     - **Property 1: 保证金估算公式正确性**
     - **Validates: Requirements 1.1**
 
-  - [-] 3.4 实现 `_calc_margin_volume` 方法
+  - [x] 3.4 实现 `_calc_margin_volume` 方法
     - 公式：`floor(available_funds / margin_per_lot)`
     - _Requirements: 1.2_
 
-  - [~] 3.5 实现 `_calc_usage_volume` 方法
+  - [-] 3.5 实现 `_calc_usage_volume` 方法
     - 公式：`floor((total_equity × margin_usage_limit - used_margin) / margin_per_lot)`
     - _Requirements: 2.2_
 

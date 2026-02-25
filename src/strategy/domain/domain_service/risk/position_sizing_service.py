@@ -84,6 +84,17 @@ class PositionSizingService:
             return 0
         return math.floor(available_funds / margin_per_lot)
 
+    def _calc_usage_volume(
+        self, total_equity: float, used_margin: float, margin_per_lot: float
+    ) -> int:
+        """使用率维度：(总权益 × margin_usage_limit - 已用保证金) / 单手保证金"""
+        if margin_per_lot <= 0:
+            return 0
+        available = total_equity * self.margin_usage_limit - used_margin
+        if available <= 0:
+            return 0
+        return math.floor(available / margin_per_lot)
+
 
     
     def calculate_open_volumn(
