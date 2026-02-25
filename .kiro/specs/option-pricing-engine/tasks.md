@@ -49,7 +49,7 @@
     - **Validates: Requirements 2.3**
 
 - [ ] 4. 实现 CRRPricer
-  - [-] 4.1 创建 `src/strategy/domain/domain_service/pricing/crr_pricer.py`
+  - [x] 4.1 创建 `src/strategy/domain/domain_service/pricing/crr_pricer.py`
     - 内部输入校验（spot_price, strike_price, volatility, time_to_expiry）
     - 实现 Cox-Ross-Rubinstein 二叉树算法
     - 支持美式和欧式期权
@@ -58,7 +58,7 @@
     - 异常捕获，返回 error PricingResult
     - _Requirements: 3.1, 3.2, 3.3, 3.4, 3.5, 3.6, 3.7_
 
-  - [~] 4.2 编写 Property 3 属性测试：CRR 欧式定价收敛到 BS
+  - [-] 4.2 编写 Property 3 属性测试：CRR 欧式定价收敛到 BS
     - **Property 3: CRR 欧式定价收敛到 BS**
     - *For any* 有效欧式参数，|CRR_price - BS_price| < max(BS_price * 0.02, 0.05)
     - **Validates: Requirements 3.2**

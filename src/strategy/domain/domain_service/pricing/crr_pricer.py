@@ -114,6 +114,13 @@ class CRRPricer:
         p = (math.exp(r * dt) - d) / (u - d)
         q = 1.0 - p
 
+        # 概率 p 必须在 [0, 1] 范围内，否则二叉树参数无效
+        if p < 0 or p > 1:
+            raise ValueError(
+                f"CRR 概率 p={p:.6f} 超出 [0,1] 范围，"
+                f"参数组合无效 (r={r}, σ={sigma}, dt={dt:.6f})"
+            )
+
         is_call = option_type == "call"
 
         # 构建到期节点的期权价值
