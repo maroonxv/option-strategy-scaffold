@@ -55,7 +55,7 @@
     - **Property 6: 无效输入拒绝**
     - **Validates: Requirements 4.1, 4.2, 4.3**
 
-  - [~] 4.7 编写属性测试: YAML 配置加载一致性
+  - [x] 4.7 编写属性测试: YAML 配置加载一致性
     - **Property 7: YAML 配置加载一致性**
     - **Validates: Requirements 5.1, 5.2**
 

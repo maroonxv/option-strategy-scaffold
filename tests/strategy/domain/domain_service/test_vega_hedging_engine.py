@@ -390,3 +390,70 @@ class TestVegaHedgingProperty6:
         assert result.rejected is True
         assert result.should_hedge is False
         assert len(events) == 0
+
+
+# ========== Property 7: YAML 配置加载一致性 ==========
+
+
+# VegaHedgingConfig 所有字段名及其对应的 hypothesis 策略
+_CONFIG_FIELDS = {
+    "target_vega": st.floats(min_value=-500.0, max_value=500.0, allow_nan=False, allow_infinity=False),
+    "hedging_band": st.floats(min_value=0.01, max_value=200.0, allow_nan=False, allow_infinity=False),
+    "hedge_instrument_vt_symbol": st.text(min_size=0, max_size=30),
+    "hedge_instrument_vega": st.floats(min_value=-10.0, max_value=10.0, allow_nan=False, allow_infinity=False),
+    "hedge_instrument_delta": st.floats(min_value=-1.0, max_value=1.0, allow_nan=False, allow_infinity=False),
+    "hedge_instrument_gamma": st.floats(min_value=-0.1, max_value=0.1, allow_nan=False, allow_infinity=False),
+    "hedge_instrument_theta": st.floats(min_value=-1.0, max_value=0.0, allow_nan=False, allow_infinity=False),
+    "hedge_instrument_multiplier": st.floats(min_value=1.0, max_value=300.0, allow_nan=False, allow_infinity=False),
+}
+
+# 完整配置字典生成器
+_full_config_dict_st = st.fixed_dictionaries(
+    {field: strategy for field, strategy in _CONFIG_FIELDS.items()}
+)
+
+# 要删除的键子集生成器（可能为空 → 全部保留，也可能全部删除）
+_keys_to_remove_st = st.lists(
+    st.sampled_from(list(_CONFIG_FIELDS.keys())),
+    unique=True,
+    min_size=0,
+    max_size=len(_CONFIG_FIELDS),
+)
+
+
+class TestVegaHedgingProperty7:
+    """Property 7: YAML 配置加载一致性
+
+    *For any* 配置字典（可能缺少部分字段），from_yaml_config 生成的 VegaHedgingConfig 中，
+    已提供的字段应与字典值一致，缺失的字段应等于 VegaHedgingConfig 的默认值。
+
+    **Validates: Requirements 5.1, 5.2**
+    """
+
+    @settings(max_examples=100)
+    @given(full_dict=_full_config_dict_st, keys_to_remove=_keys_to_remove_st)
+    def test_property7_yaml_config_load_consistency(self, full_dict, keys_to_remove):
+        """from_yaml_config 已提供字段与字典一致，缺失字段等于默认值
+
+        **Validates: Requirements 5.1, 5.2**
+        """
+        # 构造可能缺少部分字段的配置字典
+        partial_dict = {k: v for k, v in full_dict.items() if k not in keys_to_remove}
+
+        engine = VegaHedgingEngine.from_yaml_config(partial_dict)
+        config = engine.config
+        defaults = VegaHedgingConfig()
+
+        for field in _CONFIG_FIELDS:
+            actual = getattr(config, field)
+            if field in partial_dict:
+                # 需求 5.1: 已提供的字段应与字典值一致
+                assert actual == partial_dict[field], (
+                    f"字段 {field}: 期望 {partial_dict[field]}，实际 {actual}"
+                )
+            else:
+                # 需求 5.2: 缺失的字段应等于默认值
+                expected = getattr(defaults, field)
+                assert actual == expected, (
+                    f"字段 {field}: 期望默认值 {expected}，实际 {actual}"
+                )
