@@ -121,3 +121,103 @@ class TestProperty2UsageVolumeInvariant:
                 f"n+1={n+1} 手后使用率 {ratio_with_n_plus_1} 仍未超限 {margin_usage_limit}，"
                 f"说明 n 不是最大值"
             )
+
+
+# ---------------------------------------------------------------------------
+# 策略：Greeks 相关参数
+# ---------------------------------------------------------------------------
+from src.strategy.domain.value_object.greeks import GreeksResult
+from src.strategy.domain.value_object.risk import PortfolioGreeks, RiskThresholds
+
+
+# Feature: dynamic-position-sizing, Property 3: Greeks 预算计算正确性
+class TestProperty3GreeksBudgetCalculation:
+    """
+    Property 3: Greeks 预算计算正确性
+
+    *For any* 有效的组合 Greeks、风控阈值和单手 Greeks（至少一个维度非零），
+    `_calc_greeks_volume` 返回的手数应等于各非零维度
+    `floor((limit - |current|) / |greek × multiplier|)` 的最小值，
+    且返回的 delta_budget、gamma_budget、vega_budget 应分别等于 `limit - |current|`。
+
+    **Validates: Requirements 3.1, 3.2**
+    """
+
+    @given(
+        delta=st.floats(min_value=-1.0, max_value=1.0, allow_nan=False, allow_infinity=False),
+        gamma=st.floats(min_value=0.0, max_value=0.5, allow_nan=False, allow_infinity=False),
+        vega=st.floats(min_value=-100.0, max_value=100.0, allow_nan=False, allow_infinity=False),
+        multiplier=st.floats(min_value=1.0, max_value=10000.0, allow_nan=False, allow_infinity=False),
+        portfolio_delta=st.floats(min_value=-5.0, max_value=5.0, allow_nan=False, allow_infinity=False),
+        portfolio_gamma=st.floats(min_value=-1.0, max_value=1.0, allow_nan=False, allow_infinity=False),
+        portfolio_vega=st.floats(min_value=-500.0, max_value=500.0, allow_nan=False, allow_infinity=False),
+        delta_limit=st.floats(min_value=1.0, max_value=20.0, allow_nan=False, allow_infinity=False),
+        gamma_limit=st.floats(min_value=0.1, max_value=5.0, allow_nan=False, allow_infinity=False),
+        vega_limit=st.floats(min_value=50.0, max_value=2000.0, allow_nan=False, allow_infinity=False),
+    )
+    @settings(max_examples=200)
+    def test_greeks_budget_calculation(
+        self, delta, gamma, vega, multiplier,
+        portfolio_delta, portfolio_gamma, portfolio_vega,
+        delta_limit, gamma_limit, vega_limit,
+    ):
+        """Feature: dynamic-position-sizing, Property 3: Greeks 预算计算正确性
+        **Validates: Requirements 3.1, 3.2**
+        """
+        import math
+        from hypothesis import assume
+
+        # At least one greek must be non-zero
+        assume(delta != 0 or gamma != 0 or vega != 0)
+
+        # Filter out subnormal floats that cause overflow in floor(budget / per_lot)
+        for g_val in [delta, gamma, vega]:
+            per_lot = abs(g_val * multiplier)
+            if per_lot != 0:
+                assume(per_lot > 1e-15)
+
+        greeks = GreeksResult(delta=delta, gamma=gamma, vega=vega)
+        portfolio = PortfolioGreeks(
+            total_delta=portfolio_delta,
+            total_gamma=portfolio_gamma,
+            total_vega=portfolio_vega,
+        )
+        thresholds = RiskThresholds(
+            portfolio_delta_limit=delta_limit,
+            portfolio_gamma_limit=gamma_limit,
+            portfolio_vega_limit=vega_limit,
+        )
+
+        service = PositionSizingService()
+        volume, d_budget, g_budget, v_budget = service._calc_greeks_volume(
+            greeks, multiplier, portfolio, thresholds
+        )
+
+        # Verify budgets: limit - |current|
+        assert d_budget == pytest.approx(delta_limit - abs(portfolio_delta), rel=1e-9)
+        assert g_budget == pytest.approx(gamma_limit - abs(portfolio_gamma), rel=1e-9)
+        assert v_budget == pytest.approx(vega_limit - abs(portfolio_vega), rel=1e-9)
+
+        # Verify volume: min of floor(budget / per_lot) across non-zero dimensions
+        expected_volumes = []
+        dims = [
+            (delta, d_budget),
+            (gamma, g_budget),
+            (vega, v_budget),
+        ]
+        for greek_val, budget in dims:
+            per_lot = abs(greek_val * multiplier)
+            if per_lot == 0:
+                continue
+            expected_volumes.append(math.floor(budget / per_lot))
+
+        if expected_volumes:
+            expected_volume = min(expected_volumes)
+        else:
+            expected_volume = 999999
+
+        assert volume == expected_volume, (
+            f"volume={volume}, expected={expected_volume}. "
+            f"delta={delta}, gamma={gamma}, vega={vega}, multiplier={multiplier}, "
+            f"budgets=({d_budget}, {g_budget}, {v_budget})"
+        )

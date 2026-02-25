@@ -50,7 +50,7 @@
     - 返回 (允许手数, delta_budget, gamma_budget, vega_budget)
     - _Requirements: 3.1, 3.2, 3.4_
 
-  - [~] 3.8 编写 _calc_greeks_volume 属性测试
+  - [x] 3.8 编写 _calc_greeks_volume 属性测试
     - **Property 3: Greeks 预算计算正确性**
     - **Validates: Requirements 3.1, 3.2**
 
