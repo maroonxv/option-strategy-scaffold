@@ -68,7 +68,7 @@
 - [x] 4. Checkpoint - 确保所有属性测试通过
   - 确保所有测试通过，如有问题请询问用户。
 
-- [-] 5. 重构开仓与平仓方法
+- [x] 5. 重构开仓与平仓方法
   - [x] 5.1 重构 `calculate_open_volume` 方法（修正拼写 volumn → volume）
     - 保留现有风控前置检查（最大持仓、全局日限额、单合约日限额、重复合约）
     - 新增参数：total_equity, used_margin, underlying_price, strike_price, option_type, multiplier, greeks, portfolio_greeks, risk_thresholds
@@ -81,7 +81,7 @@
     - 保持平仓逻辑不变
     - _Requirements: 设计决策 2_
 
-  - [-] 5.3 编写单元测试覆盖编排逻辑和边界条件
+  - [x] 5.3 编写单元测试覆盖编排逻辑和边界条件
     - 测试前置风控检查保留（最大持仓、日限额、重复合约）
     - 测试 compute_sizing 拒绝时 calculate_open_volume 返回 None
     - 测试保证金 <= 0、资金不足一手、使用率超限、Greeks 超限等边界条件
@@ -90,8 +90,8 @@
     - 测试 calculate_close_volume 保持不变
     - _Requirements: 1.3, 1.4, 2.3, 3.3, 3.4, 4.3, 4.5, 6.2_
 
-- [~] 6. 更新调用方适配新接口
-  - [~] 6.1 查找所有调用 `calculate_open_volumn` 和 `calculate_close_volumn` 的代码，更新为新方法签名
+- [-] 6. 更新调用方适配新接口
+  - [-] 6.1 查找所有调用 `calculate_open_volumn` 和 `calculate_close_volumn` 的代码，更新为新方法签名
     - 传入新增参数（total_equity, used_margin, underlying_price, strike_price, option_type, multiplier, greeks, portfolio_greeks, risk_thresholds）
     - 更新 PositionSizingService 的初始化代码，从 strategy_config.yaml 读取 position_sizing 配置节
     - _Requirements: 6.1, 6.2_

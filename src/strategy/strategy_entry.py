@@ -207,11 +207,24 @@ class StrategyEntry(StrategyTemplate):
 
         # ______________________________  2. 创建领域服务  ______________________________
 
+        # ── 加载 strategy_config.yaml ──
+        try:
+            strategy_config_path = str(Path(__file__).resolve().parents[2] / "config" / "strategy_config.yaml")
+            full_config = ConfigLoader.load_yaml(strategy_config_path)
+        except Exception:
+            full_config = {}
+
         self.indicator_service = IndicatorService()
         self.signal_service = SignalService()
+
+        # ── 从 position_sizing 配置节读取动态仓位参数 ──
+        ps_cfg = full_config.get("position_sizing", {})
         self.position_sizing_service = PositionSizingService(
             max_positions=self.max_positions,
-            position_ratio=self.position_ratio
+            margin_ratio=ps_cfg.get("margin_ratio", 0.12),
+            min_margin_ratio=ps_cfg.get("min_margin_ratio", 0.07),
+            margin_usage_limit=ps_cfg.get("margin_usage_limit", 0.6),
+            max_volume_per_order=ps_cfg.get("max_volume_per_order", 10),
         )
         self.future_selection_service = BaseFutureSelector()
         self.option_selector_service = OptionSelectorService(
@@ -219,11 +232,6 @@ class StrategyEntry(StrategyTemplate):
         )
 
         # ── Greeks 风控 & 订单执行增强 ──
-        try:
-            strategy_config_path = str(Path(__file__).resolve().parents[2] / "config" / "strategy_config.yaml")
-            full_config = ConfigLoader.load_yaml(strategy_config_path)
-        except Exception:
-            full_config = {}
 
         greeks_risk_cfg = full_config.get("greeks_risk", {})
         position_limits = greeks_risk_cfg.get("position_limits", {})
