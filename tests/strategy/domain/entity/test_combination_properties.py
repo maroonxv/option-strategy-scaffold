@@ -497,3 +497,208 @@ class TestProperty1CombinationStructureValidation:
         )
         with pytest.raises(ValueError):
             combo.validate()
+
+
+# ---------------------------------------------------------------------------
+# 策略：生成具有唯一 vt_symbol 的有效 Combination（用于状态测试）
+# ---------------------------------------------------------------------------
+
+def _unique_vt_symbols(n: int):
+    """生成 n 个唯一的 vt_symbol 策略。"""
+    return st.lists(
+        st.from_regex(r"[a-z]{2}[0-9]{4}-[CP]-[0-9]{4}\.[A-Z]{3}", fullmatch=True),
+        min_size=n,
+        max_size=n,
+        unique=True,
+    )
+
+
+def _combination_with_unique_legs():
+    """
+    生成具有唯一 vt_symbol 的有效 CUSTOM Combination。
+    使用 CUSTOM 类型以避免结构约束，专注于状态转换逻辑。
+    腿数量 2~6，每个 Leg 的 vt_symbol 唯一。
+    """
+    return st.integers(min_value=2, max_value=6).flatmap(
+        lambda n: st.tuples(
+            _unique_vt_symbols(n),
+            st.lists(_option_type, min_size=n, max_size=n),
+            st.lists(_strike_price, min_size=n, max_size=n),
+            st.lists(_expiry_date, min_size=n, max_size=n),
+            st.lists(_direction, min_size=n, max_size=n),
+            st.lists(_volume, min_size=n, max_size=n),
+            st.lists(_open_price, min_size=n, max_size=n),
+            st.sampled_from([CombinationStatus.PENDING, CombinationStatus.ACTIVE]),
+        ).map(
+            lambda t: Combination(
+                combination_id="test-status-id",
+                combination_type=CombinationType.CUSTOM,
+                underlying_vt_symbol="underlying.EX",
+                legs=[
+                    Leg(
+                        vt_symbol=t[0][i],
+                        option_type=t[1][i],
+                        strike_price=t[2][i],
+                        expiry_date=t[3][i],
+                        direction=t[4][i],
+                        volume=t[5][i],
+                        open_price=t[6][i],
+                    )
+                    for i in range(len(t[0]))
+                ],
+                status=t[7],
+                create_time=__import__("datetime").datetime(2025, 1, 1),
+            )
+        )
+    )
+
+
+# ---------------------------------------------------------------------------
+# Feature: combination-strategy-management, Property 7: 组合状态反映腿的平仓状态
+# ---------------------------------------------------------------------------
+
+class TestProperty7CombinationStatusReflectsLegClosure:
+    """
+    Property 7: 组合状态反映腿的平仓状态
+
+    *For any* Combination 和一组 closed_vt_symbols：
+    - 当至少一个但非全部 Leg 的 vt_symbol 在 closed_vt_symbols 中时，
+      update_status 应返回 PARTIALLY_CLOSED
+    - 当所有 Leg 的 vt_symbol 在 closed_vt_symbols 中时，应返回 CLOSED
+    - 当没有 Leg 的 vt_symbol 在 closed_vt_symbols 中时，状态不变（return None）
+
+    **Validates: Requirements 6.3, 6.4**
+    """
+
+    @given(combo=_combination_with_unique_legs())
+    @settings(max_examples=100)
+    def test_no_legs_closed_returns_none(self, combo):
+        """Feature: combination-strategy-management, Property 7: 组合状态反映腿的平仓状态
+        当没有 Leg 的 vt_symbol 在 closed_vt_symbols 中时，状态不变（return None）。
+        **Validates: Requirements 6.3, 6.4**
+        """
+        leg_symbols = {leg.vt_symbol for leg in combo.legs}
+        # 构造一个与所有 leg vt_symbol 完全不相交的 closed 集合
+        disjoint_symbols = {f"UNRELATED-{i}.ZZZ" for i in range(3)}
+        assert disjoint_symbols.isdisjoint(leg_symbols)
+
+        old_status = combo.status
+        result = combo.update_status(disjoint_symbols)
+
+        assert result is None
+        assert combo.status == old_status
+
+    @given(combo=_combination_with_unique_legs())
+    @settings(max_examples=100)
+    def test_no_legs_closed_empty_set_returns_none(self, combo):
+        """Feature: combination-strategy-management, Property 7: 组合状态反映腿的平仓状态
+        当 closed_vt_symbols 为空集时，状态不变（return None）。
+        **Validates: Requirements 6.3, 6.4**
+        """
+        old_status = combo.status
+        result = combo.update_status(set())
+
+        assert result is None
+        assert combo.status == old_status
+
+    @given(combo=_combination_with_unique_legs())
+    @settings(max_examples=100)
+    def test_all_legs_closed_returns_closed(self, combo):
+        """Feature: combination-strategy-management, Property 7: 组合状态反映腿的平仓状态
+        当所有 Leg 的 vt_symbol 在 closed_vt_symbols 中时，应返回 CLOSED。
+        **Validates: Requirements 6.3, 6.4**
+        """
+        all_symbols = {leg.vt_symbol for leg in combo.legs}
+        # 可以包含额外的无关 symbol
+        closed = all_symbols | {"extra-symbol.ZZZ"}
+
+        result = combo.update_status(closed)
+
+        assert result == CombinationStatus.CLOSED
+        assert combo.status == CombinationStatus.CLOSED
+        assert combo.close_time is not None
+
+    @given(data=st.data())
+    @settings(max_examples=100)
+    def test_partial_legs_closed_returns_partially_closed(self, data):
+        """Feature: combination-strategy-management, Property 7: 组合状态反映腿的平仓状态
+        当至少一个但非全部 Leg 的 vt_symbol 在 closed_vt_symbols 中时，
+        update_status 应返回 PARTIALLY_CLOSED。
+        **Validates: Requirements 6.3, 6.4**
+        """
+        combo = data.draw(_combination_with_unique_legs(), label="combination")
+        leg_symbols = [leg.vt_symbol for leg in combo.legs]
+        assume(len(leg_symbols) >= 2)
+
+        # 随机选择 1 到 len-1 个 leg 作为已平仓
+        k = data.draw(
+            st.integers(min_value=1, max_value=len(leg_symbols) - 1),
+            label="num_closed",
+        )
+        closed_indices = data.draw(
+            st.lists(
+                st.sampled_from(range(len(leg_symbols))),
+                min_size=k,
+                max_size=k,
+                unique=True,
+            ),
+            label="closed_indices",
+        )
+        closed_symbols = {leg_symbols[i] for i in closed_indices}
+
+        result = combo.update_status(closed_symbols)
+
+        assert result == CombinationStatus.PARTIALLY_CLOSED
+        assert combo.status == CombinationStatus.PARTIALLY_CLOSED
+
+    @given(combo=_combination_with_unique_legs())
+    @settings(max_examples=100)
+    def test_already_closed_status_returns_none(self, combo):
+        """Feature: combination-strategy-management, Property 7: 组合状态反映腿的平仓状态
+        当 Combination 已经是 CLOSED 状态，再次调用 update_status 全部平仓时返回 None（状态未变）。
+        **Validates: Requirements 6.3, 6.4**
+        """
+        all_symbols = {leg.vt_symbol for leg in combo.legs}
+
+        # 先设为 CLOSED
+        combo.status = CombinationStatus.CLOSED
+        result = combo.update_status(all_symbols)
+
+        # 状态已经是 CLOSED，不应再次返回 CLOSED
+        assert result is None
+        assert combo.status == CombinationStatus.CLOSED
+
+    @given(data=st.data())
+    @settings(max_examples=100)
+    def test_already_partially_closed_returns_none(self, data):
+        """Feature: combination-strategy-management, Property 7: 组合状态反映腿的平仓状态
+        当 Combination 已经是 PARTIALLY_CLOSED 状态，再次用相同的部分平仓集合调用时返回 None。
+        **Validates: Requirements 6.3, 6.4**
+        """
+        combo = data.draw(_combination_with_unique_legs(), label="combination")
+        leg_symbols = [leg.vt_symbol for leg in combo.legs]
+        assume(len(leg_symbols) >= 2)
+
+        # 选择部分 leg 平仓
+        k = data.draw(
+            st.integers(min_value=1, max_value=len(leg_symbols) - 1),
+            label="num_closed",
+        )
+        closed_indices = data.draw(
+            st.lists(
+                st.sampled_from(range(len(leg_symbols))),
+                min_size=k,
+                max_size=k,
+                unique=True,
+            ),
+            label="closed_indices",
+        )
+        closed_symbols = {leg_symbols[i] for i in closed_indices}
+
+        # 先设为 PARTIALLY_CLOSED
+        combo.status = CombinationStatus.PARTIALLY_CLOSED
+        result = combo.update_status(closed_symbols)
+
+        # 状态已经是 PARTIALLY_CLOSED，不应再次返回
+        assert result is None
+        assert combo.status == CombinationStatus.PARTIALLY_CLOSED

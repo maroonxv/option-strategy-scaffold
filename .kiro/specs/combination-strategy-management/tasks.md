@@ -29,7 +29,7 @@
     - 使用 Hypothesis 生成随机 CombinationType 和 Leg 列表，验证满足约束时通过、不满足时抛出 ValueError
     - **Validates: Requirements 1.2, 1.3, 1.4**
 
-  - [~] 2.3 编写 Combination 实体属性测试（Property 7: 组合状态反映腿的平仓状态）
+  - [x] 2.3 编写 Combination 实体属性测试（Property 7: 组合状态反映腿的平仓状态）
     - 文件：`tests/strategy/domain/entity/test_combination_properties.py`（追加）
     - **Property 7: 组合状态反映腿的平仓状态**
     - 使用 Hypothesis 生成随机 Combination 和 closed_vt_symbols 集合，验证 PARTIALLY_CLOSED / CLOSED / 不变的状态转换逻辑
