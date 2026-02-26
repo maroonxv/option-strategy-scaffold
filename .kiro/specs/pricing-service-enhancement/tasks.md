@@ -11,10 +11,10 @@
     - 定义 market_price, spot_price, strike_price, time_to_expiry, risk_free_rate, option_type 字段
     - _Requirements: 2.1_
 
-  - [-] 1.2 创建 `src/strategy/domain/domain_service/pricing/iv/` 子目录及 `__init__.py`
+  - [x] 1.2 创建 `src/strategy/domain/domain_service/pricing/iv/` 子目录及 `__init__.py`
     - _Requirements: 5.2_
 
-  - [~] 1.3 实现 `src/strategy/domain/domain_service/pricing/iv/iv_solver.py`
+  - [-] 1.3 实现 `src/strategy/domain/domain_service/pricing/iv/iv_solver.py`
     - 实现 `SolveMethod` 枚举（NEWTON, BISECTION, BRENT）
     - 实现 `IVSolver.solve()` 方法：输入校验（market_price ≤ 0、低于内在价值）、牛顿法求解、牛顿法未收敛自动回退二分法
     - 实现 `_solve_newton()`、`_solve_bisection()`、`_solve_brent()` 内部方法
