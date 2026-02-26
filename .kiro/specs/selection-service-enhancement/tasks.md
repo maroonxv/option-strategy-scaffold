@@ -50,14 +50,14 @@
   - 确保所有测试通过，如有问题请向用户确认。
 
 - [ ] 4. 增强 OptionSelectorService - 组合选择
-  - [-] 4.1 新增 `select_combination` 方法
+  - [x] 4.1 新增 `select_combination` 方法
     - 根据 CombinationType 分发到内部方法 `_select_straddle`、`_select_strangle`、`_select_vertical_spread`
     - 每个内部方法复用现有 `_filter_liquidity`、`_filter_trading_days`、`_calculate_otm_ranking` 方法
     - 对选择结果调用 `VALIDATION_RULES` 验证结构合规
     - 任一腿流动性不足时返回 success=False
     - _Requirements: 4.1, 4.2, 4.3, 4.4, 4.5_
 
-  - [~] 4.2 编写组合选择属性测试
+  - [x] 4.2 编写组合选择属性测试
     - **Property 5: 组合选择结构合规**
     - **Property 6: Straddle 选择最接近 ATM**
     - **Property 7: Strangle 选择虚值档位正确**
