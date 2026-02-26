@@ -13,14 +13,14 @@
     - _Requirements: 1.1, 3.1, 4.1, 6.1_
 
 - [ ] 2. 增强 BaseFutureSelector
-  - [-] 2.1 重写 `select_dominant_contract` 方法
+  - [x] 2.1 重写 `select_dominant_contract` 方法
     - 接受 `market_data` 参数，计算加权得分（volume × volume_weight + open_interest × oi_weight）
     - 按得分降序排列，得分相同时按到期日升序
     - 无行情数据时回退到按到期日排序
     - 空列表返回 None
     - _Requirements: 1.1, 1.2, 1.3, 1.4_
 
-  - [~] 2.2 编写 select_dominant_contract 属性测试
+  - [x] 2.2 编写 select_dominant_contract 属性测试
     - **Property 1: 主力合约得分最高**
     - **Validates: Requirements 1.1, 1.2**
 
