@@ -11,9 +11,9 @@
     - _Requirements: 1.1_
   - [x] 1.2 重构 `CombinationGreeksCalculator`：删除模块级 `_DIRECTION_SIGN` 字典，将 `sign = _DIRECTION_SIGN[leg.direction]` 替换为 `sign = leg.direction_sign`
     - _Requirements: 1.2, 1.4_
-  - [-] 1.3 重构 `CombinationPnLCalculator`：删除模块级 `_DIRECTION_SIGN` 字典，将 `sign = _DIRECTION_SIGN[leg.direction]` 替换为 `sign = leg.direction_sign`
+  - [x] 1.3 重构 `CombinationPnLCalculator`：删除模块级 `_DIRECTION_SIGN` 字典，将 `sign = _DIRECTION_SIGN[leg.direction]` 替换为 `sign = leg.direction_sign`
     - _Requirements: 1.3, 1.4_
-  - [~] 1.4 编写属性测试验证 direction_sign 正确性
+  - [x] 1.4 编写属性测试验证 direction_sign 正确性
     - **Property 1: direction_sign 正确性**
     - **Validates: Requirements 1.1**
   - [~] 1.5 编写属性测试验证 Greeks 计算方向加权正确性
