@@ -3,7 +3,7 @@ OptionSelectorService - 期权选择领域服务
 
 负责从全市场合约中筛选出符合策略要求的虚值期权合约。
 """
-from typing import Optional, List, Callable, Any
+from typing import Optional, List, Callable, Any, Dict
 
 import pandas as pd
 
@@ -11,6 +11,7 @@ from ...value_object.option_contract import OptionContract, OptionType
 from ...value_object.combination import CombinationType
 from ...value_object.selection import CombinationSelectionResult
 from ...value_object.combination_rules import VALIDATION_RULES, LegStructure
+from ...value_object.greeks import GreeksResult
 
 
 class OptionSelectorService:
@@ -437,6 +438,118 @@ class OptionSelectorService:
                 )
 
         return result
+
+    def select_by_delta(
+        self,
+        contracts: pd.DataFrame,
+        option_type: str,
+        underlying_price: float,
+        target_delta: float,
+        greeks_data: Dict[str, GreeksResult],
+        delta_tolerance: float = 0.05,
+        log_func: Optional[Callable] = None
+    ) -> Optional[OptionContract]:
+        """
+        基于目标 Delta 选择最优期权。
+        若无 Greeks 数据则回退到虚值档位选择。
+
+        参数:
+            contracts: 合约 DataFrame
+            option_type: 期权类型 ("CALL" | "PUT", 大小写不敏感)
+            underlying_price: 标的当前价格
+            target_delta: 目标 Delta 值
+            greeks_data: Greeks 数据字典 (key 为 vt_symbol)
+            delta_tolerance: Delta 容差范围，默认 0.05
+            log_func: 日志回调函数
+
+        返回:
+            选中的期权合约，如果没有符合条件的则返回 None
+        """
+        if contracts.empty:
+            if log_func:
+                log_func("[DELTA] 筛选失败: 传入合约列表为空")
+            return None
+
+        if underlying_price <= 0:
+            if log_func:
+                log_func(f"[DELTA] 错误: underlying_price={underlying_price} 无效")
+            return None
+
+        # 归一化 option_type
+        option_type = option_type.lower()
+        if option_type not in ("call", "put"):
+            if log_func:
+                log_func(f"[DELTA] 错误: 无效的 option_type {option_type}")
+            return None
+
+        df = contracts.copy()
+
+        # 1. 按期权类型筛选
+        if "option_type" in df.columns:
+            df = df[df["option_type"] == option_type]
+
+        if df.empty:
+            if log_func:
+                log_func("[DELTA] 筛选失败: 无该类型期权")
+            return None
+
+        # 2. 过滤流动性
+        df = self._filter_liquidity(df, log_func)
+        if df.empty:
+            if log_func:
+                log_func("[DELTA] 筛选失败: 流动性过滤后为空")
+            return None
+
+        # 3. 过滤到期日
+        df = self._filter_trading_days(df, log_func)
+        if df.empty:
+            if log_func:
+                log_func("[DELTA] 筛选失败: 到期日过滤后为空")
+            return None
+
+        # 4. 查找候选合约的 Greeks 数据
+        candidates = []
+        for _, row in df.iterrows():
+            vt_symbol = str(row.get("vt_symbol", ""))
+            greeks = greeks_data.get(vt_symbol)
+            if greeks is not None and greeks.success:
+                candidates.append((row, greeks.delta))
+
+        # 5. 无 Greeks 数据时回退到虚值档位选择
+        if not candidates:
+            if log_func:
+                log_func("[DELTA] 无可用 Greeks 数据，回退到虚值档位选择")
+            return self.select_option(
+                contracts, option_type, underlying_price, log_func=log_func
+            )
+
+        # 6. 按 delta_tolerance 范围过滤
+        filtered = [
+            (row, delta)
+            for row, delta in candidates
+            if abs(delta - target_delta) <= delta_tolerance
+        ]
+
+        if not filtered:
+            if log_func:
+                log_func(
+                    f"[DELTA] 无候选合约在 Delta 容差范围内 "
+                    f"(target={target_delta}, tolerance={delta_tolerance})"
+                )
+            return None
+
+        # 7. 选择 Delta 最接近目标值的合约
+        best_row, best_delta = min(filtered, key=lambda x: abs(x[1] - target_delta))
+
+        result = self._to_option_contract(best_row, option_type)
+        if log_func:
+            log_func(
+                f"[DELTA] 选中: {result.vt_symbol} "
+                f"(delta={best_delta:.4f}, target={target_delta}, diff={abs(best_delta - target_delta):.4f})"
+            )
+
+        return result
+
 
     def _validate_combination(self, result: CombinationSelectionResult) -> Optional[str]:
         """对选择结果调用 VALIDATION_RULES 验证结构合规"""

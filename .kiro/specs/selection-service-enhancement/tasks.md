@@ -49,7 +49,7 @@
 - [x] 3. 检查点 - 期货选择器验证
   - 确保所有测试通过，如有问题请向用户确认。
 
-- [ ] 4. 增强 OptionSelectorService - 组合选择
+- [x] 4. 增强 OptionSelectorService - 组合选择
   - [x] 4.1 新增 `select_combination` 方法
     - 根据 CombinationType 分发到内部方法 `_select_straddle`、`_select_strangle`、`_select_vertical_spread`
     - 每个内部方法复用现有 `_filter_liquidity`、`_filter_trading_days`、`_calculate_otm_ranking` 方法
@@ -65,7 +65,7 @@
     - **Validates: Requirements 4.1, 4.2, 4.4, 4.5**
 
 - [ ] 5. 增强 OptionSelectorService - Greeks 感知选择
-  - [~] 5.1 新增 `select_by_delta` 方法
+  - [x] 5.1 新增 `select_by_delta` 方法
     - 接受 `greeks_data: Dict[str, GreeksResult]` 和 `target_delta`
     - 从候选合约中选择 Delta 最接近目标值的合约
     - 支持 delta_tolerance 范围过滤
