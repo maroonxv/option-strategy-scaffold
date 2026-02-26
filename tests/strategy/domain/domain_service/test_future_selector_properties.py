@@ -327,3 +327,321 @@ def test_filter_by_maturity_correctness(
                 f"Contract {contract.symbol} with expiry {expiry} is in range "
                 f"[{range_start}, {range_end}] but was not included in result"
             )
+
+# ---------------------------------------------------------------------------
+# Property 3: 移仓触发正确性
+# Feature: selection-service-enhancement, Property 3: 移仓触发正确性
+# ---------------------------------------------------------------------------
+
+from src.strategy.domain.value_object.selection import RolloverRecommendation  # noqa: E402
+from datetime import timedelta  # noqa: E402
+
+# Strategy: rollover_days threshold
+_rollover_days = st.integers(min_value=1, max_value=60)
+
+# Strategy: generate a current_date for rollover tests
+_rollover_current_date = st.dates(min_value=date(2025, 1, 1), max_value=date(2034, 12, 28))
+
+
+# Feature: selection-service-enhancement, Property 3: 移仓触发正确性
+@settings(max_examples=100)
+@given(
+    symbol=_contract_symbol,
+    current_dt=_rollover_current_date,
+    rollover_days=_rollover_days,
+)
+def test_check_rollover_trigger_correctness(symbol, current_dt, rollover_days):
+    """
+    Property 3: 移仓触发正确性
+
+    **Validates: Requirements 3.1, 3.3**
+
+    For any contract and rollover threshold, check_rollover returns non-None
+    if and only if the contract's remaining calendar days <= threshold.
+    """
+    selector = BaseFutureSelector()
+    contract = _make_contract(symbol)
+
+    expiry = ContractHelper.get_expiry_from_symbol(symbol)
+    assume(expiry is not None)
+
+    remaining_days = (expiry - current_dt).days
+
+    result = selector.check_rollover(
+        current_contract=contract,
+        all_contracts=[contract],
+        current_date=current_dt,
+        rollover_days=rollover_days,
+    )
+
+    if remaining_days <= rollover_days:
+        assert result is not None, (
+            f"Contract {symbol} has {remaining_days} remaining days with "
+            f"threshold {rollover_days}, should trigger rollover but got None"
+        )
+        assert result.remaining_days == remaining_days
+        assert result.current_contract_symbol == symbol
+    else:
+        assert result is None, (
+            f"Contract {symbol} has {remaining_days} remaining days with "
+            f"threshold {rollover_days}, should NOT trigger rollover but got "
+            f"a recommendation"
+        )
+
+
+# ---------------------------------------------------------------------------
+# Property 4: 移仓目标为最大成交量合约
+# Feature: selection-service-enhancement, Property 4: 移仓目标为最大成交量合约
+# ---------------------------------------------------------------------------
+
+# Strategy: generate next-month contract symbols relative to a given YYMM
+def _next_month_yymm(yy: int, mm: int):
+    """Return (year, month) for the next month."""
+    if mm == 12:
+        return yy + 1, 1
+    return yy, mm + 1
+
+
+# Strategy: volumes for next-month contracts
+_next_month_volumes = st.lists(
+    st.integers(min_value=0, max_value=1_000_000),
+    min_size=1,
+    max_size=5,
+)
+
+
+# Feature: selection-service-enhancement, Property 4: 移仓目标为最大成交量合约
+@settings(max_examples=100)
+@given(
+    yy=st.integers(min_value=25, max_value=34),
+    mm=st.integers(min_value=1, max_value=12),
+    next_volumes=_next_month_volumes,
+)
+def test_check_rollover_target_is_max_volume(yy, mm, next_volumes):
+    """
+    Property 4: 移仓目标为最大成交量合约
+
+    **Validates: Requirements 3.2**
+
+    For any rollover scenario where next-month contracts exist with market data,
+    check_rollover should return the next-month contract with the highest volume.
+    """
+    selector = BaseFutureSelector()
+
+    # Current contract symbol
+    current_symbol = f"rb{yy:02d}{mm:02d}"
+    current_contract = _make_contract(current_symbol)
+
+    current_expiry = ContractHelper.get_expiry_from_symbol(current_symbol)
+    assume(current_expiry is not None)
+
+    # Use a current_date that guarantees rollover triggers (same as expiry)
+    current_dt = current_expiry
+
+    # Build next-month contracts with unique suffixes
+    next_yy, next_mm = _next_month_yymm(yy, mm)
+    # We use different product prefixes to create unique next-month contracts
+    prefixes = ["rb", "hc", "cu", "al", "zn"]
+    next_contracts = []
+    for i, vol in enumerate(next_volumes):
+        prefix = prefixes[i % len(prefixes)]
+        sym = f"{prefix}{next_yy:02d}{next_mm:02d}"
+        next_contracts.append(_make_contract(sym))
+
+    # Ensure all next-month contracts have unique vt_symbols
+    vt_symbols = [c.vt_symbol for c in next_contracts]
+    assume(len(vt_symbols) == len(set(vt_symbols)))
+
+    all_contracts = [current_contract] + next_contracts
+
+    # Build market data with specified volumes
+    market_data = {}
+    for i, c in enumerate(next_contracts):
+        market_data[c.vt_symbol] = MarketData(
+            vt_symbol=c.vt_symbol,
+            volume=next_volumes[i],
+            open_interest=0.0,
+        )
+
+    result = selector.check_rollover(
+        current_contract=current_contract,
+        all_contracts=all_contracts,
+        current_date=current_dt,
+        rollover_days=5,
+        market_data=market_data,
+    )
+
+    assert result is not None, "Rollover should trigger when current_date == expiry"
+    assert result.has_target, "Should find target among next-month contracts"
+
+    # The target should be the contract with max volume among next-month contracts
+    max_volume = max(next_volumes)
+    target_md = market_data.get(
+        f"{result.target_contract_symbol}.{_Exchange.SHFE.value}"
+    )
+    assert target_md is not None, (
+        f"Target {result.target_contract_symbol} not found in market data"
+    )
+    assert target_md.volume == max_volume, (
+        f"Target contract volume {target_md.volume} != max volume {max_volume}"
+    )
+
+
+
+# ---------------------------------------------------------------------------
+# Property 3: 移仓触发正确性
+# Feature: selection-service-enhancement, Property 3: 移仓触发正确性
+# ---------------------------------------------------------------------------
+
+from src.strategy.domain.value_object.selection import RolloverRecommendation  # noqa: E402
+from datetime import timedelta  # noqa: E402
+
+# Strategy: rollover_days threshold
+_rollover_days = st.integers(min_value=1, max_value=60)
+
+# Strategy: generate a current_date for rollover tests
+_rollover_current_date = st.dates(min_value=date(2025, 1, 1), max_value=date(2034, 12, 28))
+
+
+# Feature: selection-service-enhancement, Property 3: 移仓触发正确性
+@settings(max_examples=100)
+@given(
+    symbol=_contract_symbol,
+    current_dt=_rollover_current_date,
+    rollover_days=_rollover_days,
+)
+def test_check_rollover_trigger_correctness(symbol, current_dt, rollover_days):
+    """
+    Property 3: 移仓触发正确性
+
+    **Validates: Requirements 3.1, 3.3**
+
+    For any contract and rollover threshold, check_rollover returns non-None
+    if and only if the contract's remaining calendar days <= threshold.
+    """
+    selector = BaseFutureSelector()
+    contract = _make_contract(symbol)
+
+    expiry = ContractHelper.get_expiry_from_symbol(symbol)
+    assume(expiry is not None)
+
+    remaining_days = (expiry - current_dt).days
+
+    result = selector.check_rollover(
+        current_contract=contract,
+        all_contracts=[contract],
+        current_date=current_dt,
+        rollover_days=rollover_days,
+    )
+
+    if remaining_days <= rollover_days:
+        assert result is not None, (
+            f"Contract {symbol} has {remaining_days} remaining days with "
+            f"threshold {rollover_days}, should trigger rollover but got None"
+        )
+        assert result.remaining_days == remaining_days
+        assert result.current_contract_symbol == symbol
+    else:
+        assert result is None, (
+            f"Contract {symbol} has {remaining_days} remaining days with "
+            f"threshold {rollover_days}, should NOT trigger rollover but got "
+            f"a recommendation"
+        )
+
+
+# ---------------------------------------------------------------------------
+# Property 4: 移仓目标为最大成交量合约
+# Feature: selection-service-enhancement, Property 4: 移仓目标为最大成交量合约
+# ---------------------------------------------------------------------------
+
+# Strategy: generate next-month contract symbols relative to a given YYMM
+def _next_month_yymm(yy: int, mm: int):
+    """Return (year, month) for the next month."""
+    if mm == 12:
+        return yy + 1, 1
+    return yy, mm + 1
+
+
+# Strategy: volumes for next-month contracts
+_next_month_volumes = st.lists(
+    st.integers(min_value=0, max_value=1_000_000),
+    min_size=1,
+    max_size=5,
+)
+
+
+# Feature: selection-service-enhancement, Property 4: 移仓目标为最大成交量合约
+@settings(max_examples=100)
+@given(
+    yy=st.integers(min_value=25, max_value=34),
+    mm=st.integers(min_value=1, max_value=12),
+    next_volumes=_next_month_volumes,
+)
+def test_check_rollover_target_is_max_volume(yy, mm, next_volumes):
+    """
+    Property 4: 移仓目标为最大成交量合约
+
+    **Validates: Requirements 3.2**
+
+    For any rollover scenario where next-month contracts exist with market data,
+    check_rollover should return the next-month contract with the highest volume.
+    """
+    selector = BaseFutureSelector()
+
+    # Current contract symbol
+    current_symbol = f"rb{yy:02d}{mm:02d}"
+    current_contract = _make_contract(current_symbol)
+
+    current_expiry = ContractHelper.get_expiry_from_symbol(current_symbol)
+    assume(current_expiry is not None)
+
+    # Use a current_date that guarantees rollover triggers (same as expiry)
+    current_dt = current_expiry
+
+    # Build next-month contracts with unique suffixes
+    next_yy, next_mm = _next_month_yymm(yy, mm)
+    # We use different product prefixes to create unique next-month contracts
+    prefixes = ["rb", "hc", "cu", "al", "zn"]
+    next_contracts = []
+    for i, vol in enumerate(next_volumes):
+        prefix = prefixes[i % len(prefixes)]
+        sym = f"{prefix}{next_yy:02d}{next_mm:02d}"
+        next_contracts.append(_make_contract(sym))
+
+    # Ensure all next-month contracts have unique vt_symbols
+    vt_symbols = [c.vt_symbol for c in next_contracts]
+    assume(len(vt_symbols) == len(set(vt_symbols)))
+
+    all_contracts = [current_contract] + next_contracts
+
+    # Build market data with specified volumes
+    market_data = {}
+    for i, c in enumerate(next_contracts):
+        market_data[c.vt_symbol] = MarketData(
+            vt_symbol=c.vt_symbol,
+            volume=next_volumes[i],
+            open_interest=0.0,
+        )
+
+    result = selector.check_rollover(
+        current_contract=current_contract,
+        all_contracts=all_contracts,
+        current_date=current_dt,
+        rollover_days=5,
+        market_data=market_data,
+    )
+
+    assert result is not None, "Rollover should trigger when current_date == expiry"
+    assert result.has_target, "Should find target among next-month contracts"
+
+    # The target should be the contract with max volume among next-month contracts
+    max_volume = max(next_volumes)
+    target_md = market_data.get(
+        f"{result.target_contract_symbol}.{_Exchange.SHFE.value}"
+    )
+    assert target_md is not None, (
+        f"Target {result.target_contract_symbol} not found in market data"
+    )
+    assert target_md.volume == max_volume, (
+        f"Target contract volume {target_md.volume} != max volume {max_volume}"
+    )

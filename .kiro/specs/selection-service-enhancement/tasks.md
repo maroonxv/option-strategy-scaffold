@@ -41,7 +41,7 @@
     - 无目标时返回 has_target=False 的建议
     - _Requirements: 3.1, 3.2, 3.3, 3.4_
 
-  - [~] 2.6 编写 check_rollover 属性测试
+  - [x] 2.6 编写 check_rollover 属性测试
     - **Property 3: 移仓触发正确性**
     - **Property 4: 移仓目标为最大成交量合约**
     - **Validates: Requirements 3.1, 3.2, 3.3**
