@@ -19,7 +19,7 @@
   - [x] 1.5 编写属性测试验证 Greeks 计算方向加权正确性
     - **Property 2: Greeks 计算方向加权正确性**
     - **Validates: Requirements 1.2, 1.3, 1.5**
-  - [~] 1.6 编写属性测试验证 PnL 计算方向加权正确性
+  - [x] 1.6 编写属性测试验证 PnL 计算方向加权正确性
     - **Property 3: PnL 计算方向加权正确性**
     - **Validates: Requirements 1.3, 1.5**
 
