@@ -50,14 +50,14 @@
   - Ensure all tests pass, ask the user if questions arise.
 
 - [ ] 4. 实现 PricingEngine 统一定价入口
-  - [-] 4.1 创建 `src/strategy/domain/domain_service/pricing/pricing_engine.py`
+  - [x] 4.1 创建 `src/strategy/domain/domain_service/pricing/pricing_engine.py`
     - 实现 `PricingEngine.__init__()` 接受 `american_model` 配置和 `crr_steps` 参数
     - 实现 `PricingEngine.price()` 方法：输入校验 → 根据 exercise_style 和 american_model 路由到对应定价器
     - 实现 `_validate()` 静态方法：校验 spot_price, strike_price, volatility, time_to_expiry
     - 确保 PricingResult.model_used 字段正确记录实际使用的模型名称
     - _Requirements: 4.1, 4.2, 4.3, 4.4, 4.5, 4.6_
 
-  - [~] 4.2 创建 `tests/strategy/domain/domain_service/test_pricing_engine.py` 单元测试
+  - [-] 4.2 创建 `tests/strategy/domain/domain_service/test_pricing_engine.py` 单元测试
     - 测试欧式期权路由到 BS、美式默认路由到 BAW、配置 CRR 后路由到 CRR
     - 测试无效输入返回 success=False
     - _Requirements: 4.1, 4.2, 4.3, 4.4, 4.5, 4.6_
