@@ -90,12 +90,12 @@
     - **Validates: Requirements 6.1, 6.2, 6.3, 6.4, 6.5**
 
 - [ ] 7. 集成与导出
-  - [-] 7.1 更新 `selection/__init__.py` 导出
+  - [x] 7.1 更新 `selection/__init__.py` 导出
     - 导出增强后的 `BaseFutureSelector` 和 `OptionSelectorService`
     - 导出新增值对象
     - _Requirements: 全部_
 
-  - [~] 7.2 编写集成测试
+  - [-] 7.2 编写集成测试
     - 测试期货选择器完整流程：选择主力 → 检查移仓 → 过滤到期日
     - 测试期权选择器完整流程：评分 → 组合选择 → Delta 选择
     - _Requirements: 全部_
