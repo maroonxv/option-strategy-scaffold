@@ -24,9 +24,9 @@
     - **Validates: Requirements 1.3, 1.5**
 
 - [ ] 2. Direction 类方法与 LifecycleService 重构（需求 4）
-  - [-] 2.1 在 `src/strategy/domain/value_object/order_instruction.py` 的 `Direction` 枚举上新增 `from_leg_direction(cls, leg_direction: str)` 类方法和 `reverse(self)` 方法
+  - [x] 2.1 在 `src/strategy/domain/value_object/order_instruction.py` 的 `Direction` 枚举上新增 `from_leg_direction(cls, leg_direction: str)` 类方法和 `reverse(self)` 方法
     - _Requirements: 4.1, 4.2_
-  - [~] 2.2 重构 `CombinationLifecycleService`：将所有 `if leg.direction == "long"` 的 if-else 方向映射替换为 `Direction.from_leg_direction()` 和 `.reverse()` 调用
+  - [-] 2.2 重构 `CombinationLifecycleService`：将所有 `if leg.direction == "long"` 的 if-else 方向映射替换为 `Direction.from_leg_direction()` 和 `.reverse()` 调用
     - _Requirements: 4.3, 4.4_
   - [~] 2.3 编写属性测试验证 Direction.reverse 对合性
     - **Property 7: Direction.reverse round-trip**

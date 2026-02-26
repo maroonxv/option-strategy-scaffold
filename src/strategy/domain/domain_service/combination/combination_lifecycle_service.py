@@ -30,9 +30,7 @@ class CombinationLifecycleService:
         """
         instructions: List[OrderInstruction] = []
         for leg in combination.legs:
-            direction = (
-                Direction.LONG if leg.direction == "long" else Direction.SHORT
-            )
+            direction = Direction.from_leg_direction(leg.direction)
             price = price_map.get(leg.vt_symbol, 0.0)
             instructions.append(
                 OrderInstruction(
@@ -59,9 +57,7 @@ class CombinationLifecycleService:
         """
         instructions: List[OrderInstruction] = []
         for leg in combination.get_active_legs():
-            direction = (
-                Direction.SHORT if leg.direction == "long" else Direction.LONG
-            )
+            direction = Direction.from_leg_direction(leg.direction).reverse()
             price = price_map.get(leg.vt_symbol, 0.0)
             instructions.append(
                 OrderInstruction(
@@ -103,11 +99,7 @@ class CombinationLifecycleService:
 
         if diff > 0:
             # 增仓：开仓指令，方向与 Leg 方向一致
-            direction = (
-                Direction.LONG
-                if target_leg.direction == "long"
-                else Direction.SHORT
-            )
+            direction = Direction.from_leg_direction(target_leg.direction)
             return OrderInstruction(
                 vt_symbol=leg_vt_symbol,
                 direction=direction,
@@ -117,11 +109,7 @@ class CombinationLifecycleService:
             )
         elif diff < 0:
             # 减仓：平仓指令，方向与 Leg 方向相反
-            direction = (
-                Direction.SHORT
-                if target_leg.direction == "long"
-                else Direction.LONG
-            )
+            direction = Direction.from_leg_direction(target_leg.direction).reverse()
             return OrderInstruction(
                 vt_symbol=leg_vt_symbol,
                 direction=direction,
