@@ -49,7 +49,7 @@
     - **Property 4: Recognizer 表驱动行为等价性**
     - **Validates: Requirements 2.3, 2.4, 2.5, 2.6**
 
-- [ ] 5. 共享结构约束规则（需求 3）
+- [x] 5. 共享结构约束规则（需求 3）
   - [x] 5.1 新建 `src/strategy/domain/value_object/combination_rules.py`，定义 `LegStructure` dataclass 和各类型验证函数（validate_straddle 等），导出 `VALIDATION_RULES` 字典
     - _Requirements: 3.1_
   - [x] 5.2 重构 `Combination.validate()`：删除 `_validate_straddle` 等私有方法，改为将 Leg 转换为 LegStructure 后调用 `VALIDATION_RULES[self.combination_type]`
