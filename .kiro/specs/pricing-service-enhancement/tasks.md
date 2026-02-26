@@ -49,7 +49,7 @@
 - [x] 3. Checkpoint - 确保 IVSolver 和 GreeksCalculator 所有测试通过
   - Ensure all tests pass, ask the user if questions arise.
 
-- [ ] 4. 实现 PricingEngine 统一定价入口
+- [x] 4. 实现 PricingEngine 统一定价入口
   - [x] 4.1 创建 `src/strategy/domain/domain_service/pricing/pricing_engine.py`
     - 实现 `PricingEngine.__init__()` 接受 `american_model` 配置和 `crr_steps` 参数
     - 实现 `PricingEngine.price()` 方法：输入校验 → 根据 exercise_style 和 american_model 路由到对应定价器
@@ -69,7 +69,7 @@
     - **Validates: Requirements 4.5**
 
 - [ ] 5. 目录结构重组与导入路径更新
-  - [~] 5.1 创建 `pricing/pricers/` 子目录，移动 `bs_pricer.py`、`baw_pricer.py`、`crr_pricer.py` 到其中
+  - [-] 5.1 创建 `pricing/pricers/` 子目录，移动 `bs_pricer.py`、`baw_pricer.py`、`crr_pricer.py` 到其中
     - 创建 `pricers/__init__.py` 导出三个定价器
     - 更新 `bs_pricer.py` 中对 `GreeksCalculator` 的导入路径
     - _Requirements: 5.1, 6.2, 6.4_
