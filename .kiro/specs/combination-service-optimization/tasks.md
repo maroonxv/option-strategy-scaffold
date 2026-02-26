@@ -72,12 +72,12 @@
     - **Property 9: 风控检查 theta 集成正确性**
     - **Validates: Requirements 5.2, 5.3, 5.4, 5.5**
 
-- [ ] 8. PnL 已实现盈亏支持（需求 7）
+- [x] 8. PnL 已实现盈亏支持（需求 7）
   - [x] 8.1 在 `src/strategy/domain/value_object/combination.py` 中为 `LegPnL` 新增 `realized_pnl: float = 0.0` 字段，为 `CombinationPnL` 新增 `total_realized_pnl: float = 0.0` 字段
     - _Requirements: 7.1, 7.2_
   - [x] 8.2 修改 `CombinationPnLCalculator.calculate()` 新增可选参数 `realized_pnl_map: Optional[Dict[str, float]] = None`，在计算中将 realized_pnl 记入 LegPnL 并求和得到 total_realized_pnl
     - _Requirements: 7.3, 7.4, 7.5, 7.6_
-  - [~] 8.3 编写属性测试验证 PnL 已实现盈亏正确性
+  - [x] 8.3 编写属性测试验证 PnL 已实现盈亏正确性
     - **Property 11: PnL 已实现盈亏正确性**
     - **Validates: Requirements 7.4, 7.5, 7.6**
 
