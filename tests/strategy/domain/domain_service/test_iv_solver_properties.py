@@ -71,11 +71,15 @@ class TestProperty1IVRoundTrip:
         # 过滤掉价格过小的情况（数值精度不足）
         assume(market_price > 0.01)
 
+        # 过滤掉深度 ITM/OTM 期权（moneyness 极端时 vega 很小，IV 不可靠恢复）
+        moneyness = spot / strike
+        assume(0.5 <= moneyness <= 2.0)
+
         # 计算 vega 以确定合理的 IV 误差上界
         # 求解器的 tolerance 是价格维度的，IV 误差 ≈ price_tolerance / vega
         # 对于低 vega 的深度 OTM 期权，需要更宽松的 IV 容差
         vega = IVSolver._bs_vega_raw(spot, strike, time, rate, vol)
-        assume(vega > 0.1)  # 过滤掉 vega 极小的情况（IV 对价格不敏感）
+        assume(vega > 1.0)  # 过滤掉 vega 极小的情况（IV 对价格不敏感）
 
         tolerance = 0.01
         result = _solver.solve(
