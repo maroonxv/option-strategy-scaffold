@@ -74,11 +74,11 @@
     - 更新 `bs_pricer.py` 中对 `GreeksCalculator` 的导入路径
     - _Requirements: 5.1, 6.2, 6.4_
 
-  - [-] 5.2 创建 `pricing/volatility/` 子目录，移动 `vol_surface_builder.py` 到其中
+  - [x] 5.2 创建 `pricing/volatility/` 子目录，移动 `vol_surface_builder.py` 到其中
     - 创建 `volatility/__init__.py` 导出 `VolSurfaceBuilder`
     - _Requirements: 5.3_
 
-  - [~] 5.3 更新顶层 `pricing/__init__.py`
+  - [-] 5.3 更新顶层 `pricing/__init__.py`
     - 从新的子目录路径重新导出所有现有公开类
     - 新增导出 `IVSolver`、`SolveMethod`、`PricingEngine`
     - 确保 `__all__` 列表包含所有导出
