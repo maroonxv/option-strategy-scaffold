@@ -43,9 +43,9 @@
     - _Requirements: 2.1_
   - [x] 4.2 将现有 `_is_straddle`、`_is_strangle`、`_is_vertical_spread`、`_is_calendar_spread`、`_is_iron_condor` 方法转换为静态谓词函数，构建按优先级排序的 `_RULES` 列表
     - _Requirements: 2.2_
-  - [-] 4.3 重写 `recognize()` 方法为遍历规则列表的表驱动逻辑
+  - [x] 4.3 重写 `recognize()` 方法为遍历规则列表的表驱动逻辑
     - _Requirements: 2.3, 2.4, 2.5_
-  - [~] 4.4 编写属性测试验证 Recognizer 行为等价性
+  - [x] 4.4 编写属性测试验证 Recognizer 行为等价性
     - **Property 4: Recognizer 表驱动行为等价性**
     - **Validates: Requirements 2.3, 2.4, 2.5, 2.6**
 
