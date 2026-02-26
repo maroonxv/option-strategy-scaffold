@@ -52,9 +52,9 @@
 - [ ] 5. 共享结构约束规则（需求 3）
   - [x] 5.1 新建 `src/strategy/domain/value_object/combination_rules.py`，定义 `LegStructure` dataclass 和各类型验证函数（validate_straddle 等），导出 `VALIDATION_RULES` 字典
     - _Requirements: 3.1_
-  - [-] 5.2 重构 `Combination.validate()`：删除 `_validate_straddle` 等私有方法，改为将 Leg 转换为 LegStructure 后调用 `VALIDATION_RULES[self.combination_type]`
+  - [x] 5.2 重构 `Combination.validate()`：删除 `_validate_straddle` 等私有方法，改为将 Leg 转换为 LegStructure 后调用 `VALIDATION_RULES[self.combination_type]`
     - _Requirements: 3.2, 3.3_
-  - [~] 5.3 重构 `CombinationRecognizer` 的 `MatchRule.predicate`：内部将 OptionContract 转换为 LegStructure 后复用 `validate_xxx` 函数
+  - [-] 5.3 重构 `CombinationRecognizer` 的 `MatchRule.predicate`：内部将 OptionContract 转换为 LegStructure 后复用 `validate_xxx` 函数
     - _Requirements: 3.2, 3.4_
   - [~] 5.4 编写属性测试验证 validate() 行为等价性
     - **Property 5: validate() 行为等价性**

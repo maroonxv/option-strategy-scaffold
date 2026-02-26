@@ -9,6 +9,14 @@ from typing import Callable, Dict, List
 
 from src.strategy.domain.entity.position import Position
 from src.strategy.domain.value_object.combination import CombinationType
+from src.strategy.domain.value_object.combination_rules import (
+    LegStructure,
+    validate_straddle,
+    validate_strangle,
+    validate_vertical_spread,
+    validate_calendar_spread,
+    validate_iron_condor,
+)
 from src.strategy.domain.value_object.option_contract import OptionContract
 
 
@@ -21,60 +29,67 @@ class MatchRule:
 
 
 # ------------------------------------------------------------------
-# 静态谓词函数
+# 辅助函数
+# ------------------------------------------------------------------
+
+
+def _to_leg_structure(contract: OptionContract) -> LegStructure:
+    """将 OptionContract 转换为 LegStructure"""
+    return LegStructure(
+        option_type=contract.option_type,
+        strike_price=contract.strike_price,
+        expiry_date=contract.expiry_date,
+    )
+
+
+def _to_leg_structures(option_contracts: List[OptionContract]) -> List[LegStructure]:
+    """将 OptionContract 列表转换为 LegStructure 列表"""
+    return [_to_leg_structure(c) for c in option_contracts]
+
+
+def _check_same_underlying(option_contracts: List[OptionContract]) -> bool:
+    """检查所有合约是否属于同一标的"""
+    if not option_contracts:
+        return True
+    underlyings = {c.underlying_symbol for c in option_contracts}
+    return len(underlyings) == 1
+
+
+# ------------------------------------------------------------------
+# 静态谓词函数（复用 validate_xxx 函数）
 # ------------------------------------------------------------------
 
 
 def _is_straddle(option_contracts: List[OptionContract]) -> bool:
     """STRADDLE: 2腿, 同标的, 同到期日, 同行权价, 一Call一Put"""
-    if len(option_contracts) != 2:
+    if not _check_same_underlying(option_contracts):
         return False
-    c0, c1 = option_contracts[0], option_contracts[1]
-    return (
-        c0.underlying_symbol == c1.underlying_symbol
-        and c0.expiry_date == c1.expiry_date
-        and c0.strike_price == c1.strike_price
-        and {c0.option_type, c1.option_type} == {"call", "put"}
-    )
+    leg_structures = _to_leg_structures(option_contracts)
+    return validate_straddle(leg_structures) is None
 
 
 def _is_strangle(option_contracts: List[OptionContract]) -> bool:
     """STRANGLE: 2腿, 同标的, 同到期日, 不同行权价, 一Call一Put"""
-    if len(option_contracts) != 2:
+    if not _check_same_underlying(option_contracts):
         return False
-    c0, c1 = option_contracts[0], option_contracts[1]
-    return (
-        c0.underlying_symbol == c1.underlying_symbol
-        and c0.expiry_date == c1.expiry_date
-        and c0.strike_price != c1.strike_price
-        and {c0.option_type, c1.option_type} == {"call", "put"}
-    )
+    leg_structures = _to_leg_structures(option_contracts)
+    return validate_strangle(leg_structures) is None
 
 
 def _is_vertical_spread(option_contracts: List[OptionContract]) -> bool:
     """VERTICAL_SPREAD: 2腿, 同标的, 同到期日, 同期权类型, 不同行权价"""
-    if len(option_contracts) != 2:
+    if not _check_same_underlying(option_contracts):
         return False
-    c0, c1 = option_contracts[0], option_contracts[1]
-    return (
-        c0.underlying_symbol == c1.underlying_symbol
-        and c0.expiry_date == c1.expiry_date
-        and c0.option_type == c1.option_type
-        and c0.strike_price != c1.strike_price
-    )
+    leg_structures = _to_leg_structures(option_contracts)
+    return validate_vertical_spread(leg_structures) is None
 
 
 def _is_calendar_spread(option_contracts: List[OptionContract]) -> bool:
     """CALENDAR_SPREAD: 2腿, 同标的, 不同到期日, 同行权价, 同期权类型"""
-    if len(option_contracts) != 2:
+    if not _check_same_underlying(option_contracts):
         return False
-    c0, c1 = option_contracts[0], option_contracts[1]
-    return (
-        c0.underlying_symbol == c1.underlying_symbol
-        and c0.expiry_date != c1.expiry_date
-        and c0.strike_price == c1.strike_price
-        and c0.option_type == c1.option_type
-    )
+    leg_structures = _to_leg_structures(option_contracts)
+    return validate_calendar_spread(leg_structures) is None
 
 
 def _is_iron_condor(option_contracts: List[OptionContract]) -> bool:
@@ -82,28 +97,10 @@ def _is_iron_condor(option_contracts: List[OptionContract]) -> bool:
     IRON_CONDOR: 4腿, 同标的, 同到期日,
     2 Puts 不同行权价 + 2 Calls 不同行权价
     """
-    if len(option_contracts) != 4:
+    if not _check_same_underlying(option_contracts):
         return False
-
-    # 同标的、同到期日
-    underlyings = {c.underlying_symbol for c in option_contracts}
-    expiries = {c.expiry_date for c in option_contracts}
-    if len(underlyings) != 1 or len(expiries) != 1:
-        return False
-
-    puts = [c for c in option_contracts if c.option_type == "put"]
-    calls = [c for c in option_contracts if c.option_type == "call"]
-
-    if len(puts) != 2 or len(calls) != 2:
-        return False
-
-    # 每对行权价必须不同
-    if puts[0].strike_price == puts[1].strike_price:
-        return False
-    if calls[0].strike_price == calls[1].strike_price:
-        return False
-
-    return True
+    leg_structures = _to_leg_structures(option_contracts)
+    return validate_iron_condor(leg_structures) is None
 
 
 # ------------------------------------------------------------------
