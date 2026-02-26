@@ -72,7 +72,7 @@
     - 无 Greeks 数据时回退到 `select_option` 方法
     - _Requirements: 5.1, 5.2, 5.3_
 
-  - [~] 5.2 编写 Delta 选择属性测试
+  - [x] 5.2 编写 Delta 选择属性测试
     - **Property 9: Delta 选择最优性**
     - **Property 10: Delta 范围过滤正确性**
     - **Validates: Requirements 5.1, 5.3**
