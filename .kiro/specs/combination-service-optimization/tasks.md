@@ -9,9 +9,9 @@
 - [ ] 1. Leg.direction_sign 属性与方向符号去重（需求 1）
   - [x] 1.1 在 `src/strategy/domain/value_object/combination.py` 的 `Leg` dataclass 上新增 `direction_sign` 计算属性，direction 为 "long" 返回 1.0，为 "short" 返回 -1.0
     - _Requirements: 1.1_
-  - [-] 1.2 重构 `CombinationGreeksCalculator`：删除模块级 `_DIRECTION_SIGN` 字典，将 `sign = _DIRECTION_SIGN[leg.direction]` 替换为 `sign = leg.direction_sign`
+  - [x] 1.2 重构 `CombinationGreeksCalculator`：删除模块级 `_DIRECTION_SIGN` 字典，将 `sign = _DIRECTION_SIGN[leg.direction]` 替换为 `sign = leg.direction_sign`
     - _Requirements: 1.2, 1.4_
-  - [~] 1.3 重构 `CombinationPnLCalculator`：删除模块级 `_DIRECTION_SIGN` 字典，将 `sign = _DIRECTION_SIGN[leg.direction]` 替换为 `sign = leg.direction_sign`
+  - [-] 1.3 重构 `CombinationPnLCalculator`：删除模块级 `_DIRECTION_SIGN` 字典，将 `sign = _DIRECTION_SIGN[leg.direction]` 替换为 `sign = leg.direction_sign`
     - _Requirements: 1.3, 1.4_
   - [~] 1.4 编写属性测试验证 direction_sign 正确性
     - **Property 1: direction_sign 正确性**

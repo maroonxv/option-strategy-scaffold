@@ -15,8 +15,6 @@ from src.strategy.domain.value_object.combination import (
     LegPnL,
 )
 
-_DIRECTION_SIGN = {"long": 1.0, "short": -1.0}
-
 
 class CombinationPnLCalculator:
     """组合级盈亏计算服务"""
@@ -54,7 +52,7 @@ class CombinationPnLCalculator:
                 )
                 continue
 
-            sign = _DIRECTION_SIGN[leg.direction]
+            sign = leg.direction_sign
             pnl = (current_price - leg.open_price) * leg.volume * multiplier * sign
             total_pnl += pnl
 
