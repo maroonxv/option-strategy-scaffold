@@ -57,12 +57,12 @@
     - 确保 PricingResult.model_used 字段正确记录实际使用的模型名称
     - _Requirements: 4.1, 4.2, 4.3, 4.4, 4.5, 4.6_
 
-  - [-] 4.2 创建 `tests/strategy/domain/domain_service/test_pricing_engine.py` 单元测试
+  - [x] 4.2 创建 `tests/strategy/domain/domain_service/test_pricing_engine.py` 单元测试
     - 测试欧式期权路由到 BS、美式默认路由到 BAW、配置 CRR 后路由到 CRR
     - 测试无效输入返回 success=False
     - _Requirements: 4.1, 4.2, 4.3, 4.4, 4.5, 4.6_
 
-  - [~] 4.3 创建 `tests/strategy/domain/domain_service/test_pricing_engine_properties.py` 属性测试（Property 5-6）
+  - [x] 4.3 创建 `tests/strategy/domain/domain_service/test_pricing_engine_properties.py` 属性测试（Property 5-6）
     - **Property 5: PricingEngine 路由正确性**
     - **Validates: Requirements 4.1, 4.2, 4.3, 4.4, 4.6**
     - **Property 6: PricingEngine 错误输入处理**
