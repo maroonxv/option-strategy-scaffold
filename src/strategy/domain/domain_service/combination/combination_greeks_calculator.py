@@ -3,7 +3,7 @@ CombinationGreeksCalculator 领域服务
 
 计算组合级 Greeks 聚合：对组合内所有活跃 Leg 的 Greeks 进行加权求和。
 加权公式：greek_total += greek_per_unit × volume × multiplier × direction_sign
-- direction_sign: long = +1, short = -1
+- direction_sign: long = +1, short = -1（通过 Leg.direction_sign 属性获取）
 - 某个 Leg 的 GreeksResult.success 为 False 时，记入 failed_legs 并继续计算其余 Leg
 """
 from typing import Dict
@@ -11,8 +11,6 @@ from typing import Dict
 from src.strategy.domain.entity.combination import Combination
 from src.strategy.domain.value_object.combination import CombinationGreeks
 from src.strategy.domain.value_object.greeks import GreeksResult
-
-_DIRECTION_SIGN = {"long": 1.0, "short": -1.0}
 
 
 class CombinationGreeksCalculator:
@@ -48,7 +46,7 @@ class CombinationGreeksCalculator:
                 failed_legs.append(leg.vt_symbol)
                 continue
 
-            sign = _DIRECTION_SIGN[leg.direction]
+            sign = leg.direction_sign
             weight = leg.volume * multiplier * sign
 
             delta += greeks_result.delta * weight
