@@ -81,15 +81,15 @@
     - **Property 11: PnL 已实现盈亏正确性**
     - **Validates: Requirements 7.4, 7.5, 7.6**
 
-- [ ] 9. CombinationFacade 编排层（需求 6）
+- [x] 9. CombinationFacade 编排层（需求 6）
   - [x] 9.1 在 `src/strategy/domain/value_object/combination.py` 中新增 `CombinationEvaluation` 值对象（greeks, pnl, risk_result）
     - _Requirements: 6.3_
   - [x] 9.2 新建 `src/strategy/domain/domain_service/combination/combination_facade.py`，实现 `CombinationFacade.evaluate()` 方法，依次调用 GreeksCalculator、PnLCalculator、RiskChecker
     - _Requirements: 6.1, 6.2, 6.4_
-  - [~] 9.3 编写属性测试验证 Facade evaluate 组合正确性
+  - [x] 9.3 编写属性测试验证 Facade evaluate 组合正确性
     - **Property 10: Facade evaluate 组合正确性**
     - **Validates: Requirements 6.2, 6.3**
-  - [~] 9.4 编写单元测试验证 Facade 子服务异常传播
+  - [x] 9.4 编写单元测试验证 Facade 子服务异常传播
     - 测试当子服务抛出异常时 evaluate 不静默吞没
     - _Requirements: 6.4_
 
