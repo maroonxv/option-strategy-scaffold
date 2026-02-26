@@ -82,9 +82,9 @@
     - **Validates: Requirements 7.4, 7.5, 7.6**
 
 - [ ] 9. CombinationFacade 编排层（需求 6）
-  - [~] 9.1 在 `src/strategy/domain/value_object/combination.py` 中新增 `CombinationEvaluation` 值对象（greeks, pnl, risk_result）
+  - [x] 9.1 在 `src/strategy/domain/value_object/combination.py` 中新增 `CombinationEvaluation` 值对象（greeks, pnl, risk_result）
     - _Requirements: 6.3_
-  - [~] 9.2 新建 `src/strategy/domain/domain_service/combination/combination_facade.py`，实现 `CombinationFacade.evaluate()` 方法，依次调用 GreeksCalculator、PnLCalculator、RiskChecker
+  - [x] 9.2 新建 `src/strategy/domain/domain_service/combination/combination_facade.py`，实现 `CombinationFacade.evaluate()` 方法，依次调用 GreeksCalculator、PnLCalculator、RiskChecker
     - _Requirements: 6.1, 6.2, 6.4_
   - [~] 9.3 编写属性测试验证 Facade evaluate 组合正确性
     - **Property 10: Facade evaluate 组合正确性**

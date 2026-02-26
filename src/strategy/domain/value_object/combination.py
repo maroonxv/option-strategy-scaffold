@@ -9,6 +9,7 @@ Combination 组合策略值对象
 - LegPnL: 单腿盈亏值对象
 - CombinationPnL: 组合级盈亏值对象
 - CombinationRiskConfig: 组合级风控阈值配置
+- CombinationEvaluation: 组合评估结果值对象
 """
 from dataclasses import dataclass, field
 from datetime import datetime
@@ -16,6 +17,7 @@ from enum import Enum
 from typing import List
 
 from src.strategy.domain.value_object.option_contract import OptionType
+from src.strategy.domain.value_object.risk import RiskCheckResult
 
 
 class CombinationType(Enum):
@@ -90,3 +92,11 @@ class CombinationRiskConfig:
     gamma_limit: float = 0.5
     vega_limit: float = 200.0
     theta_limit: float = 100.0
+
+
+@dataclass(frozen=True)
+class CombinationEvaluation:
+    """组合评估结果"""
+    greeks: CombinationGreeks
+    pnl: CombinationPnL
+    risk_result: RiskCheckResult
