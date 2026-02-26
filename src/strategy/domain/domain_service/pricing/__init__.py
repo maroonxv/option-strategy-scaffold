@@ -12,7 +12,7 @@ Pricing Module
 """
 
 from .iv.greeks_calculator import GreeksCalculator
-from .vol_surface_builder import VolSurfaceBuilder
+from .volatility.vol_surface_builder import VolSurfaceBuilder
 from .pricers.baw_pricer import BAWPricer
 from .pricers.crr_pricer import CRRPricer
 from .pricers.bs_pricer import BlackScholesPricer

@@ -69,12 +69,12 @@
     - **Validates: Requirements 4.5**
 
 - [ ] 5. 目录结构重组与导入路径更新
-  - [-] 5.1 创建 `pricing/pricers/` 子目录，移动 `bs_pricer.py`、`baw_pricer.py`、`crr_pricer.py` 到其中
+  - [x] 5.1 创建 `pricing/pricers/` 子目录，移动 `bs_pricer.py`、`baw_pricer.py`、`crr_pricer.py` 到其中
     - 创建 `pricers/__init__.py` 导出三个定价器
     - 更新 `bs_pricer.py` 中对 `GreeksCalculator` 的导入路径
     - _Requirements: 5.1, 6.2, 6.4_
 
-  - [~] 5.2 创建 `pricing/volatility/` 子目录，移动 `vol_surface_builder.py` 到其中
+  - [-] 5.2 创建 `pricing/volatility/` 子目录，移动 `vol_surface_builder.py` 到其中
     - 创建 `volatility/__init__.py` 导出 `VolSurfaceBuilder`
     - _Requirements: 5.3_
 
