@@ -20,6 +20,106 @@ class MatchRule:
     predicate: Callable[[List[OptionContract]], bool]
 
 
+# ------------------------------------------------------------------
+# 静态谓词函数
+# ------------------------------------------------------------------
+
+
+def _is_straddle(option_contracts: List[OptionContract]) -> bool:
+    """STRADDLE: 2腿, 同标的, 同到期日, 同行权价, 一Call一Put"""
+    if len(option_contracts) != 2:
+        return False
+    c0, c1 = option_contracts[0], option_contracts[1]
+    return (
+        c0.underlying_symbol == c1.underlying_symbol
+        and c0.expiry_date == c1.expiry_date
+        and c0.strike_price == c1.strike_price
+        and {c0.option_type, c1.option_type} == {"call", "put"}
+    )
+
+
+def _is_strangle(option_contracts: List[OptionContract]) -> bool:
+    """STRANGLE: 2腿, 同标的, 同到期日, 不同行权价, 一Call一Put"""
+    if len(option_contracts) != 2:
+        return False
+    c0, c1 = option_contracts[0], option_contracts[1]
+    return (
+        c0.underlying_symbol == c1.underlying_symbol
+        and c0.expiry_date == c1.expiry_date
+        and c0.strike_price != c1.strike_price
+        and {c0.option_type, c1.option_type} == {"call", "put"}
+    )
+
+
+def _is_vertical_spread(option_contracts: List[OptionContract]) -> bool:
+    """VERTICAL_SPREAD: 2腿, 同标的, 同到期日, 同期权类型, 不同行权价"""
+    if len(option_contracts) != 2:
+        return False
+    c0, c1 = option_contracts[0], option_contracts[1]
+    return (
+        c0.underlying_symbol == c1.underlying_symbol
+        and c0.expiry_date == c1.expiry_date
+        and c0.option_type == c1.option_type
+        and c0.strike_price != c1.strike_price
+    )
+
+
+def _is_calendar_spread(option_contracts: List[OptionContract]) -> bool:
+    """CALENDAR_SPREAD: 2腿, 同标的, 不同到期日, 同行权价, 同期权类型"""
+    if len(option_contracts) != 2:
+        return False
+    c0, c1 = option_contracts[0], option_contracts[1]
+    return (
+        c0.underlying_symbol == c1.underlying_symbol
+        and c0.expiry_date != c1.expiry_date
+        and c0.strike_price == c1.strike_price
+        and c0.option_type == c1.option_type
+    )
+
+
+def _is_iron_condor(option_contracts: List[OptionContract]) -> bool:
+    """
+    IRON_CONDOR: 4腿, 同标的, 同到期日,
+    2 Puts 不同行权价 + 2 Calls 不同行权价
+    """
+    if len(option_contracts) != 4:
+        return False
+
+    # 同标的、同到期日
+    underlyings = {c.underlying_symbol for c in option_contracts}
+    expiries = {c.expiry_date for c in option_contracts}
+    if len(underlyings) != 1 or len(expiries) != 1:
+        return False
+
+    puts = [c for c in option_contracts if c.option_type == "put"]
+    calls = [c for c in option_contracts if c.option_type == "call"]
+
+    if len(puts) != 2 or len(calls) != 2:
+        return False
+
+    # 每对行权价必须不同
+    if puts[0].strike_price == puts[1].strike_price:
+        return False
+    if calls[0].strike_price == calls[1].strike_price:
+        return False
+
+    return True
+
+
+# ------------------------------------------------------------------
+# 按优先级排序的规则列表
+# 优先级: IRON_CONDOR → STRADDLE → STRANGLE → VERTICAL_SPREAD → CALENDAR_SPREAD
+# ------------------------------------------------------------------
+
+_RULES: List[MatchRule] = [
+    MatchRule(CombinationType.IRON_CONDOR, 4, _is_iron_condor),
+    MatchRule(CombinationType.STRADDLE, 2, _is_straddle),
+    MatchRule(CombinationType.STRANGLE, 2, _is_strangle),
+    MatchRule(CombinationType.VERTICAL_SPREAD, 2, _is_vertical_spread),
+    MatchRule(CombinationType.CALENDAR_SPREAD, 2, _is_calendar_spread),
+]
+
+
 class CombinationRecognizer:
     """组合策略识别服务"""
 
@@ -56,72 +156,44 @@ class CombinationRecognizer:
         return CombinationType.CUSTOM
 
     # ------------------------------------------------------------------
-    # 私有匹配方法
+    # 私有匹配方法（调用静态谓词函数）
     # ------------------------------------------------------------------
 
     def _is_straddle(
         self, positions: List[Position], contracts: Dict[str, OptionContract]
     ) -> bool:
         """STRADDLE: 2腿, 同标的, 同到期日, 同行权价, 一Call一Put"""
-        if len(positions) != 2:
+        option_contracts = self._get_option_contracts(positions, contracts)
+        if option_contracts is None:
             return False
-        c0, c1 = self._get_contracts(positions, contracts)
-        if c0 is None or c1 is None:
-            return False
-        return (
-            c0.underlying_symbol == c1.underlying_symbol
-            and c0.expiry_date == c1.expiry_date
-            and c0.strike_price == c1.strike_price
-            and {c0.option_type, c1.option_type} == {"call", "put"}
-        )
+        return _is_straddle(option_contracts)
 
     def _is_strangle(
         self, positions: List[Position], contracts: Dict[str, OptionContract]
     ) -> bool:
         """STRANGLE: 2腿, 同标的, 同到期日, 不同行权价, 一Call一Put"""
-        if len(positions) != 2:
+        option_contracts = self._get_option_contracts(positions, contracts)
+        if option_contracts is None:
             return False
-        c0, c1 = self._get_contracts(positions, contracts)
-        if c0 is None or c1 is None:
-            return False
-        return (
-            c0.underlying_symbol == c1.underlying_symbol
-            and c0.expiry_date == c1.expiry_date
-            and c0.strike_price != c1.strike_price
-            and {c0.option_type, c1.option_type} == {"call", "put"}
-        )
+        return _is_strangle(option_contracts)
 
     def _is_vertical_spread(
         self, positions: List[Position], contracts: Dict[str, OptionContract]
     ) -> bool:
         """VERTICAL_SPREAD: 2腿, 同标的, 同到期日, 同期权类型, 不同行权价"""
-        if len(positions) != 2:
+        option_contracts = self._get_option_contracts(positions, contracts)
+        if option_contracts is None:
             return False
-        c0, c1 = self._get_contracts(positions, contracts)
-        if c0 is None or c1 is None:
-            return False
-        return (
-            c0.underlying_symbol == c1.underlying_symbol
-            and c0.expiry_date == c1.expiry_date
-            and c0.option_type == c1.option_type
-            and c0.strike_price != c1.strike_price
-        )
+        return _is_vertical_spread(option_contracts)
 
     def _is_calendar_spread(
         self, positions: List[Position], contracts: Dict[str, OptionContract]
     ) -> bool:
         """CALENDAR_SPREAD: 2腿, 同标的, 不同到期日, 同行权价, 同期权类型"""
-        if len(positions) != 2:
+        option_contracts = self._get_option_contracts(positions, contracts)
+        if option_contracts is None:
             return False
-        c0, c1 = self._get_contracts(positions, contracts)
-        if c0 is None or c1 is None:
-            return False
-        return (
-            c0.underlying_symbol == c1.underlying_symbol
-            and c0.expiry_date != c1.expiry_date
-            and c0.strike_price == c1.strike_price
-            and c0.option_type == c1.option_type
-        )
+        return _is_calendar_spread(option_contracts)
 
     def _is_iron_condor(
         self, positions: List[Position], contracts: Dict[str, OptionContract]
@@ -130,35 +202,25 @@ class CombinationRecognizer:
         IRON_CONDOR: 4腿, 同标的, 同到期日,
         2 Puts 不同行权价 + 2 Calls 不同行权价
         """
-        if len(positions) != 4:
+        option_contracts = self._get_option_contracts(positions, contracts)
+        if option_contracts is None:
             return False
-        option_contracts = [contracts.get(p.vt_symbol) for p in positions]
-        if any(c is None for c in option_contracts):
-            return False
-
-        # 同标的、同到期日
-        underlyings = {c.underlying_symbol for c in option_contracts}  # type: ignore[union-attr]
-        expiries = {c.expiry_date for c in option_contracts}  # type: ignore[union-attr]
-        if len(underlyings) != 1 or len(expiries) != 1:
-            return False
-
-        puts = [c for c in option_contracts if c.option_type == "put"]  # type: ignore[union-attr]
-        calls = [c for c in option_contracts if c.option_type == "call"]  # type: ignore[union-attr]
-
-        if len(puts) != 2 or len(calls) != 2:
-            return False
-
-        # 每对行权价必须不同
-        if puts[0].strike_price == puts[1].strike_price:
-            return False
-        if calls[0].strike_price == calls[1].strike_price:
-            return False
-
-        return True
+        return _is_iron_condor(option_contracts)
 
     # ------------------------------------------------------------------
     # 辅助方法
     # ------------------------------------------------------------------
+
+    @staticmethod
+    def _get_option_contracts(
+        positions: List[Position],
+        contracts: Dict[str, OptionContract],
+    ) -> List[OptionContract] | None:
+        """获取 Position 列表对应的 OptionContract 列表，任一缺失返回 None"""
+        option_contracts = [contracts.get(p.vt_symbol) for p in positions]
+        if any(c is None for c in option_contracts):
+            return None
+        return option_contracts  # type: ignore[return-value]
 
     @staticmethod
     def _get_contracts(

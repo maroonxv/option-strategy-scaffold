@@ -39,9 +39,9 @@
   - 运行所有现有测试确保通过，ask the user if questions arise.
 
 - [ ] 4. CombinationRecognizer 表驱动化（需求 2）
-  - [-] 4.1 在 `combination_recognizer.py` 中定义 `MatchRule` dataclass，包含 combination_type、leg_count、predicate 字段
+  - [x] 4.1 在 `combination_recognizer.py` 中定义 `MatchRule` dataclass，包含 combination_type、leg_count、predicate 字段
     - _Requirements: 2.1_
-  - [~] 4.2 将现有 `_is_straddle`、`_is_strangle`、`_is_vertical_spread`、`_is_calendar_spread`、`_is_iron_condor` 方法转换为静态谓词函数，构建按优先级排序的 `_RULES` 列表
+  - [-] 4.2 将现有 `_is_straddle`、`_is_strangle`、`_is_vertical_spread`、`_is_calendar_spread`、`_is_iron_condor` 方法转换为静态谓词函数，构建按优先级排序的 `_RULES` 列表
     - _Requirements: 2.2_
   - [~] 4.3 重写 `recognize()` 方法为遍历规则列表的表驱动逻辑
     - _Requirements: 2.3, 2.4, 2.5_
