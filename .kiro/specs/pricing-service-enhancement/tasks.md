@@ -6,7 +6,7 @@
 
 ## Tasks
 
-- [ ] 1. 新增 IVQuote 值对象与 IVSolver 核心实现
+- [x] 1. 新增 IVQuote 值对象与 IVSolver 核心实现
   - [x] 1.1 在 `src/strategy/domain/value_object/greeks.py` 中追加 `IVQuote` 数据类
     - 定义 market_price, spot_price, strike_price, time_to_expiry, risk_free_rate, option_type 字段
     - _Requirements: 2.1_
@@ -36,7 +36,7 @@
     - **Validates: Requirements 2.1, 2.2, 2.3**
 
 - [ ] 2. 修改 GreeksCalculator 委托 IVSolver 并验证向后兼容
-  - [~] 2.1 将 `greeks_calculator.py` 移动到 `pricing/iv/greeks_calculator.py`
+  - [-] 2.1 将 `greeks_calculator.py` 移动到 `pricing/iv/greeks_calculator.py`
     - 构造函数增加可选 `iv_solver` 参数，默认创建 `IVSolver()` 实例
     - `calculate_implied_volatility` 方法委托给 `self._iv_solver.solve()`，签名和返回类型不变
     - 其他方法（calculate_greeks, bs_price）保持不变
