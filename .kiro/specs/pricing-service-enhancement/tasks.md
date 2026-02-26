@@ -88,7 +88,7 @@
     - 通过顶层 `__init__.py` 兼容或直接更新导入路径
     - _Requirements: 6.1, 6.3_
 
-- [-] 6. Final checkpoint - 确保所有测试通过且导入兼容
+- [x] 6. Final checkpoint - 确保所有测试通过且导入兼容
   - 运行全部现有测试（test_greeks_calculator, test_bs_pricer, test_baw_pricer, test_crr_pricer, test_vol_surface_builder, test_pricing_properties）确认无破坏
   - 运行新增测试（test_iv_solver, test_iv_solver_properties, test_pricing_engine, test_pricing_engine_properties）确认功能正确
   - Ensure all tests pass, ask the user if questions arise.
