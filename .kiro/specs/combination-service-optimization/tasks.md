@@ -93,7 +93,7 @@
     - 测试当子服务抛出异常时 evaluate 不静默吞没
     - _Requirements: 6.4_
 
-- [~] 10. 最终检查点
+- [x] 10. 最终检查点
   - 运行所有测试确保通过，ask the user if questions arise.
 
 ## Notes

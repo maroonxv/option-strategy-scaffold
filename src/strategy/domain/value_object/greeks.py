@@ -63,3 +63,24 @@ class IVResult:
     iterations: int = 0
     success: bool = True
     error_message: str = ""
+
+
+@dataclass(frozen=True)
+class IVQuote:
+    """
+    批量 IV 求解的单个报价输入
+
+    Attributes:
+        market_price: 期权市场价格
+        spot_price: 标的价格
+        strike_price: 行权价
+        time_to_expiry: 剩余到期时间（年化）
+        risk_free_rate: 无风险利率
+        option_type: 期权类型 ("call" | "put")
+    """
+    market_price: float
+    spot_price: float
+    strike_price: float
+    time_to_expiry: float
+    risk_free_rate: float
+    option_type: str
