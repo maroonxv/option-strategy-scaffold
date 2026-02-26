@@ -21,13 +21,13 @@
     - 实现 `IVSolver.solve_batch()` 方法：逐个调用 solve，异常隔离，保持输入输出等长等序
     - _Requirements: 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 2.1, 2.2, 2.3_
 
-  - [-] 1.4 创建 `tests/strategy/domain/domain_service/test_iv_solver.py` 单元测试
+  - [x] 1.4 创建 `tests/strategy/domain/domain_service/test_iv_solver.py` 单元测试
     - 测试各算法的具体数值验证（已知期权参数 → 已知 IV）
     - 测试边界条件：market_price=0、market_price 低于内在价值、极端参数
     - 测试牛顿法未收敛自动回退二分法
     - _Requirements: 1.1, 1.2, 1.3, 1.6, 1.7, 1.8_
 
-  - [~] 1.5 创建 `tests/strategy/domain/domain_service/test_iv_solver_properties.py` 属性测试（Property 1-3）
+  - [x] 1.5 创建 `tests/strategy/domain/domain_service/test_iv_solver_properties.py` 属性测试（Property 1-3）
     - **Property 1: IV 求解 Round-Trip（跨算法）**
     - **Validates: Requirements 1.1, 1.2, 1.4, 1.5**
     - **Property 2: IVSolver 错误输入处理**
