@@ -14,14 +14,14 @@
   - [x] 1.2 创建 `src/strategy/domain/domain_service/pricing/iv/` 子目录及 `__init__.py`
     - _Requirements: 5.2_
 
-  - [-] 1.3 实现 `src/strategy/domain/domain_service/pricing/iv/iv_solver.py`
+  - [x] 1.3 实现 `src/strategy/domain/domain_service/pricing/iv/iv_solver.py`
     - 实现 `SolveMethod` 枚举（NEWTON, BISECTION, BRENT）
     - 实现 `IVSolver.solve()` 方法：输入校验（market_price ≤ 0、低于内在价值）、牛顿法求解、牛顿法未收敛自动回退二分法
     - 实现 `_solve_newton()`、`_solve_bisection()`、`_solve_brent()` 内部方法
     - 实现 `IVSolver.solve_batch()` 方法：逐个调用 solve，异常隔离，保持输入输出等长等序
     - _Requirements: 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 2.1, 2.2, 2.3_
 
-  - [~] 1.4 创建 `tests/strategy/domain/domain_service/test_iv_solver.py` 单元测试
+  - [-] 1.4 创建 `tests/strategy/domain/domain_service/test_iv_solver.py` 单元测试
     - 测试各算法的具体数值验证（已知期权参数 → 已知 IV）
     - 测试边界条件：market_price=0、market_price 低于内在价值、极端参数
     - 测试牛顿法未收敛自动回退二分法
