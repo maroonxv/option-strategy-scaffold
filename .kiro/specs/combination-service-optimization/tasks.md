@@ -6,7 +6,7 @@
 
 ## Tasks
 
-- [ ] 1. Leg.direction_sign 属性与方向符号去重（需求 1）
+- [x] 1. Leg.direction_sign 属性与方向符号去重（需求 1）
   - [x] 1.1 在 `src/strategy/domain/value_object/combination.py` 的 `Leg` dataclass 上新增 `direction_sign` 计算属性，direction 为 "long" 返回 1.0，为 "short" 返回 -1.0
     - _Requirements: 1.1_
   - [x] 1.2 重构 `CombinationGreeksCalculator`：删除模块级 `_DIRECTION_SIGN` 字典，将 `sign = _DIRECTION_SIGN[leg.direction]` 替换为 `sign = leg.direction_sign`
@@ -24,7 +24,7 @@
     - **Validates: Requirements 1.3, 1.5**
 
 - [ ] 2. Direction 类方法与 LifecycleService 重构（需求 4）
-  - [~] 2.1 在 `src/strategy/domain/value_object/order_instruction.py` 的 `Direction` 枚举上新增 `from_leg_direction(cls, leg_direction: str)` 类方法和 `reverse(self)` 方法
+  - [-] 2.1 在 `src/strategy/domain/value_object/order_instruction.py` 的 `Direction` 枚举上新增 `from_leg_direction(cls, leg_direction: str)` 类方法和 `reverse(self)` 方法
     - _Requirements: 4.1, 4.2_
   - [~] 2.2 重构 `CombinationLifecycleService`：将所有 `if leg.direction == "long"` 的 if-else 方向映射替换为 `Direction.from_leg_direction()` 和 `.reverse()` 调用
     - _Requirements: 4.3, 4.4_

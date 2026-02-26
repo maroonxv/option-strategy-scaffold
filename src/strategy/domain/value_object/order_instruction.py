@@ -16,6 +16,24 @@ class Direction(Enum):
     LONG = "long"      # 买入/做多
     SHORT = "short"    # 卖出/做空
 
+    @classmethod
+    def from_leg_direction(cls, leg_direction: str) -> "Direction":
+        """将 Leg 的 direction 字符串映射为 Direction 枚举"""
+        return cls(leg_direction)
+
+    def reverse(self) -> "Direction":
+        """返回反向 Direction"""
+        return Direction.SHORT if self == Direction.LONG else Direction.LONG
+
+    @classmethod
+    def from_leg_direction(cls, leg_direction: str) -> "Direction":
+        """将 Leg 的 direction 字符串映射为 Direction 枚举"""
+        return cls(leg_direction)
+
+    def reverse(self) -> "Direction":
+        """返回反向 Direction"""
+        return Direction.SHORT if self == Direction.LONG else Direction.LONG
+
 
 class Offset(Enum):
     """开平标志"""
