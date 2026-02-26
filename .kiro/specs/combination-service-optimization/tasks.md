@@ -38,7 +38,7 @@
 - [x] 3. 检查点 - 重构阶段 1
   - 运行所有现有测试确保通过，ask the user if questions arise.
 
-- [ ] 4. CombinationRecognizer 表驱动化（需求 2）
+- [x] 4. CombinationRecognizer 表驱动化（需求 2）
   - [x] 4.1 在 `combination_recognizer.py` 中定义 `MatchRule` dataclass，包含 combination_type、leg_count、predicate 字段
     - _Requirements: 2.1_
   - [x] 4.2 将现有 `_is_straddle`、`_is_strangle`、`_is_vertical_spread`、`_is_calendar_spread`、`_is_iron_condor` 方法转换为静态谓词函数，构建按优先级排序的 `_RULES` 列表
@@ -50,7 +50,7 @@
     - **Validates: Requirements 2.3, 2.4, 2.5, 2.6**
 
 - [ ] 5. 共享结构约束规则（需求 3）
-  - [~] 5.1 新建 `src/strategy/domain/value_object/combination_rules.py`，定义 `LegStructure` dataclass 和各类型验证函数（validate_straddle 等），导出 `VALIDATION_RULES` 字典
+  - [-] 5.1 新建 `src/strategy/domain/value_object/combination_rules.py`，定义 `LegStructure` dataclass 和各类型验证函数（validate_straddle 等），导出 `VALIDATION_RULES` 字典
     - _Requirements: 3.1_
   - [~] 5.2 重构 `Combination.validate()`：删除 `_validate_straddle` 等私有方法，改为将 Leg 转换为 LegStructure 后调用 `VALIDATION_RULES[self.combination_type]`
     - _Requirements: 3.2, 3.3_
