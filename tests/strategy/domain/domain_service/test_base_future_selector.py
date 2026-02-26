@@ -66,7 +66,7 @@ from datetime import date  # noqa: E402
 from src.strategy.domain.domain_service.selection.future_selection_service import (  # noqa: E402
     BaseFutureSelector,
 )
-from src.strategy.domain.value_object.selection import MarketData  # noqa: E402
+from src.strategy.domain.value_object.selection import MarketData, RolloverRecommendation  # noqa: E402
 
 
 def _make_contract(symbol: str, exchange: _Exchange = _Exchange.SHFE) -> _ContractData:
@@ -345,3 +345,187 @@ class TestFilterByMaturity:
         assert result == []
         assert len(logs) == 1
         assert "未知" in logs[0]
+
+
+class TestCheckRollover:
+    """check_rollover 单元测试 - 期货移仓换月逻辑
+
+    Validates: Requirements 3.1, 3.2, 3.3, 3.4
+    """
+
+    @pytest.fixture
+    def selector(self):
+        return BaseFutureSelector()
+
+    def test_remaining_days_above_threshold_returns_none(self, selector):
+        """剩余天数大于阈值时不生成移仓建议 (Req 3.3)"""
+        # rb2501 到期日 2025-01-15, current_date=2025-01-01 -> 剩余14天
+        current = _make_contract("rb2501")
+        result = selector.check_rollover(
+            current, [], date(2025, 1, 1), rollover_days=5
+        )
+        assert result is None
+
+    def test_remaining_days_equal_threshold_triggers(self, selector):
+        """剩余天数等于阈值时触发移仓建议 (Req 3.1)"""
+        # rb2501 到期日 2025-01-15, current_date=2025-01-10 -> 剩余5天
+        current = _make_contract("rb2501")
+        target = _make_contract("rb2502")
+        result = selector.check_rollover(
+            current, [current, target], date(2025, 1, 10), rollover_days=5
+        )
+        assert result is not None
+        assert result.remaining_days == 5
+        assert result.has_target is True
+        assert result.target_contract_symbol == "rb2502"
+
+    def test_remaining_days_below_threshold_triggers(self, selector):
+        """剩余天数小于阈值时触发移仓建议 (Req 3.1)"""
+        # rb2501 到期日 2025-01-15, current_date=2025-01-13 -> 剩余2天
+        current = _make_contract("rb2501")
+        target = _make_contract("rb2502")
+        result = selector.check_rollover(
+            current, [current, target], date(2025, 1, 13), rollover_days=5
+        )
+        assert result is not None
+        assert result.remaining_days == 2
+        assert result.has_target is True
+
+    def test_select_highest_volume_target(self, selector):
+        """目标合约选择下月中成交量最大的合约 (Req 3.2)"""
+        current = _make_contract("rb2501")
+        target_a = _make_contract("rb2502")
+        target_b = _make_contract("hc2502")  # 同月不同品种
+        market_data = {
+            target_a.vt_symbol: MarketData(
+                vt_symbol=target_a.vt_symbol, volume=100, open_interest=50.0
+            ),
+            target_b.vt_symbol: MarketData(
+                vt_symbol=target_b.vt_symbol, volume=500, open_interest=200.0
+            ),
+        }
+        result = selector.check_rollover(
+            current,
+            [current, target_a, target_b],
+            date(2025, 1, 13),
+            rollover_days=5,
+            market_data=market_data,
+        )
+        assert result is not None
+        assert result.target_contract_symbol == "hc2502"
+
+    def test_no_target_contract_returns_has_target_false(self, selector):
+        """无目标合约时返回 has_target=False (Req 3.4)"""
+        current = _make_contract("rb2501")
+        # 只有当前合约，无下月合约
+        result = selector.check_rollover(
+            current, [current], date(2025, 1, 13), rollover_days=5
+        )
+        assert result is not None
+        assert result.has_target is False
+        assert result.target_contract_symbol == ""
+        assert result.current_contract_symbol == "rb2501"
+
+    def test_unparseable_symbol_returns_none(self, selector):
+        """无法解析到期日的合约返回 None"""
+        current = _make_contract("INVALID")
+        result = selector.check_rollover(current, [], date(2025, 1, 13))
+        assert result is None
+
+    def test_unparseable_symbol_logs_warning(self, selector):
+        """无法解析到期日时记录日志"""
+        logs = []
+        current = _make_contract("INVALID")
+        selector.check_rollover(
+            current, [], date(2025, 1, 13), log_func=logs.append
+        )
+        assert len(logs) == 1
+        assert "无法解析" in logs[0]
+
+    def test_december_rollover_to_january(self, selector):
+        """12月合约移仓到次年1月"""
+        current = _make_contract("rb2512")
+        target = _make_contract("rb2601")
+        result = selector.check_rollover(
+            current,
+            [current, target],
+            date(2025, 12, 13),
+            rollover_days=5,
+        )
+        assert result is not None
+        assert result.has_target is True
+        assert result.target_contract_symbol == "rb2601"
+
+    def test_current_contract_excluded_from_targets(self, selector):
+        """当前合约不会被选为目标合约"""
+        current = _make_contract("rb2501")
+        # 只有当前合约自身在列表中，无其他下月合约
+        result = selector.check_rollover(
+            current, [current], date(2025, 1, 13), rollover_days=5
+        )
+        assert result is not None
+        assert result.has_target is False
+
+    def test_no_market_data_selects_first_next_month(self, selector):
+        """无行情数据时选择下月合约（按到期日）"""
+        current = _make_contract("rb2501")
+        target = _make_contract("rb2502")
+        result = selector.check_rollover(
+            current,
+            [current, target],
+            date(2025, 1, 13),
+            rollover_days=5,
+        )
+        assert result is not None
+        assert result.has_target is True
+        assert result.target_contract_symbol == "rb2502"
+
+    def test_log_func_called_on_trigger(self, selector):
+        """触发移仓时 log_func 记录信息"""
+        logs = []
+        current = _make_contract("rb2501")
+        target = _make_contract("rb2502")
+        selector.check_rollover(
+            current,
+            [current, target],
+            date(2025, 1, 13),
+            rollover_days=5,
+            log_func=logs.append,
+        )
+        assert len(logs) >= 1
+        # 应包含触发信息和建议信息
+        combined = " ".join(logs)
+        assert "剩余" in combined
+        assert "建议移仓" in combined
+
+    def test_negative_remaining_days_triggers(self, selector):
+        """到期日已过（剩余天数为负）也触发移仓"""
+        current = _make_contract("rb2501")
+        target = _make_contract("rb2502")
+        # current_date 在到期日之后
+        result = selector.check_rollover(
+            current,
+            [current, target],
+            date(2025, 1, 20),
+            rollover_days=5,
+        )
+        assert result is not None
+        assert result.remaining_days < 0
+        assert result.has_target is True
+
+    def test_recommendation_fields_populated(self, selector):
+        """验证返回的 RolloverRecommendation 字段完整"""
+        current = _make_contract("rb2501")
+        target = _make_contract("rb2502")
+        result = selector.check_rollover(
+            current,
+            [current, target],
+            date(2025, 1, 13),
+            rollover_days=5,
+        )
+        assert isinstance(result, RolloverRecommendation)
+        assert result.current_contract_symbol == "rb2501"
+        assert result.target_contract_symbol == "rb2502"
+        assert isinstance(result.remaining_days, int)
+        assert isinstance(result.reason, str)
+        assert len(result.reason) > 0

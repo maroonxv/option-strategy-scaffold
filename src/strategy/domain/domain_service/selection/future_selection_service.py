@@ -3,7 +3,7 @@ from datetime import date
 from typing import Dict, List, Optional, Callable, Tuple
 from vnpy.trader.object import ContractData
 from src.strategy.infrastructure.parsing.contract_helper import ContractHelper
-from src.strategy.domain.value_object.selection import MarketData
+from src.strategy.domain.value_object.selection import MarketData, RolloverRecommendation
 
 
 class BaseFutureSelector:
@@ -147,5 +147,111 @@ class BaseFutureSelector:
                 result.append(contract)
 
         return result
+
+
+    def check_rollover(
+        self,
+        current_contract: ContractData,
+        all_contracts: List[ContractData],
+        current_date: date,
+        rollover_days: int = 5,
+        market_data: Optional[Dict[str, MarketData]] = None,
+        log_func: Optional[Callable[[str], None]] = None
+    ) -> Optional[RolloverRecommendation]:
+        """
+        检查是否需要移仓换月，返回移仓建议或 None。
+
+        Args:
+            current_contract: 当前持有合约
+            all_contracts: 所有可用合约列表
+            current_date: 当前日期
+            rollover_days: 移仓阈值天数，默认 5
+            market_data: 行情数据字典，key 为 vt_symbol
+            log_func: 日志回调函数
+
+        Returns:
+            移仓建议，不需要移仓时返回 None
+        """
+        # 解析当前合约到期日
+        expiry = ContractHelper.get_expiry_from_symbol(current_contract.symbol)
+        if expiry is None:
+            if log_func:
+                log_func(f"无法解析合约 {current_contract.symbol} 的到期日")
+            return None
+
+        # 计算剩余天数
+        remaining_days = (expiry - current_date).days
+
+        # 剩余天数大于阈值，不需要移仓 (Req 3.3)
+        if remaining_days > rollover_days:
+            return None
+
+        if log_func:
+            log_func(
+                f"合约 {current_contract.symbol} 剩余 {remaining_days} 天，"
+                f"触发移仓阈值 {rollover_days} 天"
+            )
+
+        # 确定下一个到期月份
+        if expiry.month == 12:
+            next_month = 1
+            next_year = expiry.year + 1
+        else:
+            next_month = expiry.month + 1
+            next_year = expiry.year
+
+        # 筛选下月到期的合约（排除当前合约）
+        next_month_contracts = []
+        for contract in all_contracts:
+            if contract.vt_symbol == current_contract.vt_symbol:
+                continue
+            c_expiry = ContractHelper.get_expiry_from_symbol(contract.symbol)
+            if c_expiry is None:
+                continue
+            if c_expiry.year == next_year and c_expiry.month == next_month:
+                next_month_contracts.append(contract)
+
+        # 无目标合约时返回 has_target=False 的建议 (Req 3.4)
+        if not next_month_contracts:
+            if log_func:
+                log_func(
+                    f"未找到下月({next_year}-{next_month:02d})的目标合约"
+                )
+            return RolloverRecommendation(
+                current_contract_symbol=current_contract.symbol,
+                target_contract_symbol="",
+                remaining_days=remaining_days,
+                reason=f"当前合约 {current_contract.symbol} 剩余 {remaining_days} 天，"
+                       f"但未找到下月合适的目标合约",
+                has_target=False,
+            )
+
+        # 选择下月中成交量最大的合约 (Req 3.2)
+        if market_data:
+            best_contract = max(
+                next_month_contracts,
+                key=lambda c: market_data.get(c.vt_symbol, MarketData(vt_symbol="", volume=0, open_interest=0.0)).volume,
+            )
+        else:
+            # 无行情数据时选择到期日最近的
+            best_contract = min(
+                next_month_contracts,
+                key=lambda c: ContractHelper.get_expiry_from_symbol(c.symbol) or date.max,
+            )
+
+        if log_func:
+            log_func(
+                f"建议移仓: {current_contract.symbol} -> {best_contract.symbol}"
+            )
+
+        return RolloverRecommendation(
+            current_contract_symbol=current_contract.symbol,
+            target_contract_symbol=best_contract.symbol,
+            remaining_days=remaining_days,
+            reason=f"当前合约 {current_contract.symbol} 剩余 {remaining_days} 天，"
+                   f"建议切换到 {best_contract.symbol}",
+            has_target=True,
+        )
+
 
 

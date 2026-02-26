@@ -34,7 +34,7 @@
     - **Property 2: 到期日过滤正确性**
     - **Validates: Requirements 2.1, 2.2, 2.3**
 
-  - [~] 2.5 新增 `check_rollover` 方法
+  - [x] 2.5 新增 `check_rollover` 方法
     - 解析当前合约到期日，计算剩余交易日
     - 剩余天数 <= 阈值时生成移仓建议
     - 目标合约选择下月中成交量最大的合约
