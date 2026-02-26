@@ -66,9 +66,9 @@
 - [ ] 7. CombinationRiskChecker theta 检查（需求 5）
   - [x] 7.1 在 `src/strategy/domain/value_object/combination.py` 的 `CombinationRiskConfig` 中新增 `theta_limit: float = 100.0` 字段
     - _Requirements: 5.1_
-  - [-] 7.2 在 `CombinationRiskChecker.check()` 中新增 theta 检查逻辑，格式与现有 delta/gamma/vega 一致
+  - [x] 7.2 在 `CombinationRiskChecker.check()` 中新增 theta 检查逻辑，格式与现有 delta/gamma/vega 一致
     - _Requirements: 5.2, 5.3, 5.4, 5.5_
-  - [~] 7.3 编写属性测试验证风控检查 theta 集成正确性
+  - [x] 7.3 编写属性测试验证风控检查 theta 集成正确性
     - **Property 9: 风控检查 theta 集成正确性**
     - **Validates: Requirements 5.2, 5.3, 5.4, 5.5**
 
