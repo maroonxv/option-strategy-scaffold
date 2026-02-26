@@ -8,6 +8,9 @@ from typing import Optional, List, Callable, Any
 import pandas as pd
 
 from ...value_object.option_contract import OptionContract, OptionType
+from ...value_object.combination import CombinationType
+from ...value_object.selection import CombinationSelectionResult
+from ...value_object.combination_rules import VALIDATION_RULES, LegStructure
 
 
 class OptionSelectorService:
@@ -359,3 +362,337 @@ class OptionSelectorService:
         
         # 转换为对象列表
         return [self._to_option_contract(row, option_type) for _, row in df.iterrows()]
+
+    def select_combination(
+        self,
+        contracts: pd.DataFrame,
+        combination_type: CombinationType,
+        underlying_price: float,
+        strike_level: Optional[int] = None,
+        spread_width: Optional[int] = None,
+        option_type_for_spread: Optional[str] = None,
+        log_func: Optional[Callable] = None
+    ) -> Optional[CombinationSelectionResult]:
+        """
+        根据组合类型联合选择多个期权腿。
+
+        参数:
+            contracts: 合约 DataFrame
+            combination_type: 组合策略类型
+            underlying_price: 标的当前价格
+            strike_level: 虚值档位 (STRANGLE 使用)
+            spread_width: 行权价间距档位数 (VERTICAL_SPREAD 使用)
+            option_type_for_spread: 期权类型 (VERTICAL_SPREAD 使用, "call" 或 "put")
+            log_func: 日志回调函数
+
+        返回:
+            CombinationSelectionResult 或 None (underlying_price 无效时)
+        """
+        if underlying_price <= 0:
+            if log_func:
+                log_func(f"[COMBO] 错误: underlying_price={underlying_price} 无效")
+            return None
+
+        if contracts.empty:
+            return CombinationSelectionResult(
+                combination_type=combination_type,
+                legs=[],
+                success=False,
+                failure_reason="合约列表为空"
+            )
+
+        dispatch = {
+            CombinationType.STRADDLE: self._select_straddle,
+            CombinationType.STRANGLE: self._select_strangle,
+            CombinationType.VERTICAL_SPREAD: self._select_vertical_spread,
+        }
+
+        handler = dispatch.get(combination_type)
+        if handler is None:
+            return CombinationSelectionResult(
+                combination_type=combination_type,
+                legs=[],
+                success=False,
+                failure_reason=f"不支持的组合类型: {combination_type.value}"
+            )
+
+        result = handler(
+            contracts=contracts,
+            underlying_price=underlying_price,
+            strike_level=strike_level,
+            spread_width=spread_width,
+            option_type_for_spread=option_type_for_spread,
+            log_func=log_func,
+        )
+
+        # 成功时进行结构验证
+        if result.success:
+            validation_error = self._validate_combination(result)
+            if validation_error is not None:
+                return CombinationSelectionResult(
+                    combination_type=combination_type,
+                    legs=result.legs,
+                    success=False,
+                    failure_reason=f"结构验证失败: {validation_error}"
+                )
+
+        return result
+
+    def _validate_combination(self, result: CombinationSelectionResult) -> Optional[str]:
+        """对选择结果调用 VALIDATION_RULES 验证结构合规"""
+        validator = VALIDATION_RULES.get(result.combination_type)
+        if validator is None:
+            return None
+        leg_structures = [
+            LegStructure(
+                option_type=leg.option_type,
+                strike_price=leg.strike_price,
+                expiry_date=leg.expiry_date,
+            )
+            for leg in result.legs
+        ]
+        return validator(leg_structures)
+
+    def _select_straddle(
+        self,
+        contracts: pd.DataFrame,
+        underlying_price: float,
+        log_func: Optional[Callable] = None,
+        **kwargs,
+    ) -> CombinationSelectionResult:
+        """
+        STRADDLE: 选择同一到期日、同一行权价的一个 Call 和一个 Put，
+        行权价最接近标的当前价格。
+        """
+        combo_type = CombinationType.STRADDLE
+        df = contracts.copy()
+
+        # 过滤流动性和到期日
+        df = self._filter_liquidity(df, log_func)
+        df = self._filter_trading_days(df, log_func)
+
+        if df.empty:
+            return CombinationSelectionResult(
+                combination_type=combo_type, legs=[], success=False,
+                failure_reason="流动性或到期日过滤后无可用合约"
+            )
+
+        # 分离 Call 和 Put
+        calls = df[df["option_type"] == "call"] if "option_type" in df.columns else pd.DataFrame()
+        puts = df[df["option_type"] == "put"] if "option_type" in df.columns else pd.DataFrame()
+
+        if calls.empty or puts.empty:
+            missing = "Call" if calls.empty else "Put"
+            return CombinationSelectionResult(
+                combination_type=combo_type, legs=[], success=False,
+                failure_reason=f"流动性不足: 无满足条件的 {missing} 合约"
+            )
+
+        # 找到 Call 和 Put 共有的行权价
+        call_strikes = set(calls["strike_price"].unique())
+        put_strikes = set(puts["strike_price"].unique())
+        common_strikes = call_strikes & put_strikes
+
+        if not common_strikes:
+            return CombinationSelectionResult(
+                combination_type=combo_type, legs=[], success=False,
+                failure_reason="流动性不足: 无 Call/Put 共有的行权价"
+            )
+
+        # 选择最接近标的价格的行权价
+        atm_strike = min(common_strikes, key=lambda s: abs(s - underlying_price))
+
+        call_row = calls[calls["strike_price"] == atm_strike].iloc[0]
+        put_row = puts[puts["strike_price"] == atm_strike].iloc[0]
+
+        call_leg = self._to_option_contract(call_row, "call")
+        put_leg = self._to_option_contract(put_row, "put")
+
+        if log_func:
+            log_func(f"[COMBO] STRADDLE 选中: 行权价={atm_strike}, Call={call_leg.vt_symbol}, Put={put_leg.vt_symbol}")
+
+        return CombinationSelectionResult(
+            combination_type=combo_type,
+            legs=[call_leg, put_leg],
+            success=True,
+        )
+
+    def _select_strangle(
+        self,
+        contracts: pd.DataFrame,
+        underlying_price: float,
+        strike_level: Optional[int] = None,
+        log_func: Optional[Callable] = None,
+        **kwargs,
+    ) -> CombinationSelectionResult:
+        """
+        STRANGLE: 选择同一到期日的一个虚值 Call 和一个虚值 Put，
+        虚值档位由 strike_level 决定。
+        """
+        combo_type = CombinationType.STRANGLE
+        level = strike_level or self.strike_level
+        df = contracts.copy()
+
+        # 过滤流动性和到期日
+        df = self._filter_liquidity(df, log_func)
+        df = self._filter_trading_days(df, log_func)
+
+        if df.empty:
+            return CombinationSelectionResult(
+                combination_type=combo_type, legs=[], success=False,
+                failure_reason="流动性或到期日过滤后无可用合约"
+            )
+
+        # 分别计算 Call 和 Put 的虚值排名
+        calls = df[df["option_type"] == "call"].copy() if "option_type" in df.columns else pd.DataFrame()
+        puts = df[df["option_type"] == "put"].copy() if "option_type" in df.columns else pd.DataFrame()
+
+        if calls.empty:
+            return CombinationSelectionResult(
+                combination_type=combo_type, legs=[], success=False,
+                failure_reason="流动性不足: 无满足条件的 Call 合约"
+            )
+        if puts.empty:
+            return CombinationSelectionResult(
+                combination_type=combo_type, legs=[], success=False,
+                failure_reason="流动性不足: 无满足条件的 Put 合约"
+            )
+
+        calls_ranked = self._calculate_otm_ranking(calls, "call", underlying_price)
+        puts_ranked = self._calculate_otm_ranking(puts, "put", underlying_price)
+
+        if calls_ranked.empty:
+            return CombinationSelectionResult(
+                combination_type=combo_type, legs=[], success=False,
+                failure_reason="流动性不足: 无虚值 Call 合约"
+            )
+        if puts_ranked.empty:
+            return CombinationSelectionResult(
+                combination_type=combo_type, legs=[], success=False,
+                failure_reason="流动性不足: 无虚值 Put 合约"
+            )
+
+        call_target = self._select_by_level(calls_ranked, "call", level)
+        put_target = self._select_by_level(puts_ranked, "put", level)
+
+        if call_target is None:
+            return CombinationSelectionResult(
+                combination_type=combo_type, legs=[], success=False,
+                failure_reason="流动性不足: 无法选择目标档位的 Call"
+            )
+        if put_target is None:
+            return CombinationSelectionResult(
+                combination_type=combo_type, legs=[], success=False,
+                failure_reason="流动性不足: 无法选择目标档位的 Put"
+            )
+
+        call_leg = self._to_option_contract(call_target, "call")
+        put_leg = self._to_option_contract(put_target, "put")
+
+        if log_func:
+            log_func(
+                f"[COMBO] STRANGLE 选中: 档位={level}, "
+                f"Call={call_leg.vt_symbol}(K={call_leg.strike_price}), "
+                f"Put={put_leg.vt_symbol}(K={put_leg.strike_price})"
+            )
+
+        return CombinationSelectionResult(
+            combination_type=combo_type,
+            legs=[call_leg, put_leg],
+            success=True,
+        )
+
+    def _select_vertical_spread(
+        self,
+        contracts: pd.DataFrame,
+        underlying_price: float,
+        spread_width: Optional[int] = None,
+        option_type_for_spread: Optional[str] = None,
+        log_func: Optional[Callable] = None,
+        **kwargs,
+    ) -> CombinationSelectionResult:
+        """
+        VERTICAL_SPREAD: 选择同一到期日、同一期权类型、不同行权价的两个期权，
+        行权价间距由 spread_width 档位数决定。
+        """
+        combo_type = CombinationType.VERTICAL_SPREAD
+        width = spread_width or 1
+        opt_type = (option_type_for_spread or "call").lower()
+
+        if opt_type not in ("call", "put"):
+            return CombinationSelectionResult(
+                combination_type=combo_type, legs=[], success=False,
+                failure_reason=f"无效的期权类型: {opt_type}"
+            )
+
+        df = contracts.copy()
+
+        # 过滤流动性和到期日
+        df = self._filter_liquidity(df, log_func)
+        df = self._filter_trading_days(df, log_func)
+
+        if df.empty:
+            return CombinationSelectionResult(
+                combination_type=combo_type, legs=[], success=False,
+                failure_reason="流动性或到期日过滤后无可用合约"
+            )
+
+        # 按期权类型筛选
+        if "option_type" in df.columns:
+            df = df[df["option_type"] == opt_type]
+
+        if df.empty:
+            return CombinationSelectionResult(
+                combination_type=combo_type, legs=[], success=False,
+                failure_reason=f"流动性不足: 无满足条件的 {opt_type} 合约"
+            )
+
+        # 计算虚值排名
+        ranked = self._calculate_otm_ranking(df, opt_type, underlying_price)
+
+        if ranked.empty:
+            return CombinationSelectionResult(
+                combination_type=combo_type, legs=[], success=False,
+                failure_reason=f"无虚值 {opt_type} 合约"
+            )
+
+        # 选择近腿 (第1档虚值) 和远腿 (第1+width档虚值)
+        near_target = self._select_by_level(ranked, opt_type, 1)
+        far_target = self._select_by_level(ranked, opt_type, 1 + width)
+
+        if near_target is None:
+            return CombinationSelectionResult(
+                combination_type=combo_type, legs=[], success=False,
+                failure_reason="流动性不足: 无法选择近腿"
+            )
+        if far_target is None:
+            return CombinationSelectionResult(
+                combination_type=combo_type, legs=[], success=False,
+                failure_reason="流动性不足: 无法选择远腿 (行权价间距不足)"
+            )
+
+        # 确保两腿行权价不同
+        near_strike = float(near_target.get("strike_price", 0))
+        far_strike = float(far_target.get("strike_price", 0))
+        if near_strike == far_strike:
+            return CombinationSelectionResult(
+                combination_type=combo_type, legs=[], success=False,
+                failure_reason="两腿行权价相同，无法构成垂直价差"
+            )
+
+        near_leg = self._to_option_contract(near_target, opt_type)
+        far_leg = self._to_option_contract(far_target, opt_type)
+
+        if log_func:
+            log_func(
+                f"[COMBO] VERTICAL_SPREAD 选中: 类型={opt_type}, "
+                f"近腿={near_leg.vt_symbol}(K={near_leg.strike_price}), "
+                f"远腿={far_leg.vt_symbol}(K={far_leg.strike_price})"
+            )
+
+        return CombinationSelectionResult(
+            combination_type=combo_type,
+            legs=[near_leg, far_leg],
+            success=True,
+        )
+

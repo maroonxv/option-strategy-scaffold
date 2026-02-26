@@ -12,7 +12,7 @@
     - 定义 `MarketData`、`RolloverRecommendation`、`CombinationSelectionResult`、`SelectionScore` 四个 frozen dataclass
     - _Requirements: 1.1, 3.1, 4.1, 6.1_
 
-- [ ] 2. 增强 BaseFutureSelector
+- [x] 2. 增强 BaseFutureSelector
   - [x] 2.1 重写 `select_dominant_contract` 方法
     - 接受 `market_data` 参数，计算加权得分（volume × volume_weight + open_interest × oi_weight）
     - 按得分降序排列，得分相同时按到期日升序
@@ -46,11 +46,11 @@
     - **Property 4: 移仓目标为最大成交量合约**
     - **Validates: Requirements 3.1, 3.2, 3.3**
 
-- [ ] 3. 检查点 - 期货选择器验证
+- [x] 3. 检查点 - 期货选择器验证
   - 确保所有测试通过，如有问题请向用户确认。
 
 - [ ] 4. 增强 OptionSelectorService - 组合选择
-  - [~] 4.1 新增 `select_combination` 方法
+  - [-] 4.1 新增 `select_combination` 方法
     - 根据 CombinationType 分发到内部方法 `_select_straddle`、`_select_strangle`、`_select_vertical_spread`
     - 每个内部方法复用现有 `_filter_liquidity`、`_filter_trading_days`、`_calculate_otm_ranking` 方法
     - 对选择结果调用 `VALIDATION_RULES` 验证结构合规
