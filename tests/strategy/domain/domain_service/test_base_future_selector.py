@@ -220,25 +220,128 @@ class TestSelectDominantContract:
 
 
 class TestFilterByMaturity:
-    """保留原有 filter_by_maturity 测试"""
+    """filter_by_maturity 单元测试 - 基于到期日解析的合约过滤
+
+    Validates: Requirements 2.1, 2.2, 2.3, 2.4
+    """
 
     @pytest.fixture
     def selector(self):
         return BaseFutureSelector()
 
-    def test_filter_current_month(self, selector):
-        contracts = [_make_contract("rb2505"), _make_contract("rb2501")]
-        filtered = selector.filter_by_maturity(contracts, date.today(), mode="current_month")
-        assert len(filtered) == 1
-        assert filtered[0].symbol == "rb2501"
+    def test_empty_list_returns_empty(self, selector):
+        """空列表返回空列表"""
+        result = selector.filter_by_maturity([], date(2025, 1, 15))
+        assert result == []
 
-    def test_filter_next_month(self, selector):
-        contracts = [_make_contract("rb2505"), _make_contract("rb2501")]
-        filtered = selector.filter_by_maturity(contracts, date.today(), mode="next_month")
-        assert len(filtered) == 1
-        assert filtered[0].symbol == "rb2505"
+    def test_current_month_filter(self, selector):
+        """当月过滤：仅返回到期日在当月范围内的合约 (Req 2.1)"""
+        # rb2501 -> 2025-01-15, rb2502 -> 2025-02-15, rb2503 -> 2025-03-15
+        contracts = [
+            _make_contract("rb2501"),
+            _make_contract("rb2502"),
+            _make_contract("rb2503"),
+        ]
+        result = selector.filter_by_maturity(
+            contracts, date(2025, 1, 10), mode="current_month"
+        )
+        assert len(result) == 1
+        assert result[0].symbol == "rb2501"
 
-    def test_filter_next_month_empty(self, selector):
+    def test_next_month_filter(self, selector):
+        """次月过滤：仅返回到期日在下月范围内的合约 (Req 2.2)"""
+        contracts = [
+            _make_contract("rb2501"),
+            _make_contract("rb2502"),
+            _make_contract("rb2503"),
+        ]
+        result = selector.filter_by_maturity(
+            contracts, date(2025, 1, 10), mode="next_month"
+        )
+        assert len(result) == 1
+        assert result[0].symbol == "rb2502"
+
+    def test_next_month_december_wraps_to_january(self, selector):
+        """12月的次月应为次年1月"""
+        contracts = [
+            _make_contract("rb2512"),
+            _make_contract("rb2601"),
+        ]
+        result = selector.filter_by_maturity(
+            contracts, date(2025, 12, 1), mode="next_month"
+        )
+        assert len(result) == 1
+        assert result[0].symbol == "rb2601"
+
+    def test_custom_date_range(self, selector):
+        """自定义日期范围过滤 (Req 2.3)"""
+        contracts = [
+            _make_contract("rb2501"),
+            _make_contract("rb2503"),
+            _make_contract("rb2506"),
+        ]
+        result = selector.filter_by_maturity(
+            contracts,
+            date(2025, 1, 1),
+            mode="custom",
+            date_range=(date(2025, 1, 1), date(2025, 3, 31)),
+        )
+        assert len(result) == 2
+        symbols = [c.symbol for c in result]
+        assert "rb2501" in symbols
+        assert "rb2503" in symbols
+
+    def test_custom_mode_without_date_range_returns_empty(self, selector):
+        """custom 模式未提供 date_range 返回空列表"""
         contracts = [_make_contract("rb2501")]
-        filtered = selector.filter_by_maturity(contracts, date.today(), mode="next_month")
-        assert len(filtered) == 0
+        result = selector.filter_by_maturity(
+            contracts, date(2025, 1, 1), mode="custom"
+        )
+        assert result == []
+
+    def test_unparseable_symbol_excluded_with_warning(self, selector):
+        """无法解析到期日的合约被排除并记录警告 (Req 2.4)"""
+        contracts = [
+            _make_contract("rb2501"),
+            _make_contract("INVALID"),  # 无法解析
+        ]
+        logs = []
+        result = selector.filter_by_maturity(
+            contracts, date(2025, 1, 10), mode="current_month", log_func=logs.append
+        )
+        assert len(result) == 1
+        assert result[0].symbol == "rb2501"
+        assert len(logs) == 1
+        assert "INVALID" in logs[0]
+        assert "无法解析" in logs[0]
+
+    def test_no_matching_contracts_returns_empty(self, selector):
+        """无匹配合约时返回空列表"""
+        contracts = [_make_contract("rb2506"), _make_contract("rb2509")]
+        result = selector.filter_by_maturity(
+            contracts, date(2025, 1, 10), mode="current_month"
+        )
+        assert result == []
+
+    def test_multiple_contracts_in_same_month(self, selector):
+        """同月多个合约都应被返回"""
+        # 假设有两个不同品种但同月到期的合约
+        contracts = [
+            _make_contract("rb2501"),
+            _make_contract("hc2501"),
+        ]
+        result = selector.filter_by_maturity(
+            contracts, date(2025, 1, 10), mode="current_month"
+        )
+        assert len(result) == 2
+
+    def test_unknown_mode_returns_empty(self, selector):
+        """未知模式返回空列表"""
+        contracts = [_make_contract("rb2501")]
+        logs = []
+        result = selector.filter_by_maturity(
+            contracts, date(2025, 1, 10), mode="unknown", log_func=logs.append
+        )
+        assert result == []
+        assert len(logs) == 1
+        assert "未知" in logs[0]

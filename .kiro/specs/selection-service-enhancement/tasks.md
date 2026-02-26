@@ -24,7 +24,7 @@
     - **Property 1: 主力合约得分最高**
     - **Validates: Requirements 1.1, 1.2**
 
-  - [~] 2.3 重写 `filter_by_maturity` 方法
+  - [x] 2.3 重写 `filter_by_maturity` 方法
     - 使用 `ContractHelper.get_expiry_from_symbol` 解析到期日
     - 支持 current_month / next_month / custom 三种模式
     - 无法解析到期日的合约排除并记录警告
@@ -46,7 +46,7 @@
     - **Property 4: 移仓目标为最大成交量合约**
     - **Validates: Requirements 3.1, 3.2, 3.3**
 
-- [~] 3. 检查点 - 期货选择器验证
+- [ ] 3. 检查点 - 期货选择器验证
   - 确保所有测试通过，如有问题请向用户确认。
 
 - [ ] 4. 增强 OptionSelectorService - 组合选择
@@ -100,7 +100,7 @@
     - 测试期权选择器完整流程：评分 → 组合选择 → Delta 选择
     - _Requirements: 全部_
 
-- [~] 8. 最终检查点 - 确保所有测试通过
+- [ ] 8. 最终检查点 - 确保所有测试通过
   - 确保所有测试通过，如有问题请向用户确认。
 
 ## 备注

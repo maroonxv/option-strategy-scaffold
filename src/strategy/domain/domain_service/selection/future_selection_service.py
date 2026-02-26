@@ -1,5 +1,6 @@
+import calendar
 from datetime import date
-from typing import Dict, List, Optional, Callable
+from typing import Dict, List, Optional, Callable, Tuple
 from vnpy.trader.object import ContractData
 from src.strategy.infrastructure.parsing.contract_helper import ContractHelper
 from src.strategy.domain.value_object.selection import MarketData
@@ -88,29 +89,63 @@ class BaseFutureSelector:
         self,
         contracts: List[ContractData],
         current_date: date,
-        mode: str = "current_month"
+        mode: str = "current_month",
+        date_range: Optional[Tuple[date, date]] = None,
+        log_func: Optional[Callable[[str], None]] = None
     ) -> List[ContractData]:
         """
-        Filter contracts by maturity.
+        基于真实到期日解析过滤合约。
 
         Args:
-            contracts: List of available contracts
-            current_date: Current date
-            mode: "current_month" or "next_month"
+            contracts: 可用合约列表
+            current_date: 当前日期
+            mode: 过滤模式 - "current_month" | "next_month" | "custom"
+            date_range: 仅 mode="custom" 时使用，(start_date, end_date) 闭区间
+            log_func: 日志回调函数
 
         Returns:
-            Filtered list of contracts
+            过滤后的合约列表
         """
-        sorted_contracts = sorted(contracts, key=lambda c: c.symbol)
-        if not sorted_contracts:
+        if not contracts:
             return []
 
+        # 确定目标日期范围
         if mode == "current_month":
-            return [sorted_contracts[0]]
+            range_start = date(current_date.year, current_date.month, 1)
+            last_day = calendar.monthrange(current_date.year, current_date.month)[1]
+            range_end = date(current_date.year, current_date.month, last_day)
         elif mode == "next_month":
-            if len(sorted_contracts) > 1:
-                return [sorted_contracts[1]]
+            if current_date.month == 12:
+                next_year = current_date.year + 1
+                next_month = 1
             else:
+                next_year = current_date.year
+                next_month = current_date.month + 1
+            range_start = date(next_year, next_month, 1)
+            last_day = calendar.monthrange(next_year, next_month)[1]
+            range_end = date(next_year, next_month, last_day)
+        elif mode == "custom":
+            if date_range is None:
+                if log_func:
+                    log_func("custom 模式需要提供 date_range 参数")
                 return []
-        return sorted_contracts
+            range_start, range_end = date_range
+        else:
+            if log_func:
+                log_func(f"未知的过滤模式: {mode}")
+            return []
+
+        # 过滤合约
+        result = []
+        for contract in contracts:
+            expiry = ContractHelper.get_expiry_from_symbol(contract.symbol)
+            if expiry is None:
+                if log_func:
+                    log_func(f"无法解析合约 {contract.symbol} 的到期日，已排除")
+                continue
+            if range_start <= expiry <= range_end:
+                result.append(contract)
+
+        return result
+
 
