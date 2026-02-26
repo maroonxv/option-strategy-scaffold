@@ -31,7 +31,7 @@
   - [x] 2.3 编写属性测试验证 Direction.reverse 对合性
     - **Property 7: Direction.reverse round-trip**
     - **Validates: Requirements 4.2**
-  - [~] 2.4 编写属性测试验证 Lifecycle 指令生成等价性
+  - [x] 2.4 编写属性测试验证 Lifecycle 指令生成等价性
     - **Property 8: Lifecycle 指令生成等价性**
     - **Validates: Requirements 4.5**
 
