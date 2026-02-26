@@ -167,12 +167,12 @@
   - [x] 13.2 在策略配置加载逻辑中支持读取 combination_risk 配置节，缺失时使用默认值（delta_limit=2.0, gamma_limit=0.5, vega_limit=200.0）
     - _Requirements: 8.3_
 
-- [ ] 14. 集成测试与最终验证
+- [x] 14. 集成测试与最终验证
   - [x] 14.1 创建 `tests/strategy/domain/domain_service/combination/__init__.py` 和集成测试文件 `tests/strategy/domain/domain_service/combination/test_combination_integration.py`
     - 测试完整流程：创建 Combination → 注册到 CombinationAggregate → 计算 Greeks → 计算 PnL → 风控检查 → 生成平仓指令 → 状态同步
     - _Requirements: 7.2, 7.3, 7.4_
 
-- [~] 15. Final Checkpoint - 确保所有测试通过
+- [x] 15. Final Checkpoint - 确保所有测试通过
   - 运行 `pytest tests/strategy/domain/ -v`，确保所有测试通过，有问题请询问用户。
 
 ## Notes

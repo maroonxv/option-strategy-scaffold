@@ -36,6 +36,7 @@ class CombinationStatus(Enum):
     CLOSED = "closed"
 
 
+
 @dataclass(frozen=True)
 class Leg:
     """组合中的单个期权持仓"""
@@ -46,6 +47,12 @@ class Leg:
     direction: str          # "long" 或 "short"
     volume: int             # 持仓量
     open_price: float       # 开仓价
+
+    @property
+    def direction_sign(self) -> float:
+        """返回方向符号：long → 1.0, short → -1.0"""
+        return 1.0 if self.direction == "long" else -1.0
+
 
 
 @dataclass(frozen=True)
