@@ -35,7 +35,7 @@
     - **Property 3: 批量求解不变量（长度、顺序、隔离性）**
     - **Validates: Requirements 2.1, 2.2, 2.3**
 
-- [ ] 2. 修改 GreeksCalculator 委托 IVSolver 并验证向后兼容
+- [x] 2. 修改 GreeksCalculator 委托 IVSolver 并验证向后兼容
   - [x] 2.1 将 `greeks_calculator.py` 移动到 `pricing/iv/greeks_calculator.py`
     - 构造函数增加可选 `iv_solver` 参数，默认创建 `IVSolver()` 实例
     - `calculate_implied_volatility` 方法委托给 `self._iv_solver.solve()`，签名和返回类型不变
@@ -46,11 +46,11 @@
     - **Property 4: GreeksCalculator 向后兼容（行为等价）**
     - **Validates: Requirements 3.1, 3.2, 3.3**
 
-- [~] 3. Checkpoint - 确保 IVSolver 和 GreeksCalculator 所有测试通过
+- [x] 3. Checkpoint - 确保 IVSolver 和 GreeksCalculator 所有测试通过
   - Ensure all tests pass, ask the user if questions arise.
 
 - [ ] 4. 实现 PricingEngine 统一定价入口
-  - [~] 4.1 创建 `src/strategy/domain/domain_service/pricing/pricing_engine.py`
+  - [-] 4.1 创建 `src/strategy/domain/domain_service/pricing/pricing_engine.py`
     - 实现 `PricingEngine.__init__()` 接受 `american_model` 配置和 `crr_steps` 参数
     - 实现 `PricingEngine.price()` 方法：输入校验 → 根据 exercise_style 和 american_model 路由到对应定价器
     - 实现 `_validate()` 静态方法：校验 spot_price, strike_price, volatility, time_to_expiry
