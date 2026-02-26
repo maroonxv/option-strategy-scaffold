@@ -30,7 +30,7 @@
     - 无法解析到期日的合约排除并记录警告
     - _Requirements: 2.1, 2.2, 2.3, 2.4_
 
-  - [~] 2.4 编写 filter_by_maturity 属性测试
+  - [x] 2.4 编写 filter_by_maturity 属性测试
     - **Property 2: 到期日过滤正确性**
     - **Validates: Requirements 2.1, 2.2, 2.3**
 

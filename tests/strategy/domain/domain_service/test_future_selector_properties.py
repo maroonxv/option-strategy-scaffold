@@ -207,3 +207,123 @@ def test_dominant_contract_has_highest_score(
                 f"(expiry={result_expiry}) should have earliest expiry, "
                 f"but {c.symbol} (expiry={c_expiry}) is earlier"
             )
+
+
+# ---------------------------------------------------------------------------
+# Property 2: 到期日过滤正确性
+# Feature: selection-service-enhancement, Property 2: 到期日过滤正确性
+# ---------------------------------------------------------------------------
+
+import calendar  # noqa: E402
+
+# Strategy: generate a current_date for filter_by_maturity
+_current_date = st.dates(min_value=date(2025, 1, 1), max_value=date(2035, 12, 28))
+
+# Strategy: filter mode
+_filter_mode = st.sampled_from(["current_month", "next_month", "custom"])
+
+# Strategy: product prefixes to add variety
+_product_prefix = st.sampled_from(["rb", "hc", "cu", "al", "zn", "ni"])
+
+# Strategy: generate a single valid contract symbol with random product prefix
+_contract_symbol_varied = st.tuples(
+    _product_prefix,
+    st.integers(min_value=25, max_value=35),
+    st.integers(min_value=1, max_value=12),
+).map(lambda t: f"{t[0]}{t[1]:02d}{t[2]:02d}")
+
+# Strategy: list of unique varied contract symbols (1 to 15)
+_unique_symbols_varied = st.lists(
+    _contract_symbol_varied,
+    min_size=1,
+    max_size=15,
+    unique=True,
+)
+
+
+def _compute_target_range(current_date: date, mode: str, date_range=None):
+    """Compute the expected target date range for a given mode."""
+    if mode == "current_month":
+        range_start = date(current_date.year, current_date.month, 1)
+        last_day = calendar.monthrange(current_date.year, current_date.month)[1]
+        range_end = date(current_date.year, current_date.month, last_day)
+    elif mode == "next_month":
+        if current_date.month == 12:
+            next_year = current_date.year + 1
+            next_month = 1
+        else:
+            next_year = current_date.year
+            next_month = current_date.month + 1
+        range_start = date(next_year, next_month, 1)
+        last_day = calendar.monthrange(next_year, next_month)[1]
+        range_end = date(next_year, next_month, last_day)
+    elif mode == "custom":
+        range_start, range_end = date_range
+    else:
+        raise ValueError(f"Unknown mode: {mode}")
+    return range_start, range_end
+
+
+# Feature: selection-service-enhancement, Property 2: 到期日过滤正确性
+@settings(max_examples=100)
+@given(
+    symbols=_unique_symbols_varied,
+    current_dt=_current_date,
+    mode=_filter_mode,
+    custom_offset_start=st.integers(min_value=0, max_value=180),
+    custom_offset_end=st.integers(min_value=0, max_value=180),
+)
+def test_filter_by_maturity_correctness(
+    symbols, current_dt, mode, custom_offset_start, custom_offset_end
+):
+    """
+    Property 2: 到期日过滤正确性
+
+    **Validates: Requirements 2.1, 2.2, 2.3**
+
+    For any contract list, current date, and filter mode (current_month / next_month / custom),
+    filter_by_maturity should return contracts whose parsed expiry falls within the target
+    date range, and all parseable contracts with expiry in range should be included.
+    """
+    selector = BaseFutureSelector()
+    contracts = [_make_contract(s) for s in symbols]
+
+    # Build date_range for custom mode
+    date_range = None
+    if mode == "custom":
+        from datetime import timedelta
+        start = current_dt - timedelta(days=custom_offset_start)
+        end = current_dt + timedelta(days=custom_offset_end)
+        # Ensure start <= end
+        if start > end:
+            start, end = end, start
+        date_range = (start, end)
+
+    # Call filter_by_maturity
+    result = selector.filter_by_maturity(
+        contracts, current_dt, mode=mode, date_range=date_range
+    )
+
+    # Compute expected target range
+    range_start, range_end = _compute_target_range(current_dt, mode, date_range)
+
+    # --- Soundness: every returned contract's expiry is in range ---
+    for contract in result:
+        expiry = ContractHelper.get_expiry_from_symbol(contract.symbol)
+        assert expiry is not None, (
+            f"Returned contract {contract.symbol} has unparseable expiry"
+        )
+        assert range_start <= expiry <= range_end, (
+            f"Contract {contract.symbol} expiry {expiry} is outside "
+            f"target range [{range_start}, {range_end}]"
+        )
+
+    # --- Completeness: all parseable contracts with expiry in range are included ---
+    result_symbols = {c.symbol for c in result}
+    for contract in contracts:
+        expiry = ContractHelper.get_expiry_from_symbol(contract.symbol)
+        if expiry is not None and range_start <= expiry <= range_end:
+            assert contract.symbol in result_symbols, (
+                f"Contract {contract.symbol} with expiry {expiry} is in range "
+                f"[{range_start}, {range_end}] but was not included in result"
+            )
