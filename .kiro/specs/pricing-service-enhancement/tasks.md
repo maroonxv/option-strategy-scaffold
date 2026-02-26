@@ -36,13 +36,13 @@
     - **Validates: Requirements 2.1, 2.2, 2.3**
 
 - [ ] 2. 修改 GreeksCalculator 委托 IVSolver 并验证向后兼容
-  - [-] 2.1 将 `greeks_calculator.py` 移动到 `pricing/iv/greeks_calculator.py`
+  - [x] 2.1 将 `greeks_calculator.py` 移动到 `pricing/iv/greeks_calculator.py`
     - 构造函数增加可选 `iv_solver` 参数，默认创建 `IVSolver()` 实例
     - `calculate_implied_volatility` 方法委托给 `self._iv_solver.solve()`，签名和返回类型不变
     - 其他方法（calculate_greeks, bs_price）保持不变
     - _Requirements: 3.1, 3.2, 3.3_
 
-  - [~] 2.2 创建属性测试 Property 4（追加到 `test_iv_solver_properties.py`）
+  - [x] 2.2 创建属性测试 Property 4（追加到 `test_iv_solver_properties.py`）
     - **Property 4: GreeksCalculator 向后兼容（行为等价）**
     - **Validates: Requirements 3.1, 3.2, 3.3**
 

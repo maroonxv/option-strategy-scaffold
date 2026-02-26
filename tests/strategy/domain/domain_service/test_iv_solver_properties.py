@@ -283,3 +283,75 @@ class TestProperty3BatchInvariants:
                     f"无效报价 #{i} (market_price={quotes[i].market_price}) "
                     f"应返回 success=False"
                 )
+
+
+# ===========================================================================
+# Feature: pricing-service-enhancement, Property 4: GreeksCalculator 向后兼容（行为等价）
+# ===========================================================================
+
+
+class TestProperty4GreeksCalculatorBackwardCompat:
+    """
+    Property 4: GreeksCalculator 向后兼容（行为等价）
+
+    *For any* 有效的 IV 求解输入，GreeksCalculator.calculate_implied_volatility
+    的返回结果应与直接调用 IVSolver.solve（使用默认牛顿法）的结果完全一致
+    （implied_volatility 和 success 字段相同）。
+
+    **Validates: Requirements 3.1, 3.2, 3.3**
+    """
+
+    @given(
+        spot=_spot,
+        strike=_strike,
+        time=_time,
+        rate=_rate,
+        vol=_vol,
+        opt=_opt_type,
+    )
+    @settings(max_examples=200)
+    def test_greeks_calculator_delegates_to_iv_solver(
+        self, spot, strike, time, rate, vol, opt,
+    ):
+        from src.strategy.domain.domain_service.pricing.iv.greeks_calculator import (
+            GreeksCalculator,
+        )
+
+        # 用已知 vol 计算 BS 理论价格作为 market_price
+        market_price = _bs_price(spot, strike, time, rate, vol, opt)
+        assume(market_price > 0.01)
+
+        greeks_calc = GreeksCalculator()
+
+        # 通过 GreeksCalculator 接口求解
+        gc_result = greeks_calc.calculate_implied_volatility(
+            market_price=market_price,
+            spot_price=spot,
+            strike_price=strike,
+            time_to_expiry=time,
+            risk_free_rate=rate,
+            option_type=opt,
+        )
+
+        # 直接通过 IVSolver 求解（默认牛顿法）
+        iv_result = _solver.solve(
+            market_price=market_price,
+            spot_price=spot,
+            strike_price=strike,
+            time_to_expiry=time,
+            risk_free_rate=rate,
+            option_type=opt,
+        )
+
+        # 两者的 success 状态必须一致
+        assert gc_result.success == iv_result.success, (
+            f"success 不一致: GreeksCalculator={gc_result.success}, "
+            f"IVSolver={iv_result.success}"
+        )
+
+        # 两者的 implied_volatility 必须完全一致
+        assert gc_result.implied_volatility == iv_result.implied_volatility, (
+            f"implied_volatility 不一致: "
+            f"GreeksCalculator={gc_result.implied_volatility}, "
+            f"IVSolver={iv_result.implied_volatility}"
+        )
