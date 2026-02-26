@@ -8,9 +8,7 @@ import pytest
 from hypothesis import given, settings, assume
 from hypothesis import strategies as st
 
-from src.strategy.domain.domain_service.pricing.baw_pricer import BAWPricer
-from src.strategy.domain.domain_service.pricing.bs_pricer import BlackScholesPricer
-from src.strategy.domain.domain_service.pricing.greeks_calculator import GreeksCalculator
+from src.strategy.domain.domain_service.pricing import BAWPricer, BlackScholesPricer, GreeksCalculator
 from src.strategy.domain.value_object.pricing import (
     ExerciseStyle,
     PricingInput,

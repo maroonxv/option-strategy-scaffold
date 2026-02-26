@@ -78,13 +78,13 @@
     - 创建 `volatility/__init__.py` 导出 `VolSurfaceBuilder`
     - _Requirements: 5.3_
 
-  - [-] 5.3 更新顶层 `pricing/__init__.py`
+  - [x] 5.3 更新顶层 `pricing/__init__.py`
     - 从新的子目录路径重新导出所有现有公开类
     - 新增导出 `IVSolver`、`SolveMethod`、`PricingEngine`
     - 确保 `__all__` 列表包含所有导出
     - _Requirements: 5.4, 5.5_
 
-  - [~] 5.4 更新 `strategy_entry.py` 及其他源码文件中的导入路径
+  - [-] 5.4 更新 `strategy_entry.py` 及其他源码文件中的导入路径
     - 通过顶层 `__init__.py` 兼容或直接更新导入路径
     - _Requirements: 6.1, 6.3_
 

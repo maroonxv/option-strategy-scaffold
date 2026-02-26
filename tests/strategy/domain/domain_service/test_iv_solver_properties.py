@@ -12,10 +12,7 @@ import math
 from hypothesis import given, settings, assume
 from hypothesis import strategies as st
 
-from src.strategy.domain.domain_service.pricing.iv.iv_solver import (
-    IVSolver,
-    SolveMethod,
-)
+from src.strategy.domain.domain_service.pricing import IVSolver, SolveMethod
 from src.strategy.domain.value_object.greeks import IVQuote, IVResult
 
 

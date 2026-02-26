@@ -7,7 +7,7 @@ import json
 import pytest
 from hypothesis import given, strategies as st, settings, assume
 
-from src.strategy.domain.domain_service.pricing.volatility.vol_surface_builder import VolSurfaceBuilder
+from src.strategy.domain.domain_service.pricing import VolSurfaceBuilder
 from src.strategy.domain.value_object.vol_surface import (
     VolQuote, VolQueryResult, VolSmile, TermStructure, VolSurfaceSnapshot,
 )

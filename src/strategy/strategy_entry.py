@@ -33,7 +33,7 @@ from .domain.domain_service.signal.signal_service import SignalService
 from .domain.domain_service.risk.position_sizing_service import PositionSizingService
 from .domain.domain_service.selection.option_selector_service import OptionSelectorService
 from .domain.domain_service.selection.future_selection_service import BaseFutureSelector
-from .domain.domain_service.pricing.greeks_calculator import GreeksCalculator
+from .domain.domain_service.pricing import GreeksCalculator
 from .domain.domain_service.risk.portfolio_risk_aggregator import PortfolioRiskAggregator
 from .domain.domain_service.execution.smart_order_executor import SmartOrderExecutor
 from .domain.entity.position import Position

@@ -6,9 +6,7 @@ CRRPricer 属性测试
 from hypothesis import given, settings, assume
 from hypothesis import strategies as st
 
-from src.strategy.domain.domain_service.pricing.crr_pricer import CRRPricer
-from src.strategy.domain.domain_service.pricing.bs_pricer import BlackScholesPricer
-from src.strategy.domain.domain_service.pricing.greeks_calculator import GreeksCalculator
+from src.strategy.domain.domain_service.pricing import CRRPricer, BlackScholesPricer, GreeksCalculator
 from src.strategy.domain.value_object.pricing import (
     ExerciseStyle,
     PricingInput,

@@ -7,8 +7,7 @@ import math
 import pytest
 from unittest.mock import MagicMock
 
-from src.strategy.domain.domain_service.pricing.bs_pricer import BlackScholesPricer
-from src.strategy.domain.domain_service.pricing.greeks_calculator import GreeksCalculator
+from src.strategy.domain.domain_service.pricing import BlackScholesPricer, GreeksCalculator
 from src.strategy.domain.value_object.greeks import GreeksInput
 from src.strategy.domain.value_object.pricing import (
     ExerciseStyle,

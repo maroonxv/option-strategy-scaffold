@@ -5,7 +5,7 @@ PricingEngine 单元测试
 """
 import pytest
 
-from src.strategy.domain.domain_service.pricing.pricing_engine import PricingEngine
+from src.strategy.domain.domain_service.pricing import PricingEngine
 from src.strategy.domain.value_object.pricing import (
     ExerciseStyle,
     PricingInput,

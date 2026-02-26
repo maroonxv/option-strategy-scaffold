@@ -10,7 +10,7 @@ Property 6: PricingEngine 错误输入处理
 from hypothesis import given, settings
 from hypothesis import strategies as st
 
-from src.strategy.domain.domain_service.pricing.pricing_engine import PricingEngine
+from src.strategy.domain.domain_service.pricing import PricingEngine
 from src.strategy.domain.value_object.pricing import (
     ExerciseStyle,
     PricingInput,

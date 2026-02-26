@@ -9,10 +9,7 @@ Property 5: 无效输入返回错误
 from hypothesis import given, settings, assume
 from hypothesis import strategies as st
 
-from src.strategy.domain.domain_service.pricing.baw_pricer import BAWPricer
-from src.strategy.domain.domain_service.pricing.crr_pricer import CRRPricer
-from src.strategy.domain.domain_service.pricing.bs_pricer import BlackScholesPricer
-from src.strategy.domain.domain_service.pricing.greeks_calculator import GreeksCalculator
+from src.strategy.domain.domain_service.pricing import BAWPricer, CRRPricer, BlackScholesPricer, GreeksCalculator
 from src.strategy.domain.value_object.pricing import (
     ExerciseStyle,
     PricingInput,
