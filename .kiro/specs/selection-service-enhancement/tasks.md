@@ -77,7 +77,7 @@
     - **Property 10: Delta 范围过滤正确性**
     - **Validates: Requirements 5.1, 5.3**
 
-- [ ] 6. 增强 OptionSelectorService - 评分排名
+- [x] 6. 增强 OptionSelectorService - 评分排名
   - [x] 6.1 新增 `score_candidates` 方法及内部评分函数
     - 实现 `_calc_liquidity_score`、`_calc_otm_score`、`_calc_expiry_score` 三个评分函数
     - 计算加权总分并按降序排列
@@ -90,7 +90,7 @@
     - **Validates: Requirements 6.1, 6.2, 6.3, 6.4, 6.5**
 
 - [ ] 7. 集成与导出
-  - [~] 7.1 更新 `selection/__init__.py` 导出
+  - [-] 7.1 更新 `selection/__init__.py` 导出
     - 导出增强后的 `BaseFutureSelector` 和 `OptionSelectorService`
     - 导出新增值对象
     - _Requirements: 全部_
