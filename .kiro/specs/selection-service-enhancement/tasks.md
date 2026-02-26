@@ -64,7 +64,7 @@
     - **Property 8: 流动性不足拒绝整个组合**
     - **Validates: Requirements 4.1, 4.2, 4.4, 4.5**
 
-- [ ] 5. 增强 OptionSelectorService - Greeks 感知选择
+- [x] 5. 增强 OptionSelectorService - Greeks 感知选择
   - [x] 5.1 新增 `select_by_delta` 方法
     - 接受 `greeks_data: Dict[str, GreeksResult]` 和 `target_delta`
     - 从候选合约中选择 Delta 最接近目标值的合约
@@ -78,7 +78,7 @@
     - **Validates: Requirements 5.1, 5.3**
 
 - [ ] 6. 增强 OptionSelectorService - 评分排名
-  - [~] 6.1 新增 `score_candidates` 方法及内部评分函数
+  - [-] 6.1 新增 `score_candidates` 方法及内部评分函数
     - 实现 `_calc_liquidity_score`、`_calc_otm_score`、`_calc_expiry_score` 三个评分函数
     - 计算加权总分并按降序排列
     - 返回 `List[SelectionScore]`
@@ -100,7 +100,7 @@
     - 测试期权选择器完整流程：评分 → 组合选择 → Delta 选择
     - _Requirements: 全部_
 
-- [ ] 8. 最终检查点 - 确保所有测试通过
+- [~] 8. 最终检查点 - 确保所有测试通过
   - 确保所有测试通过，如有问题请向用户确认。
 
 ## 备注
