@@ -78,7 +78,7 @@
     - **Validates: Requirements 5.1, 5.3**
 
 - [ ] 6. 增强 OptionSelectorService - 评分排名
-  - [-] 6.1 新增 `score_candidates` 方法及内部评分函数
+  - [x] 6.1 新增 `score_candidates` 方法及内部评分函数
     - 实现 `_calc_liquidity_score`、`_calc_otm_score`、`_calc_expiry_score` 三个评分函数
     - 计算加权总分并按降序排列
     - 返回 `List[SelectionScore]`
