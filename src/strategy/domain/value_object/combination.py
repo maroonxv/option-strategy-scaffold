@@ -71,6 +71,7 @@ class LegPnL:
     vt_symbol: str
     unrealized_pnl: float
     price_available: bool = True
+    realized_pnl: float = 0.0
 
 
 @dataclass(frozen=True)
@@ -79,6 +80,7 @@ class CombinationPnL:
     total_unrealized_pnl: float
     leg_details: List[LegPnL] = field(default_factory=list)
     timestamp: datetime = field(default_factory=datetime.now)
+    total_realized_pnl: float = 0.0
 
 
 @dataclass(frozen=True)
