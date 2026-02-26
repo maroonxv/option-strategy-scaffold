@@ -87,3 +87,4 @@ class CombinationRiskConfig:
     delta_limit: float = 2.0
     gamma_limit: float = 0.5
     vega_limit: float = 200.0
+    theta_limit: float = 100.0

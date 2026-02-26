@@ -21,7 +21,7 @@ class CombinationRiskChecker:
         """
         检查组合级 Greeks 是否超限。
 
-        通过条件: |delta| ≤ delta_limit AND |gamma| ≤ gamma_limit AND |vega| ≤ vega_limit
+        通过条件: |delta| ≤ delta_limit AND |gamma| ≤ gamma_limit AND |vega| ≤ vega_limit AND |theta| ≤ theta_limit
         失败时 reject_reason 包含超限的 Greek 名称和数值。
         """
         violations: list[str] = []
@@ -37,6 +37,10 @@ class CombinationRiskChecker:
         if abs(greeks.vega) > self._config.vega_limit:
             violations.append(
                 f"vega={greeks.vega:.4f}(limit={self._config.vega_limit})"
+            )
+        if abs(greeks.theta) > self._config.theta_limit:
+            violations.append(
+                f"theta={greeks.theta:.4f}(limit={self._config.theta_limit})"
             )
 
         if violations:

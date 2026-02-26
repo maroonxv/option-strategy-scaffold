@@ -60,13 +60,13 @@
     - **Property 5: validate() 行为等价性**
     - **Validates: Requirements 3.5**
 
-- [~] 6. 检查点 - 重构阶段 2
+- [x] 6. 检查点 - 重构阶段 2
   - 运行所有现有测试确保通过，ask the user if questions arise.
 
 - [ ] 7. CombinationRiskChecker theta 检查（需求 5）
-  - [~] 7.1 在 `src/strategy/domain/value_object/combination.py` 的 `CombinationRiskConfig` 中新增 `theta_limit: float = 100.0` 字段
+  - [x] 7.1 在 `src/strategy/domain/value_object/combination.py` 的 `CombinationRiskConfig` 中新增 `theta_limit: float = 100.0` 字段
     - _Requirements: 5.1_
-  - [~] 7.2 在 `CombinationRiskChecker.check()` 中新增 theta 检查逻辑，格式与现有 delta/gamma/vega 一致
+  - [-] 7.2 在 `CombinationRiskChecker.check()` 中新增 theta 检查逻辑，格式与现有 delta/gamma/vega 一致
     - _Requirements: 5.2, 5.3, 5.4, 5.5_
   - [~] 7.3 编写属性测试验证风控检查 theta 集成正确性
     - **Property 9: 风控检查 theta 集成正确性**

@@ -93,6 +93,66 @@ class TestCombinationRiskChecker:
         result = self.checker.check(greeks)
         assert "limit=2.0" in result.reject_reason
 
+    # --- theta 检查单元测试 ---
+
+    def test_theta_within_limit_passes(self) -> None:
+        greeks = CombinationGreeks(delta=1.0, gamma=0.3, vega=100.0, theta=50.0)
+        result = self.checker.check(greeks)
+        assert result.passed is True
+
+    def test_theta_at_exact_limit_passes(self) -> None:
+        config = CombinationRiskConfig(
+            delta_limit=2.0, gamma_limit=0.5, vega_limit=200.0, theta_limit=100.0
+        )
+        checker = CombinationRiskChecker(config)
+        greeks = CombinationGreeks(delta=1.0, gamma=0.3, vega=100.0, theta=100.0)
+        result = checker.check(greeks)
+        assert result.passed is True
+
+    def test_theta_exceeds_limit_fails(self) -> None:
+        greeks = CombinationGreeks(delta=1.0, gamma=0.3, vega=100.0, theta=150.0)
+        result = self.checker.check(greeks)
+        assert result.passed is False
+        assert "theta" in result.reject_reason
+        assert "150" in result.reject_reason
+
+    def test_negative_theta_exceeds_limit_fails(self) -> None:
+        greeks = CombinationGreeks(delta=1.0, gamma=0.3, vega=100.0, theta=-150.0)
+        result = self.checker.check(greeks)
+        assert result.passed is False
+        assert "theta" in result.reject_reason
+
+    def test_theta_and_other_greeks_exceed_limits(self) -> None:
+        greeks = CombinationGreeks(delta=3.0, gamma=1.0, vega=500.0, theta=200.0)
+        result = self.checker.check(greeks)
+        assert result.passed is False
+        assert "delta" in result.reject_reason
+        assert "gamma" in result.reject_reason
+        assert "vega" in result.reject_reason
+        assert "theta" in result.reject_reason
+
+    def test_only_theta_exceeds_limit(self) -> None:
+        greeks = CombinationGreeks(delta=1.0, gamma=0.3, vega=100.0, theta=150.0)
+        result = self.checker.check(greeks)
+        assert result.passed is False
+        assert "theta" in result.reject_reason
+        assert "delta" not in result.reject_reason
+
+    def test_custom_theta_limit(self) -> None:
+        config = CombinationRiskConfig(
+            delta_limit=2.0, gamma_limit=0.5, vega_limit=200.0, theta_limit=50.0
+        )
+        checker = CombinationRiskChecker(config)
+        greeks = CombinationGreeks(delta=1.0, gamma=0.3, vega=100.0, theta=60.0)
+        result = checker.check(greeks)
+        assert result.passed is False
+        assert "theta" in result.reject_reason
+        assert "limit=50.0" in result.reject_reason
+
+    def test_default_theta_limit_is_100(self) -> None:
+        config = CombinationRiskConfig()
+        assert config.theta_limit == 100.0
+
 
 # ---------------------------------------------------------------------------
 # Property-Based Tests
@@ -111,9 +171,11 @@ def _greeks_and_config():
         _greek_value,  # delta
         _greek_value,  # gamma
         _greek_value,  # vega
+        _greek_value,  # theta
         _limit_value,  # delta_limit
         _limit_value,  # gamma_limit
         _limit_value,  # vega_limit
+        _limit_value,  # theta_limit
     )
 
 
@@ -138,13 +200,14 @@ class TestProperty5RiskCheckCorrectness:
         对于任意 CombinationGreeks 和阈值，通过当且仅当所有 Greeks 绝对值在阈值内。
         **Validates: Requirements 5.2, 5.3**
         """
-        delta, gamma, vega, delta_limit, gamma_limit, vega_limit = data
+        delta, gamma, vega, theta, delta_limit, gamma_limit, vega_limit, theta_limit = data
 
-        greeks = CombinationGreeks(delta=delta, gamma=gamma, vega=vega)
+        greeks = CombinationGreeks(delta=delta, gamma=gamma, vega=vega, theta=theta)
         config = CombinationRiskConfig(
             delta_limit=delta_limit,
             gamma_limit=gamma_limit,
             vega_limit=vega_limit,
+            theta_limit=theta_limit,
         )
         checker = CombinationRiskChecker(config)
         result = checker.check(greeks)
@@ -153,6 +216,7 @@ class TestProperty5RiskCheckCorrectness:
             abs(delta) <= delta_limit
             and abs(gamma) <= gamma_limit
             and abs(vega) <= vega_limit
+            and abs(theta) <= theta_limit
         )
 
         assert result.passed == expected_passed
@@ -164,13 +228,14 @@ class TestProperty5RiskCheckCorrectness:
         当风控检查失败时，reject_reason 应包含所有超限的 Greek 名称。
         **Validates: Requirements 5.2, 5.3**
         """
-        delta, gamma, vega, delta_limit, gamma_limit, vega_limit = data
+        delta, gamma, vega, theta, delta_limit, gamma_limit, vega_limit, theta_limit = data
 
-        greeks = CombinationGreeks(delta=delta, gamma=gamma, vega=vega)
+        greeks = CombinationGreeks(delta=delta, gamma=gamma, vega=vega, theta=theta)
         config = CombinationRiskConfig(
             delta_limit=delta_limit,
             gamma_limit=gamma_limit,
             vega_limit=vega_limit,
+            theta_limit=theta_limit,
         )
         checker = CombinationRiskChecker(config)
         result = checker.check(greeks)
@@ -182,5 +247,7 @@ class TestProperty5RiskCheckCorrectness:
                 assert "gamma" in result.reject_reason
             if abs(vega) > vega_limit:
                 assert "vega" in result.reject_reason
+            if abs(theta) > theta_limit:
+                assert "theta" in result.reject_reason
         else:
             assert result.reject_reason == ""
