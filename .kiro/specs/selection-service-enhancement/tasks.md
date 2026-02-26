@@ -6,14 +6,14 @@
 
 ## 任务
 
-- [ ] 1. 新增值对象和数据模型
-  - [-] 1.1 创建选择服务相关值对象
+- [x] 1. 新增值对象和数据模型
+  - [x] 1.1 创建选择服务相关值对象
     - 在 `src/strategy/domain/value_object/` 下新建 `selection.py`
     - 定义 `MarketData`、`RolloverRecommendation`、`CombinationSelectionResult`、`SelectionScore` 四个 frozen dataclass
     - _Requirements: 1.1, 3.1, 4.1, 6.1_
 
 - [ ] 2. 增强 BaseFutureSelector
-  - [~] 2.1 重写 `select_dominant_contract` 方法
+  - [-] 2.1 重写 `select_dominant_contract` 方法
     - 接受 `market_data` 参数，计算加权得分（volume × volume_weight + open_interest × oi_weight）
     - 按得分降序排列，得分相同时按到期日升序
     - 无行情数据时回退到按到期日排序
