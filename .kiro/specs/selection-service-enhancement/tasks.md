@@ -84,7 +84,7 @@
     - 返回 `List[SelectionScore]`
     - _Requirements: 6.1, 6.2, 6.3, 6.4, 6.5_
 
-  - [~] 6.2 编写评分排名属性测试
+  - [x] 6.2 编写评分排名属性测试
     - **Property 11: 评分单调性**
     - **Property 12: 评分完整性与排序**
     - **Validates: Requirements 6.1, 6.2, 6.3, 6.4, 6.5**
