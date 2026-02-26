@@ -4,11 +4,20 @@ CombinationRecognizer - 组合策略识别服务
 根据持仓结构自动识别组合策略类型。
 按优先级匹配：IRON_CONDOR → STRADDLE → STRANGLE → VERTICAL_SPREAD → CALENDAR_SPREAD → CUSTOM
 """
-from typing import Dict, List
+from dataclasses import dataclass
+from typing import Callable, Dict, List
 
 from src.strategy.domain.entity.position import Position
 from src.strategy.domain.value_object.combination import CombinationType
 from src.strategy.domain.value_object.option_contract import OptionContract
+
+
+@dataclass(frozen=True)
+class MatchRule:
+    """组合类型匹配规则"""
+    combination_type: CombinationType
+    leg_count: int
+    predicate: Callable[[List[OptionContract]], bool]
 
 
 class CombinationRecognizer:

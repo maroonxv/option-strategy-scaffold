@@ -23,7 +23,7 @@
     - **Property 3: PnL 计算方向加权正确性**
     - **Validates: Requirements 1.3, 1.5**
 
-- [ ] 2. Direction 类方法与 LifecycleService 重构（需求 4）
+- [x] 2. Direction 类方法与 LifecycleService 重构（需求 4）
   - [x] 2.1 在 `src/strategy/domain/value_object/order_instruction.py` 的 `Direction` 枚举上新增 `from_leg_direction(cls, leg_direction: str)` 类方法和 `reverse(self)` 方法
     - _Requirements: 4.1, 4.2_
   - [x] 2.2 重构 `CombinationLifecycleService`：将所有 `if leg.direction == "long"` 的 if-else 方向映射替换为 `Direction.from_leg_direction()` 和 `.reverse()` 调用
@@ -35,11 +35,11 @@
     - **Property 8: Lifecycle 指令生成等价性**
     - **Validates: Requirements 4.5**
 
-- [~] 3. 检查点 - 重构阶段 1
+- [x] 3. 检查点 - 重构阶段 1
   - 运行所有现有测试确保通过，ask the user if questions arise.
 
 - [ ] 4. CombinationRecognizer 表驱动化（需求 2）
-  - [~] 4.1 在 `combination_recognizer.py` 中定义 `MatchRule` dataclass，包含 combination_type、leg_count、predicate 字段
+  - [-] 4.1 在 `combination_recognizer.py` 中定义 `MatchRule` dataclass，包含 combination_type、leg_count、predicate 字段
     - _Requirements: 2.1_
   - [~] 4.2 将现有 `_is_straddle`、`_is_strangle`、`_is_vertical_spread`、`_is_calendar_spread`、`_is_iron_condor` 方法转换为静态谓词函数，构建按优先级排序的 `_RULES` 列表
     - _Requirements: 2.2_
