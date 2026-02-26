@@ -131,103 +131,27 @@ class CombinationRecognizer:
         """
         分析持仓结构，返回匹配的组合类型。
 
+        使用表驱动逻辑遍历 _RULES 列表，返回第一个匹配的组合类型。
+        优先级: IRON_CONDOR → STRADDLE → STRANGLE → VERTICAL_SPREAD → CALENDAR_SPREAD
+
         Args:
             positions: 待识别的持仓列表
             contracts: vt_symbol → OptionContract 映射
 
         Returns:
-            匹配的 CombinationType
+            匹配的 CombinationType，无匹配时返回 CUSTOM
         """
         if not positions:
             return CombinationType.CUSTOM
 
-        # 按优先级依次尝试匹配
-        if self._is_iron_condor(positions, contracts):
-            return CombinationType.IRON_CONDOR
-        if self._is_straddle(positions, contracts):
-            return CombinationType.STRADDLE
-        if self._is_strangle(positions, contracts):
-            return CombinationType.STRANGLE
-        if self._is_vertical_spread(positions, contracts):
-            return CombinationType.VERTICAL_SPREAD
-        if self._is_calendar_spread(positions, contracts):
-            return CombinationType.CALENDAR_SPREAD
-
-        return CombinationType.CUSTOM
-
-    # ------------------------------------------------------------------
-    # 私有匹配方法（调用静态谓词函数）
-    # ------------------------------------------------------------------
-
-    def _is_straddle(
-        self, positions: List[Position], contracts: Dict[str, OptionContract]
-    ) -> bool:
-        """STRADDLE: 2腿, 同标的, 同到期日, 同行权价, 一Call一Put"""
-        option_contracts = self._get_option_contracts(positions, contracts)
-        if option_contracts is None:
-            return False
-        return _is_straddle(option_contracts)
-
-    def _is_strangle(
-        self, positions: List[Position], contracts: Dict[str, OptionContract]
-    ) -> bool:
-        """STRANGLE: 2腿, 同标的, 同到期日, 不同行权价, 一Call一Put"""
-        option_contracts = self._get_option_contracts(positions, contracts)
-        if option_contracts is None:
-            return False
-        return _is_strangle(option_contracts)
-
-    def _is_vertical_spread(
-        self, positions: List[Position], contracts: Dict[str, OptionContract]
-    ) -> bool:
-        """VERTICAL_SPREAD: 2腿, 同标的, 同到期日, 同期权类型, 不同行权价"""
-        option_contracts = self._get_option_contracts(positions, contracts)
-        if option_contracts is None:
-            return False
-        return _is_vertical_spread(option_contracts)
-
-    def _is_calendar_spread(
-        self, positions: List[Position], contracts: Dict[str, OptionContract]
-    ) -> bool:
-        """CALENDAR_SPREAD: 2腿, 同标的, 不同到期日, 同行权价, 同期权类型"""
-        option_contracts = self._get_option_contracts(positions, contracts)
-        if option_contracts is None:
-            return False
-        return _is_calendar_spread(option_contracts)
-
-    def _is_iron_condor(
-        self, positions: List[Position], contracts: Dict[str, OptionContract]
-    ) -> bool:
-        """
-        IRON_CONDOR: 4腿, 同标的, 同到期日,
-        2 Puts 不同行权价 + 2 Calls 不同行权价
-        """
-        option_contracts = self._get_option_contracts(positions, contracts)
-        if option_contracts is None:
-            return False
-        return _is_iron_condor(option_contracts)
-
-    # ------------------------------------------------------------------
-    # 辅助方法
-    # ------------------------------------------------------------------
-
-    @staticmethod
-    def _get_option_contracts(
-        positions: List[Position],
-        contracts: Dict[str, OptionContract],
-    ) -> List[OptionContract] | None:
-        """获取 Position 列表对应的 OptionContract 列表，任一缺失返回 None"""
+        # 获取所有持仓对应的期权合约
         option_contracts = [contracts.get(p.vt_symbol) for p in positions]
         if any(c is None for c in option_contracts):
-            return None
-        return option_contracts  # type: ignore[return-value]
+            return CombinationType.CUSTOM
 
-    @staticmethod
-    def _get_contracts(
-        positions: List[Position],
-        contracts: Dict[str, OptionContract],
-    ):
-        """获取两个 Position 对应的 OptionContract，任一缺失返回 (None, None)"""
-        c0 = contracts.get(positions[0].vt_symbol)
-        c1 = contracts.get(positions[1].vt_symbol)
-        return c0, c1
+        # 遍历规则列表，返回第一个匹配的组合类型
+        for rule in _RULES:
+            if len(positions) == rule.leg_count and rule.predicate(option_contracts):
+                return rule.combination_type
+
+        return CombinationType.CUSTOM
