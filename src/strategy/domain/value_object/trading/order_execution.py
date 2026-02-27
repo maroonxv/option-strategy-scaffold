@@ -27,6 +27,27 @@ class OrderExecutionConfig:
     price_tick: float = 0.2
 
 
+@dataclass(frozen=True)
+class AdvancedSchedulerConfig:
+    """
+    高级订单调度器配置
+
+    Attributes:
+        default_batch_size: 默认冰山单批量
+        default_interval_seconds: 默认拆单间隔(秒)
+        default_num_slices: 默认分片数
+        default_volume_randomize_ratio: 默认量随机比例
+        default_price_offset_ticks: 默认价格偏移跳数
+        default_price_tick: 默认最小变动价位
+    """
+    default_batch_size: int = 10
+    default_interval_seconds: int = 60
+    default_num_slices: int = 5
+    default_volume_randomize_ratio: float = 0.1
+    default_price_offset_ticks: int = 1
+    default_price_tick: float = 0.01
+
+
 @dataclass
 class ManagedOrder:
     """

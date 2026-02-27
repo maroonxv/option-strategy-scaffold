@@ -6,20 +6,20 @@
 
 ## Tasks
 
-- [ ] 1. 修复已知缺陷
+- [x] 1. 修复已知缺陷
   - [x] 1.1 删除 `advanced_order_scheduler.py` 中重复的 `submit_timed_split` 方法定义
     - 保留第一个定义（约第 69-120 行），删除第二个重复定义（约第 122-172 行）
     - 确保删除后功能不变
     - _Requirements: 5.1, 5.2_
 
-  - [-] 1.2 修复 `smart_order_executor.py` 中 `prepare_retry` 方法，重试耗尽时返回 OrderRetryExhaustedEvent
+  - [x] 1.2 修复 `smart_order_executor.py` 中 `prepare_retry` 方法，重试耗尽时返回 OrderRetryExhaustedEvent
     - 将返回类型从 `Optional[OrderInstruction]` 改为 `Tuple[Optional[OrderInstruction], List[DomainEvent]]`
     - 重试耗尽时返回 `(None, [OrderRetryExhaustedEvent(...)])`，包含正确的 vt_symbol、total_retries、original_price、final_price
     - 未耗尽时返回 `(new_instruction, [])`
     - _Requirements: 6.1, 6.2, 6.3_
 
 - [ ] 2. 新增 AdvancedSchedulerConfig 配置值对象与 TOML 配置
-  - [~] 2.1 在 `src/strategy/domain/value_object/trading/order_execution.py` 中新增 `AdvancedSchedulerConfig` frozen dataclass
+  - [-] 2.1 在 `src/strategy/domain/value_object/trading/order_execution.py` 中新增 `AdvancedSchedulerConfig` frozen dataclass
     - 包含字段：default_batch_size(10)、default_interval_seconds(60)、default_num_slices(5)、default_volume_randomize_ratio(0.1)、default_price_offset_ticks(1)、default_price_tick(0.01)
     - _Requirements: 3.1, 3.2_
 
