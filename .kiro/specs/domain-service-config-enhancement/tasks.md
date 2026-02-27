@@ -29,7 +29,7 @@
     - **属性 2: PositionSizingService 行为一致性**
     - **验证需求: 2.6, 5.1**
 
-- [ ] 3. 实现 PricingEngineConfig 配置值对象
+- [x] 3. 实现 PricingEngineConfig 配置值对象
   - [x] 3.1 创建 PricingEngineConfig 类
     - 在 `src/strategy/domain/value_object/config/pricing_engine_config.py` 创建配置类
     - 使用 `@dataclass(frozen=True)` 定义不可变值对象
@@ -43,12 +43,12 @@
     - 从配置对象读取所有原先的散装参数
     - _需求: 3.4, 3.5, 3.6_
 
-  - [-] 3.3 编写 PricingEngine 行为一致性属性测试
+  - [x] 3.3 编写 PricingEngine 行为一致性属性测试
     - **属性 3: PricingEngine 行为一致性**
     - **验证需求: 3.6, 5.2**
 
 - [ ] 4. 实现 FutureSelectorConfig 配置值对象
-  - [~] 4.1 创建 FutureSelectorConfig 类
+  - [-] 4.1 创建 FutureSelectorConfig 类
     - 在 `src/strategy/domain/value_object/config/future_selector_config.py` 创建配置类
     - 使用 `@dataclass(frozen=True)` 定义不可变值对象
     - 包含 3 个字段：volume_weight、oi_weight、rollover_days
