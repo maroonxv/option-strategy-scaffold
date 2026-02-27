@@ -6,13 +6,13 @@
 
 ## 任务列表
 
-- [-] 1. 创建配置值对象目录结构
+- [x] 1. 创建配置值对象目录结构
   - 创建 `src/strategy/domain/value_object/config/` 目录
   - 创建 `__init__.py` 模块初始化文件
   - _需求: 1.1, 1.2, 1.3_
 
 - [ ] 2. 实现 PositionSizingConfig 配置值对象
-  - [~] 2.1 创建 PositionSizingConfig 类
+  - [-] 2.1 创建 PositionSizingConfig 类
     - 在 `src/strategy/domain/value_object/config/position_sizing_config.py` 创建配置类
     - 使用 `@dataclass(frozen=True)` 定义不可变值对象
     - 包含 7 个字段：max_positions、global_daily_limit、contract_daily_limit、margin_ratio、min_margin_ratio、margin_usage_limit、max_volume_per_order
