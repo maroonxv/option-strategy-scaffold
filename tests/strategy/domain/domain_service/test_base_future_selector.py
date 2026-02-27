@@ -66,6 +66,7 @@ from datetime import date  # noqa: E402
 from src.strategy.domain.domain_service.selection.future_selection_service import (  # noqa: E402
     BaseFutureSelector,
 )
+from src.strategy.domain.value_object.config.future_selector_config import FutureSelectorConfig  # noqa: E402
 from src.strategy.domain.value_object.selection import MarketData, RolloverRecommendation  # noqa: E402
 
 
@@ -165,9 +166,11 @@ class TestSelectDominantContract:
             c2.vt_symbol: MarketData(vt_symbol=c2.vt_symbol, volume=100, open_interest=500.0),
         }
         # volume_weight=0.1, oi_weight=0.9 -> c1: 1000*0.1+10*0.9=109, c2: 100*0.1+500*0.9=460
-        selected = selector.select_dominant_contract(
-            [c1, c2], date.today(), market_data=market_data,
-            volume_weight=0.1, oi_weight=0.9
+        custom_selector = BaseFutureSelector(
+            config=FutureSelectorConfig(volume_weight=0.1, oi_weight=0.9)
+        )
+        selected = custom_selector.select_dominant_contract(
+            [c1, c2], date.today(), market_data=market_data
         )
         assert selected.symbol == "rb2506"
 
@@ -355,14 +358,14 @@ class TestCheckRollover:
 
     @pytest.fixture
     def selector(self):
-        return BaseFutureSelector()
+        return BaseFutureSelector(config=FutureSelectorConfig(rollover_days=5))
 
     def test_remaining_days_above_threshold_returns_none(self, selector):
         """剩余天数大于阈值时不生成移仓建议 (Req 3.3)"""
         # rb2501 到期日 2025-01-15, current_date=2025-01-01 -> 剩余14天
         current = _make_contract("rb2501")
         result = selector.check_rollover(
-            current, [], date(2025, 1, 1), rollover_days=5
+            current, [], date(2025, 1, 1)
         )
         assert result is None
 
@@ -372,7 +375,7 @@ class TestCheckRollover:
         current = _make_contract("rb2501")
         target = _make_contract("rb2502")
         result = selector.check_rollover(
-            current, [current, target], date(2025, 1, 10), rollover_days=5
+            current, [current, target], date(2025, 1, 10)
         )
         assert result is not None
         assert result.remaining_days == 5
@@ -385,7 +388,7 @@ class TestCheckRollover:
         current = _make_contract("rb2501")
         target = _make_contract("rb2502")
         result = selector.check_rollover(
-            current, [current, target], date(2025, 1, 13), rollover_days=5
+            current, [current, target], date(2025, 1, 13)
         )
         assert result is not None
         assert result.remaining_days == 2
@@ -408,7 +411,6 @@ class TestCheckRollover:
             current,
             [current, target_a, target_b],
             date(2025, 1, 13),
-            rollover_days=5,
             market_data=market_data,
         )
         assert result is not None
@@ -419,7 +421,7 @@ class TestCheckRollover:
         current = _make_contract("rb2501")
         # 只有当前合约，无下月合约
         result = selector.check_rollover(
-            current, [current], date(2025, 1, 13), rollover_days=5
+            current, [current], date(2025, 1, 13)
         )
         assert result is not None
         assert result.has_target is False
@@ -450,7 +452,6 @@ class TestCheckRollover:
             current,
             [current, target],
             date(2025, 12, 13),
-            rollover_days=5,
         )
         assert result is not None
         assert result.has_target is True
@@ -461,7 +462,7 @@ class TestCheckRollover:
         current = _make_contract("rb2501")
         # 只有当前合约自身在列表中，无其他下月合约
         result = selector.check_rollover(
-            current, [current], date(2025, 1, 13), rollover_days=5
+            current, [current], date(2025, 1, 13)
         )
         assert result is not None
         assert result.has_target is False
@@ -474,7 +475,6 @@ class TestCheckRollover:
             current,
             [current, target],
             date(2025, 1, 13),
-            rollover_days=5,
         )
         assert result is not None
         assert result.has_target is True
@@ -489,7 +489,6 @@ class TestCheckRollover:
             current,
             [current, target],
             date(2025, 1, 13),
-            rollover_days=5,
             log_func=logs.append,
         )
         assert len(logs) >= 1
@@ -507,7 +506,6 @@ class TestCheckRollover:
             current,
             [current, target],
             date(2025, 1, 20),
-            rollover_days=5,
         )
         assert result is not None
         assert result.remaining_days < 0
@@ -521,7 +519,6 @@ class TestCheckRollover:
             current,
             [current, target],
             date(2025, 1, 13),
-            rollover_days=5,
         )
         assert isinstance(result, RolloverRecommendation)
         assert result.current_contract_symbol == "rb2501"

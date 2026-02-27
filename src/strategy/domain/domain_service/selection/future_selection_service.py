@@ -6,19 +6,22 @@ from src.strategy.infrastructure.parsing.contract_helper import ContractHelper
 from src.strategy.domain.value_object.selection import MarketData, RolloverRecommendation
 
 
+
 class BaseFutureSelector:
     """
     Base class for future selection strategies.
     Provides common utilities for contract filtering and selection.
     """
 
+    def __init__(self, config: Optional["FutureSelectorConfig"] = None):
+        from src.strategy.domain.value_object.config.future_selector_config import FutureSelectorConfig
+        self._config = config or FutureSelectorConfig()
+
     def select_dominant_contract(
         self,
         contracts: List[ContractData],
         current_date: date,
         market_data: Optional[Dict[str, MarketData]] = None,
-        volume_weight: float = 0.6,
-        oi_weight: float = 0.4,
         log_func: Optional[Callable[[str], None]] = None
     ) -> Optional[ContractData]:
         """
@@ -29,8 +32,6 @@ class BaseFutureSelector:
             contracts: 可用合约列表
             current_date: 当前日期
             market_data: 行情数据字典，key 为 vt_symbol
-            volume_weight: 成交量权重，默认 0.6
-            oi_weight: 持仓量权重，默认 0.4
             log_func: 日志回调函数
 
         Returns:
@@ -38,6 +39,9 @@ class BaseFutureSelector:
         """
         if not contracts:
             return None
+
+        volume_weight = self._config.volume_weight
+        oi_weight = self._config.oi_weight
 
         # 辅助函数：解析合约到期日，用于排序
         def _get_expiry(contract: ContractData) -> date:
@@ -154,7 +158,6 @@ class BaseFutureSelector:
         current_contract: ContractData,
         all_contracts: List[ContractData],
         current_date: date,
-        rollover_days: int = 5,
         market_data: Optional[Dict[str, MarketData]] = None,
         log_func: Optional[Callable[[str], None]] = None
     ) -> Optional[RolloverRecommendation]:
@@ -165,13 +168,14 @@ class BaseFutureSelector:
             current_contract: 当前持有合约
             all_contracts: 所有可用合约列表
             current_date: 当前日期
-            rollover_days: 移仓阈值天数，默认 5
             market_data: 行情数据字典，key 为 vt_symbol
             log_func: 日志回调函数
 
         Returns:
             移仓建议，不需要移仓时返回 None
         """
+        rollover_days = self._config.rollover_days
+
         # 解析当前合约到期日
         expiry = ContractHelper.get_expiry_from_symbol(current_contract.symbol)
         if expiry is None:
@@ -252,6 +256,8 @@ class BaseFutureSelector:
                    f"建议切换到 {best_contract.symbol}",
             has_target=True,
         )
+
+
 
 
 

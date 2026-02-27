@@ -209,7 +209,7 @@ class TestFutureSelectorIntegration:
         # Step 2: 检查移仓 — rb2501 到期日 2025-01-15，剩余 3 天 <= 阈值 5 天
         rollover = selector.check_rollover(
             dominant, contracts, current_date,
-            rollover_days=5, market_data=market_data, log_func=logs.append
+            market_data=market_data, log_func=logs.append
         )
         assert rollover is not None
         assert isinstance(rollover, RolloverRecommendation)
@@ -252,7 +252,7 @@ class TestFutureSelectorIntegration:
 
         # Step 2: 检查移仓 — 不应触发
         rollover = selector.check_rollover(
-            dominant, contracts, current_date, rollover_days=5, market_data=market_data
+            dominant, contracts, current_date, market_data=market_data
         )
         assert rollover is None
 
@@ -306,7 +306,7 @@ class TestFutureSelectorIntegration:
 
         # Step 2: 检查移仓 — 触发但无目标
         rollover = selector.check_rollover(
-            dominant, contracts, current_date, rollover_days=5, market_data=market_data
+            dominant, contracts, current_date, market_data=market_data
         )
         assert rollover is not None
         assert rollover.has_target is False
@@ -326,7 +326,7 @@ class TestFutureSelectorIntegration:
 
         # Step 2: 检查移仓（无行情数据，目标按到期日选择）
         rollover = selector.check_rollover(
-            dominant, contracts, current_date, rollover_days=5
+            dominant, contracts, current_date
         )
         assert rollover is not None
         assert rollover.has_target is True

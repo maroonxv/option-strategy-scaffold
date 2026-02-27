@@ -48,14 +48,14 @@
     - **验证需求: 3.6, 5.2**
 
 - [ ] 4. 实现 FutureSelectorConfig 配置值对象
-  - [-] 4.1 创建 FutureSelectorConfig 类
+  - [x] 4.1 创建 FutureSelectorConfig 类
     - 在 `src/strategy/domain/value_object/config/future_selector_config.py` 创建配置类
     - 使用 `@dataclass(frozen=True)` 定义不可变值对象
     - 包含 3 个字段：volume_weight、oi_weight、rollover_days
     - 所有字段提供与 BaseFutureSelector 原默认参数一致的默认值
     - _需求: 4.1, 4.2, 4.3_
 
-  - [~] 4.2 重构 BaseFutureSelector 使用配置对象
+  - [-] 4.2 重构 BaseFutureSelector 使用配置对象
     - 添加 `__init__` 方法接收配置对象
     - 修改 `select_dominant_contract` 方法，从配置读取 volume_weight 和 oi_weight
     - 修改 `check_rollover` 方法，从配置读取 rollover_days
