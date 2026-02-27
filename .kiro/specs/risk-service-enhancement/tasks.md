@@ -33,7 +33,7 @@
     - 定义 `StopLossTriggeredEvent`、`RiskBudgetExceededEvent`、`LiquidityDeterioratedEvent`、`ConcentrationExceededEvent`、`ExpiryWarningEvent` 五个领域事件
     - _Requirements: 1.6, 2.3, 3.5, 4.4, 5.3_
 
-- [~] 2. 实现 StopLossManager（止损管理服务）
+- [x] 2. 实现 StopLossManager（止损管理服务）
   - [x] 2.1 创建 `src/strategy/domain/domain_service/risk/stop_loss_manager.py`
     - 实现 `__init__` 接受 `StopLossConfig` 参数
     - 实现 `check_position_stop_loss` 方法：检查单个持仓是否触发固定止损或移动止损
@@ -59,7 +59,7 @@
     - **Validates: Requirements 1.2**
 
 - [~] 3. 实现 RiskBudgetAllocator（风险预算分配服务）
-  - [~] 3.1 创建 `src/strategy/domain/domain_service/risk/risk_budget_allocator.py`
+  - [-] 3.1 创建 `src/strategy/domain/domain_service/risk/risk_budget_allocator.py`
     - 实现 `__init__` 接受 `RiskBudgetConfig` 参数
     - 实现 `allocate_budget_by_underlying` 方法：按品种分配 Greeks 预算
     - 实现 `calculate_usage` 方法：计算当前 Greeks 使用量（支持按品种或策略维度）
