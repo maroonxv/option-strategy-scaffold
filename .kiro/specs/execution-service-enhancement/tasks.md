@@ -75,7 +75,7 @@
     - **Property 9: 定时拆单子单总量守恒**
     - **Validates: Requirements 5.2**
 
-- [ ] 5. 实现序列化与反序列化
+- [x] 5. 实现序列化与反序列化
   - [x] 5.1 为 `SmartOrderExecutor` 添加 `to_dict()` 和 `from_dict(data, config)` 方法
     - 序列化 config 和 _orders 字典为 JSON 兼容字典
     - _orders 中每个 ManagedOrder 委托 ManagedOrder.to_dict()
@@ -88,17 +88,17 @@
     - from_dict 支持可选 config 参数，未提供时从字典恢复
     - _Requirements: 9.4, 9.5_
 
-  - [-] 5.3 创建 `tests/strategy/domain/domain_service/test_execution_serialization_properties.py` 属性测试（属性 10, 11）
+  - [x] 5.3 创建 `tests/strategy/domain/domain_service/test_execution_serialization_properties.py` 属性测试（属性 10, 11）
     - **Property 10: SmartOrderExecutor 序列化 round-trip**
     - **Validates: Requirements 9.1, 9.2, 9.3**
     - **Property 11: AdvancedOrderScheduler 序列化 round-trip**
     - **Validates: Requirements 9.4, 9.5**
 
-- [~] 6. Checkpoint - 确保工厂方法和序列化测试通过
+- [x] 6. Checkpoint - 确保工厂方法和序列化测试通过
   - Ensure all tests pass, ask the user if questions arise.
 
 - [ ] 7. 新增 ExecutionCoordinator 协调器
-  - [~] 7.1 创建 `src/strategy/domain/domain_service/execution/execution_coordinator.py`
+  - [-] 7.1 创建 `src/strategy/domain/domain_service/execution/execution_coordinator.py`
     - 实现 `__init__` 持有 SmartOrderExecutor 和 AdvancedOrderScheduler 引用
     - 实现 `process_pending_children`：从 scheduler 获取到期子单，用 executor 计算自适应价格，返回指令列表和事件列表
     - 实现 `on_child_order_submitted`：注册子单到 executor 超时管理
