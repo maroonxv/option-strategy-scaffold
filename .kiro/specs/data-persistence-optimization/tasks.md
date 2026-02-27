@@ -147,7 +147,7 @@
     - 序列化 `combinations` 字典和 `symbol_index`
     - _Requirements: 1.1, 1.2_
 
-  - [~] 8.2 修改 StrategyEntry 的快照创建和恢复逻辑
+  - [x] 8.2 修改 StrategyEntry 的快照创建和恢复逻辑
     - 修改 `_create_snapshot` 方法，将 `combination_aggregate` 纳入快照
     - 修改 `on_init` 恢复逻辑，从快照中恢复 `combination_aggregate`
     - 旧版快照（无 `combination_aggregate` 字段）时创建空实例（向后兼容）

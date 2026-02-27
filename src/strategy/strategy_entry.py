@@ -26,6 +26,7 @@ from vnpy.event.engine import Event
 
 from .domain.aggregate.target_instrument_aggregate import InstrumentManager
 from .domain.aggregate.position_aggregate import PositionAggregate
+from .domain.aggregate.combination_aggregate import CombinationAggregate
 from .domain.domain_service.signal.indicator_service import IndicatorService
 from .domain.domain_service.signal.signal_service import SignalService
 # NOTE: IndicatorService 和 SignalService 是模板类，
@@ -139,6 +140,7 @@ class StrategyEntry(StrategyTemplate):
         # ── 领域聚合根 (在 on_init 中初始化) ──
         self.target_aggregate: Optional[InstrumentManager] = None
         self.position_aggregate: Optional[PositionAggregate] = None
+        self.combination_aggregate: Optional["CombinationAggregate"] = None
 
         # ── 领域服务 (在 on_init 中初始化) ──
         self.indicator_service: Optional[IndicatorService] = None
@@ -271,6 +273,7 @@ class StrategyEntry(StrategyTemplate):
 
         self.target_aggregate = InstrumentManager()
         self.position_aggregate = PositionAggregate()
+        self.combination_aggregate = CombinationAggregate()
 
         # ______________________________  4. 创建基础设施组件  ______________________________
 
@@ -367,6 +370,11 @@ class StrategyEntry(StrategyTemplate):
                         self.target_aggregate = InstrumentManager.from_snapshot(result["target_aggregate"])
                     if "position_aggregate" in result:
                         self.position_aggregate = PositionAggregate.from_snapshot(result["position_aggregate"])
+                    if "combination_aggregate" in result:
+                        self.combination_aggregate = CombinationAggregate.from_snapshot(result["combination_aggregate"])
+                    else:
+                        # 兼容旧版本快照（无 combination_aggregate 字段）
+                        self.combination_aggregate = CombinationAggregate()
                     if "current_dt" in result:
                         self.current_dt = result["current_dt"]
                     self.logger.info(f"策略状态已恢复: {self.strategy_name}")
@@ -748,11 +756,14 @@ class StrategyEntry(StrategyTemplate):
 
     def _create_snapshot(self) -> Dict[str, Any]:
         """创建聚合根快照用于持久化"""
-        return {
+        snapshot = {
             "target_aggregate": self.target_aggregate.to_snapshot(),
             "position_aggregate": self.position_aggregate.to_snapshot(),
             "current_dt": self.current_dt,
         }
+        if self.combination_aggregate:
+            snapshot["combination_aggregate"] = self.combination_aggregate.to_snapshot()
+        return snapshot
 
     # ═══════════════════════════════════════════════════════════════════
     #  监控与事件
