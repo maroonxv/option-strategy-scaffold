@@ -137,11 +137,11 @@
     - 测试异步保存异常不影响主线程（Requirements 5.5）
     - _Requirements: 2.4, 4.2, 4.5, 5.4, 5.5_
 
-- [-] 7. Checkpoint - 确保所有测试通过
+- [x] 7. Checkpoint - 确保所有测试通过
   - Ensure all tests pass, ask the user if questions arise.
 
 - [ ] 8. CombinationAggregate 持久化补全
-  - [~] 8.1 实现 CombinationAggregate 的 `to_snapshot` 和 `from_snapshot` 方法
+  - [x] 8.1 实现 CombinationAggregate 的 `to_snapshot` 和 `from_snapshot` 方法
     - 在 `combination_aggregate.py` 中添加 `to_snapshot() -> Dict[str, Any]` 方法
     - 添加 `@classmethod from_snapshot(cls, data: Dict[str, Any]) -> CombinationAggregate` 方法
     - 序列化 `combinations` 字典和 `symbol_index`
