@@ -61,19 +61,30 @@ class StateRepository:
         序列化为 JSON 后插入 strategy_state 表，保留所有历史快照。
         """
         json_str = self._serializer.serialize(data)
+        self.save_raw(strategy_name, json_str)
+
+    def save_raw(self, strategy_name: str, json_str: str) -> None:
+        """保存已序列化的 JSON 字符串（支持压缩）。
+
+        Args:
+            strategy_name: 策略名称
+            json_str: 已序列化的 JSON 字符串
+        """
+        stored_data, compressed = self._maybe_compress(json_str)
 
         db = self._database_factory.get_peewee_db()
         StrategyStateModel._meta.database = db
 
         StrategyStateModel.create(
             strategy_name=strategy_name,
-            snapshot_json=json_str,
+            snapshot_json=stored_data,
             schema_version=CURRENT_SCHEMA_VERSION,
             saved_at=datetime.now(),
         )
 
         if self._logger:
-            self._logger.info(f"策略状态已保存: {strategy_name}")
+            compression_info = " (已压缩)" if compressed else ""
+            self._logger.info(f"策略状态已保存: {strategy_name}{compression_info}")
 
     def load(
         self, strategy_name: str
@@ -100,7 +111,8 @@ class StateRepository:
             return ArchiveNotFound(strategy_name=strategy_name)
 
         try:
-            data = self._serializer.deserialize(record.snapshot_json)
+            json_str = self._maybe_decompress(record.snapshot_json)
+            data = self._serializer.deserialize(json_str)
         except Exception as e:
             raise CorruptionError(
                 strategy_name=strategy_name, original_error=e

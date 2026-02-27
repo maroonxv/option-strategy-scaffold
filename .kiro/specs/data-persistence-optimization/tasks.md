@@ -48,7 +48,7 @@
     - 压缩后数据更大时保留原始数据
     - _Requirements: 3.1, 3.2, 3.3, 3.4_
 
-  - [~] 3.2 新增 `save_raw` 方法并修改 `save` 和 `load` 方法
+  - [x] 3.2 新增 `save_raw` 方法并修改 `save` 和 `load` 方法
     - 添加 `save_raw(strategy_name, json_str)` 方法，支持保存已序列化的 JSON 字符串（含压缩逻辑）
     - 修改 `save` 方法调用 `save_raw`
     - 修改 `load` 方法在反序列化前调用 `_maybe_decompress`
