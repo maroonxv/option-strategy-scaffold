@@ -7,7 +7,7 @@ import math
 import random
 import uuid
 from datetime import datetime, timedelta
-from typing import Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 from src.strategy.domain.value_object.trading.order_instruction import OrderInstruction
 from src.strategy.domain.value_object.trading.order_execution import AdvancedSchedulerConfig
@@ -491,3 +491,32 @@ class AdvancedOrderScheduler:
     def get_order(self, order_id: str) -> Optional[AdvancedOrder]:
         """获取高级订单"""
         return self._orders.get(order_id)
+
+    def to_dict(self) -> Dict[str, Any]:
+        """序列化内部状态为 JSON 兼容字典"""
+        return {
+            "config": {
+                "default_batch_size": self.config.default_batch_size,
+                "default_interval_seconds": self.config.default_interval_seconds,
+                "default_num_slices": self.config.default_num_slices,
+                "default_volume_randomize_ratio": self.config.default_volume_randomize_ratio,
+                "default_price_offset_ticks": self.config.default_price_offset_ticks,
+                "default_price_tick": self.config.default_price_tick,
+            },
+            "orders": {
+                oid: order.to_dict() for oid, order in self._orders.items()
+            },
+        }
+
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any], config: Optional[AdvancedSchedulerConfig] = None) -> "AdvancedOrderScheduler":
+        """从字典恢复内部状态"""
+        if config is None:
+            cfg_data = data.get("config", {})
+            config = AdvancedSchedulerConfig(**cfg_data)
+        scheduler = cls(config)
+        for oid, order_data in data.get("orders", {}).items():
+            scheduler._orders[oid] = AdvancedOrder.from_dict(order_data)
+        return scheduler
+
+
