@@ -12,7 +12,7 @@
     - 定义 `StopLossConfig`、`StopLossTrigger`、`PortfolioStopLossTrigger` 三个 frozen dataclass
     - _Requirements: 1.1, 1.2, 1.3, 1.4, 1.5, 1.6_
 
-  - [~] 1.2 创建风险预算相关值对象
+  - [x] 1.2 创建风险预算相关值对象
     - 在 `risk.py` 中定义 `RiskBudgetConfig`、`GreeksBudget`、`GreeksUsage`、`BudgetCheckResult` 四个 dataclass
     - _Requirements: 2.1, 2.2, 2.3, 2.4, 2.5, 2.6, 2.7_
 

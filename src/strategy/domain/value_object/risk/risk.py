@@ -170,3 +170,73 @@ class PortfolioStopLossTrigger:
     daily_limit: float
     positions_to_close: list[str]
     message: str
+
+
+# ============================================================================
+# 风险预算相关值对象
+# ============================================================================
+
+@dataclass(frozen=True)
+class RiskBudgetConfig:
+    """
+    风险预算配置
+    
+    Attributes:
+        allocation_dimension: 分配维度 ("underlying" | "strategy")
+        allocation_ratios: 分配比例字典，例如: {"50ETF": 0.4, "300ETF": 0.3, "500ETF": 0.3}
+        allow_dynamic_adjustment: 是否允许动态调整
+    """
+    allocation_dimension: str = "underlying"
+    allocation_ratios: Dict[str, float] = field(default_factory=dict)
+    allow_dynamic_adjustment: bool = False
+
+
+@dataclass(frozen=True)
+class GreeksBudget:
+    """
+    Greeks 预算
+    
+    Attributes:
+        delta_budget: Delta 预算
+        gamma_budget: Gamma 预算
+        vega_budget: Vega 预算
+    """
+    delta_budget: float
+    gamma_budget: float
+    vega_budget: float
+
+
+@dataclass
+class GreeksUsage:
+    """
+    Greeks 使用量
+    
+    Attributes:
+        delta_used: Delta 使用量
+        gamma_used: Gamma 使用量
+        vega_used: Vega 使用量
+        position_count: 持仓数量
+    """
+    delta_used: float = 0.0
+    gamma_used: float = 0.0
+    vega_used: float = 0.0
+    position_count: int = 0
+
+
+@dataclass(frozen=True)
+class BudgetCheckResult:
+    """
+    预算检查结果
+    
+    Attributes:
+        passed: 是否通过预算检查
+        exceeded_dimensions: 超限的维度列表，例如: ["delta", "gamma", "vega"]
+        usage: Greeks 使用量
+        budget: Greeks 预算
+        message: 检查消息
+    """
+    passed: bool
+    exceeded_dimensions: list[str]
+    usage: GreeksUsage
+    budget: GreeksBudget
+    message: str = ""
