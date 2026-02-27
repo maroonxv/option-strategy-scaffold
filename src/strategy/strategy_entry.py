@@ -316,6 +316,8 @@ class StrategyEntry(StrategyTemplate):
                 strategy_name=self.strategy_name,
                 serializer=self.json_serializer,
                 interval_seconds=60.0,
+                cleanup_interval_hours=24.0,
+                keep_days=7,
                 logger=self.logger,
             )
 
@@ -452,9 +454,10 @@ class StrategyEntry(StrategyTemplate):
             pass
         self.logger.info("策略停止")
 
-        # 保存状态 - 仅在非回测模式下
+        # 保存状态并关闭线程池 - 仅在非回测模式下
         if self.auto_save_service:
             self.auto_save_service.force_save(self._create_snapshot)
+            self.auto_save_service.shutdown()
 
         # 注销飞书处理器
         if self.feishu_handler:

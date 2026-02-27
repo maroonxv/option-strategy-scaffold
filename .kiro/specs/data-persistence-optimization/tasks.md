@@ -140,7 +140,7 @@
 - [x] 7. Checkpoint - 确保所有测试通过
   - Ensure all tests pass, ask the user if questions arise.
 
-- [ ] 8. CombinationAggregate 持久化补全
+- [x] 8. CombinationAggregate 持久化补全
   - [x] 8.1 实现 CombinationAggregate 的 `to_snapshot` 和 `from_snapshot` 方法
     - 在 `combination_aggregate.py` 中添加 `to_snapshot() -> Dict[str, Any]` 方法
     - 添加 `@classmethod from_snapshot(cls, data: Dict[str, Any]) -> CombinationAggregate` 方法
@@ -165,7 +165,7 @@
     - _Requirements: 1.3_
 
 - [ ] 9. 集成与连接
-  - [~] 9.1 更新 StrategyEntry 中 AutoSaveService 的初始化
+  - [x] 9.1 更新 StrategyEntry 中 AutoSaveService 的初始化
     - 传入新增的构造参数（cleanup_interval_hours、keep_days）
     - 传入 JsonSerializer 引用
     - 在 `on_stop` 中调用 `force_save` 和 `shutdown`
