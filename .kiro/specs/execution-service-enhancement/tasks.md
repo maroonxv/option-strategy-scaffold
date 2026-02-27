@@ -113,7 +113,7 @@
     - **Property 7: 协调器注册子单到超时管理**
     - **Validates: Requirements 4.3**
 
-  - [~] 7.3 创建 `tests/strategy/domain/domain_service/test_execution_integration.py` 集成测试
+  - [-] 7.3 创建 `tests/strategy/domain/domain_service/test_execution_integration.py` 集成测试
     - 验证高级订单子单使用自适应价格计算后的价格
     - 验证子单超时后触发重试流程
     - 验证重试耗尽时产生 OrderRetryExhaustedEvent 事件
