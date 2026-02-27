@@ -144,7 +144,7 @@ class TestSmartOrderExecutorProperties:
         price_tick=st.floats(min_value=0.01, max_value=10.0, allow_nan=False, allow_infinity=False),
     )
     def test_property11_order_retry_logic(self, instruction, retry_count, max_retries, price_tick):
-        """Property 11: retry_count < max_retries 时返回调整后指令，否则返回 None"""
+        """Property 11: retry_count < max_retries 时返回调整后指令，否则返回 (None, [event])"""
         config = OrderExecutionConfig(max_retries=max_retries, price_tick=price_tick)
         executor = SmartOrderExecutor(config)
 
@@ -155,12 +155,20 @@ class TestSmartOrderExecutorProperties:
             retry_count=retry_count,
         )
 
-        result = executor.prepare_retry(order, price_tick)
+        result, events = executor.prepare_retry(order, price_tick)
 
         if retry_count >= max_retries:
             assert result is None, "应返回 None (重试耗尽)"
+            assert len(events) == 1, "应返回一个 OrderRetryExhaustedEvent"
+            event = events[0]
+            assert isinstance(event, OrderRetryExhaustedEvent)
+            assert event.vt_symbol == instruction.vt_symbol
+            assert event.total_retries == retry_count
+            assert event.original_price == instruction.price
+            assert event.final_price == instruction.price
         else:
             assert result is not None, "应返回新指令"
+            assert events == [], "未耗尽时不应产生事件"
             # 价格应该更激进
             if instruction.direction == Direction.SHORT:
                 expected_price = executor.round_price_to_tick(

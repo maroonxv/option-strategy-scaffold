@@ -66,58 +66,6 @@ class AdvancedOrderScheduler:
         )
         self._orders[order_id] = order
         return order
-    def submit_timed_split(
-        self,
-        instruction: OrderInstruction,
-        interval_seconds: int,
-        per_order_volume: int,
-        start_time: datetime,
-    ) -> AdvancedOrder:
-        """提交定时拆单"""
-        total_volume = instruction.volume
-        if total_volume <= 0:
-            raise ValueError("总量必须大于 0")
-        if interval_seconds <= 0:
-            raise ValueError("时间间隔必须大于 0")
-        if per_order_volume <= 0:
-            raise ValueError("每笔数量必须大于 0")
-
-        order_id = str(uuid.uuid4())
-        request = AdvancedOrderRequest(
-            order_type=AdvancedOrderType.TIMED_SPLIT,
-            instruction=instruction,
-            interval_seconds=interval_seconds,
-            per_order_volume=per_order_volume,
-        )
-
-        # 拆分子单
-        child_orders: List[ChildOrder] = []
-        slice_schedule: List[SliceEntry] = []
-        remaining = total_volume
-        idx = 0
-        while remaining > 0:
-            vol = min(per_order_volume, remaining)
-            scheduled = start_time + timedelta(seconds=interval_seconds * idx)
-            child = ChildOrder(
-                child_id=f"{order_id}_child_{idx}",
-                parent_id=order_id,
-                volume=vol,
-                scheduled_time=scheduled,
-            )
-            child_orders.append(child)
-            slice_schedule.append(SliceEntry(scheduled_time=scheduled, volume=vol))
-            remaining -= vol
-            idx += 1
-
-        order = AdvancedOrder(
-            order_id=order_id,
-            request=request,
-            status=AdvancedOrderStatus.EXECUTING,
-            child_orders=child_orders,
-            slice_schedule=slice_schedule,
-        )
-        self._orders[order_id] = order
-        return order
 
     def submit_timed_split(
         self,

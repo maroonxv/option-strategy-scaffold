@@ -106,15 +106,23 @@ class SmartOrderExecutor:
 
     def prepare_retry(
         self, managed_order: ManagedOrder, price_tick: float
-    ) -> Optional[OrderInstruction]:
+    ) -> Tuple[Optional[OrderInstruction], List[DomainEvent]]:
         """
         准备重试指令
 
         Returns:
-            新的 OrderInstruction，或 None 表示重试耗尽
+            (新的 OrderInstruction 或 None, 领域事件列表)
+            重试耗尽时返回 (None, [OrderRetryExhaustedEvent(...)])
+            未耗尽时返回 (new_instruction, [])
         """
         if managed_order.retry_count >= self.config.max_retries:
-            return None
+            event = OrderRetryExhaustedEvent(
+                vt_symbol=managed_order.instruction.vt_symbol,
+                total_retries=managed_order.retry_count,
+                original_price=managed_order.instruction.price,
+                final_price=managed_order.instruction.price,
+            )
+            return None, [event]
 
         old_instr = managed_order.instruction
         # 更激进的价格: 卖出方向降价，买入方向加价
@@ -127,7 +135,7 @@ class SmartOrderExecutor:
 
         managed_order.retry_count += 1
 
-        return OrderInstruction(
+        new_instruction = OrderInstruction(
             vt_symbol=old_instr.vt_symbol,
             direction=old_instr.direction,
             offset=old_instr.offset,
@@ -136,3 +144,5 @@ class SmartOrderExecutor:
             signal=old_instr.signal,
             order_type=old_instr.order_type,
         )
+        return new_instruction, []
+
