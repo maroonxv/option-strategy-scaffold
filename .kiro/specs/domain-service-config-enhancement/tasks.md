@@ -11,7 +11,7 @@
   - 创建 `__init__.py` 模块初始化文件
   - _需求: 1.1, 1.2, 1.3_
 
-- [ ] 2. 实现 PositionSizingConfig 配置值对象
+- [x] 2. 实现 PositionSizingConfig 配置值对象
   - [x] 2.1 创建 PositionSizingConfig 类
     - 在 `src/strategy/domain/value_object/config/position_sizing_config.py` 创建配置类
     - 使用 `@dataclass(frozen=True)` 定义不可变值对象
@@ -25,12 +25,12 @@
     - 从配置对象读取所有原先的散装参数
     - _需求: 2.4, 2.5, 2.6_
 
-  - [-] 2.3 编写 PositionSizingService 行为一致性属性测试
+  - [x] 2.3 编写 PositionSizingService 行为一致性属性测试
     - **属性 2: PositionSizingService 行为一致性**
     - **验证需求: 2.6, 5.1**
 
 - [ ] 3. 实现 PricingEngineConfig 配置值对象
-  - [~] 3.1 创建 PricingEngineConfig 类
+  - [-] 3.1 创建 PricingEngineConfig 类
     - 在 `src/strategy/domain/value_object/config/pricing_engine_config.py` 创建配置类
     - 使用 `@dataclass(frozen=True)` 定义不可变值对象
     - 包含 2 个字段：american_model、crr_steps
