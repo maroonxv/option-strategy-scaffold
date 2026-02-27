@@ -1,0 +1,82 @@
+# 策略配置
+[[strategies]]
+class_name = "StrategyEntry"  # 策略类名，对应 src/strategy/strategy_entry.py 中的类
+
+[strategies.setting]
+max_positions = 5                 # 策略允许持有的最大合约数量（风控限制）
+position_ratio = 0.1              # 单次开仓使用的资金比例（相对于账户总权益）
+strike_level = 4                  # 期权选合约时的虚值档位（OTM Level），例如 4 表示虚值 4 档
+bar_window = 1                    # K线合成窗口大小。1 表示不合成，直接使用 1 分钟线；15 表示合成 15 分钟线
+bar_interval = "MINUTE"           # K线合成的基础周期单位，可选 "MINUTE", "HOUR", "DAILY"
+
+# 运行时配置
+[runtime]
+log_level = "INFO"            # 日志输出级别，可选 DEBUG, INFO, WARNING, ERROR
+log_dir = "data/logs"         # 日志文件存放的相对目录
+heartbeat_interval = 60       # 心跳检测间隔（秒），预留配置，目前代码中未强制依赖
+max_restart_count = 10        # 守护进程允许重启子进程的最大次数，超过后将停止运行
+restart_delay = 5.0           # 每次重启子进程前的等待时间（秒），避免频繁重启
+
+# Greeks 风控配置
+[greeks_risk]
+risk_free_rate = 0.02           # 无风险利率 (年化)
+
+[greeks_risk.position_limits]   # 单持仓 Greeks 阈值 (加权后绝对值)
+delta = 0.8
+gamma = 0.1
+vega = 50.0
+
+[greeks_risk.portfolio_limits]  # 组合级 Greeks 阈值 (加权后绝对值)
+delta = 5.0
+gamma = 1.0
+vega = 500.0
+
+# 动态仓位配置
+[position_sizing]
+margin_ratio = 0.12            # 保证金比例
+min_margin_ratio = 0.07        # 最低保证金比例
+margin_usage_limit = 0.6       # 保证金使用率上限
+max_volume_per_order = 10      # 单笔最大手数
+
+# 订单执行增强配置
+[order_execution]
+timeout_seconds = 30            # 限价单超时秒数
+max_retries = 3                 # 超时撤单后最大重试次数
+slippage_ticks = 2              # 自适应价格滑点跳数
+
+# 交易时段配置 (24小时制)
+# 用于守护进程判断是否在交易时间。非交易时间会停止子进程以节省资源。
+# 时间段覆盖日盘和夜盘，建议留有一定冗余供程序启动和初始化。
+[[order_execution.trading_periods]]
+start = "08:40"  # 上午盘：08:40 启动（早于 09:00 开盘），11:30 准时收盘休息
+end = "11:30"
+
+[[order_execution.trading_periods]]
+start = "13:00"  # 下午盘：13:00 启动（如果你确认此时可以连接），直到 15:30
+end = "15:30"    # 注意：国内期货标准开盘是 13:30，设置 13:00 可以让程序提前运行准备
+
+# 动态对冲配置
+[hedging.delta_hedging]
+target_delta = 0.0
+hedging_band = 0.5
+hedge_instrument_vt_symbol = ""    # 运行时由策略设置
+hedge_instrument_delta = 1.0
+hedge_instrument_multiplier = 10.0
+
+[hedging.gamma_scalping]
+rebalance_threshold = 0.3
+hedge_instrument_vt_symbol = ""
+hedge_instrument_delta = 1.0
+hedge_instrument_multiplier = 10.0
+
+# 高级订单配置
+[advanced_orders]
+default_iceberg_batch_size = 5
+default_twap_slices = 10
+default_time_window_seconds = 300
+
+# 组合策略风控配置
+[combination_risk]
+delta_limit = 2.0               # 组合级 Delta 阈值
+gamma_limit = 0.5               # 组合级 Gamma 阈值
+vega_limit = 200.0              # 组合级 Vega 阈值

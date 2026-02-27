@@ -1,0 +1,6 @@
+[[strategies]]
+strategy_name = "volatility_strategy_15m"
+
+[strategies.setting]
+bar_window = 15
+bar_interval = "MINUTE"

@@ -1,5 +1,0 @@
-strategies:
-  - strategy_name: "volatility_strategy_15m"
-    setting:
-      bar_window: 15
-      bar_interval: "MINUTE"
