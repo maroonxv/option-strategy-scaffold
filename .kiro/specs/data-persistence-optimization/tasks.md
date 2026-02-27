@@ -25,7 +25,7 @@
     - 验证 `serialize()` 后 `deserialize()` 产生与原始数据等价的结果
     - **Validates: Requirements 1.4, 6.1**
 
-  - [~] 1.4 编写 Property 3 属性测试：JsonSerializer 序列化确定性
+  - [x] 1.4 编写 Property 3 属性测试：JsonSerializer 序列化确定性
     - **Property 3: JsonSerializer 序列化确定性**
     - 在同一测试文件中实现
     - 验证连续两次 `serialize()` 产生完全相同的 JSON 字符串

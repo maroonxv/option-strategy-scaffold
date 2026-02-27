@@ -232,3 +232,48 @@ class TestJsonSerializerRoundTripProperties:
                 f"Original: {snapshot[key]!r}\n"
                 f"Restored: {restored[key]!r}"
             )
+
+
+class TestJsonSerializerDeterminismProperties:
+    """Property 3: JsonSerializer 序列化确定性
+    
+    Feature: data-persistence-optimization, Property 3: JsonSerializer 序列化确定性
+    Validates: Requirements 2.5, 6.2
+    """
+
+    @settings(max_examples=100, deadline=None)
+    @given(snapshot=_snapshot_with_all_types_strategy())
+    def test_property_3_serialization_determinism(
+        self, snapshot: Dict[str, Any]
+    ):
+        """
+        **Validates: Requirements 2.5, 6.2**
+        
+        Property 3: JsonSerializer 序列化确定性
+        
+        For any valid Snapshot dictionary, calling JsonSerializer.serialize() 
+        twice consecutively should produce exactly the same JSON string 
+        (byte-level consistency). This is ensured by using sort_keys=True.
+        
+        This property is critical for digest-based change detection in 
+        AutoSaveService, where identical states must produce identical digests.
+        """
+        serializer = _make_serializer()
+
+        # Serialize the same snapshot twice
+        json_str_1 = serializer.serialize(snapshot)
+        json_str_2 = serializer.serialize(snapshot)
+
+        # Both serializations must be byte-for-byte identical
+        assert json_str_1 == json_str_2, (
+            "Serialization is not deterministic: two consecutive calls to "
+            "serialize() with the same input produced different outputs.\n"
+            f"Length 1: {len(json_str_1)}, Length 2: {len(json_str_2)}\n"
+            f"First 200 chars of output 1: {json_str_1[:200]}\n"
+            f"First 200 chars of output 2: {json_str_2[:200]}"
+        )
+        
+        # Verify byte-level equality
+        assert json_str_1.encode('utf-8') == json_str_2.encode('utf-8'), (
+            "Serialization outputs are string-equal but not byte-equal"
+        )
