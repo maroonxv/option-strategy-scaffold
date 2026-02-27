@@ -28,7 +28,7 @@
     - 创建 `config/domain_service/execution/advanced_scheduler.toml`，包含 iceberg、split、randomize、price 分节
     - _Requirements: 1.5_
 
-  - [~] 2.3 在 `domain_service_config_loader.py` 中新增 `load_smart_order_executor_config` 和 `load_advanced_scheduler_config` 函数
+  - [-] 2.3 在 `domain_service_config_loader.py` 中新增 `load_smart_order_executor_config` 和 `load_advanced_scheduler_config` 函数
     - 遵循 overrides > TOML > dataclass 默认值优先级
     - TOML 文件不存在时使用 dataclass 默认值
     - _Requirements: 1.1, 1.2, 1.3, 1.4_

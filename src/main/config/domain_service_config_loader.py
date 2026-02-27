@@ -13,6 +13,14 @@ from src.strategy.domain.value_object.config.pricing_engine_config import Pricin
 from src.strategy.domain.value_object.config.future_selector_config import FutureSelectorConfig
 from src.strategy.domain.value_object.selection.option_selector_config import OptionSelectorConfig
 from src.strategy.domain.value_object.pricing.pricing import PricingModel
+from src.strategy.domain.value_object.trading.order_execution import (
+    OrderExecutionConfig,
+    AdvancedSchedulerConfig,
+)
+from src.strategy.domain.value_object.trading.order_execution import (
+    OrderExecutionConfig,
+    AdvancedSchedulerConfig,
+)
 
 
 # 项目根目录 (从 src/main/config/ 向上 3 级)
@@ -203,6 +211,65 @@ def load_option_selector_config(
     _map_field(kwargs, "default_spread_width", overrides, "default_spread_width", spread, "default_width")
 
     return OptionSelectorConfig(**kwargs)
+
+
+def load_smart_order_executor_config(
+    overrides: Optional[dict] = None,
+) -> OrderExecutionConfig:
+    """
+    加载智能订单执行器配置
+
+    优先级: overrides > TOML 文件 > dataclass 默认值
+
+    Args:
+        overrides: 运行时覆盖值
+    """
+    data = _load_toml(_DOMAIN_SERVICE_CONFIG_DIR / "execution" / "smart_order_executor.toml")
+    overrides = overrides or {}
+
+    timeout = data.get("timeout", {})
+    retry = data.get("retry", {})
+    price = data.get("price", {})
+
+    kwargs = {}
+
+    _map_field(kwargs, "timeout_seconds", overrides, "timeout_seconds", timeout, "seconds")
+    _map_field(kwargs, "max_retries", overrides, "max_retries", retry, "max_retries")
+    _map_field(kwargs, "slippage_ticks", overrides, "slippage_ticks", price, "slippage_ticks")
+    _map_field(kwargs, "price_tick", overrides, "price_tick", price, "price_tick")
+
+    return OrderExecutionConfig(**kwargs)
+
+
+def load_advanced_scheduler_config(
+    overrides: Optional[dict] = None,
+) -> AdvancedSchedulerConfig:
+    """
+    加载高级订单调度器配置
+
+    优先级: overrides > TOML 文件 > dataclass 默认值
+
+    Args:
+        overrides: 运行时覆盖值
+    """
+    data = _load_toml(_DOMAIN_SERVICE_CONFIG_DIR / "execution" / "advanced_scheduler.toml")
+    overrides = overrides or {}
+
+    iceberg = data.get("iceberg", {})
+    split = data.get("split", {})
+    randomize = data.get("randomize", {})
+    price = data.get("price", {})
+
+    kwargs = {}
+
+    _map_field(kwargs, "default_batch_size", overrides, "default_batch_size", iceberg, "default_batch_size")
+    _map_field(kwargs, "default_interval_seconds", overrides, "default_interval_seconds", split, "default_interval_seconds")
+    _map_field(kwargs, "default_num_slices", overrides, "default_num_slices", split, "default_num_slices")
+    _map_field(kwargs, "default_volume_randomize_ratio", overrides, "default_volume_randomize_ratio", randomize, "default_volume_randomize_ratio")
+    _map_field(kwargs, "default_price_offset_ticks", overrides, "default_price_offset_ticks", price, "default_price_offset_ticks")
+    _map_field(kwargs, "default_price_tick", overrides, "default_price_tick", price, "default_price_tick")
+
+    return AdvancedSchedulerConfig(**kwargs)
 
 
 def _map_field(
