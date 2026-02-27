@@ -76,7 +76,7 @@
     - 测试边界情况：空持仓、单一品种、分配比例总和不为 1
     - _Requirements: 2.1, 2.2, 2.3, 2.4, 2.5, 2.6, 2.7_
 
-  - [~] 3.3 编写 RiskBudgetAllocator 属性测试
+  - [x] 3.3 编写 RiskBudgetAllocator 属性测试
     - 创建 `tests/strategy/domain/domain_service/risk/test_risk_budget_properties.py`
     - **Property 4: 预算分配守恒**
     - **Validates: Requirements 2.7**
