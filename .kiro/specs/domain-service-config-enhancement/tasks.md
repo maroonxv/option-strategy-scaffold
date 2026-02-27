@@ -19,13 +19,13 @@
     - 所有字段提供与 PositionSizingService 原默认参数一致的默认值
     - _需求: 2.1, 2.2, 2.3_
 
-  - [-] 2.2 重构 PositionSizingService 使用配置对象
+  - [x] 2.2 重构 PositionSizingService 使用配置对象
     - 修改 `__init__` 方法签名为 `__init__(self, config: Optional[PositionSizingConfig] = None)`
     - 未提供配置时使用默认配置 `PositionSizingConfig()`
     - 从配置对象读取所有原先的散装参数
     - _需求: 2.4, 2.5, 2.6_
 
-  - [~] 2.3 编写 PositionSizingService 行为一致性属性测试
+  - [-] 2.3 编写 PositionSizingService 行为一致性属性测试
     - **属性 2: PositionSizingService 行为一致性**
     - **验证需求: 2.6, 5.1**
 
