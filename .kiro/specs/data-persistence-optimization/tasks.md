@@ -40,7 +40,7 @@
 - [x] 2. Checkpoint - 确保所有测试通过
   - Ensure all tests pass, ask the user if questions arise.
 
-- [ ] 3. StateRepository 压缩扩展
+- [x] 3. StateRepository 压缩扩展
   - [x] 3.1 实现 `_maybe_compress` 和 `_maybe_decompress` 方法
     - 在 `state_repository.py` 中添加 `COMPRESSION_PREFIX = "ZLIB:"` 常量和 `DEFAULT_COMPRESSION_THRESHOLD = 10 * 1024`
     - 实现 `_maybe_compress(json_str) -> tuple[str, bool]`：超过阈值时使用 zlib 压缩 + base64 编码 + ZLIB: 前缀
@@ -75,7 +75,7 @@
     - 返回删除的记录数
     - _Requirements: 4.3, 4.4_
 
-  - [~] 4.2 编写 Property 7 属性测试：清理保留最新记录
+  - [x] 4.2 编写 Property 7 属性测试：清理保留最新记录
     - **Property 7: 清理保留最新记录**
     - 在 `tests/strategy/infrastructure/persistence/test_persistence_cleanup_properties.py` 中实现
     - 使用 Hypothesis 生成随机时间戳的快照记录列表
