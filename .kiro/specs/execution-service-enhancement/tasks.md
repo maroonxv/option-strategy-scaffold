@@ -120,13 +120,13 @@
     - 验证高级订单全部子单成交后产生完成事件
     - _Requirements: 8.1, 8.2, 8.3, 8.4_
 
-- [ ] 8. 补充 `__init__.py` 导出并完成最终集成
-  - [-] 8.1 更新 `src/strategy/domain/domain_service/execution/__init__.py`
+- [x] 8. 补充 `__init__.py` 导出并完成最终集成
+  - [x] 8.1 更新 `src/strategy/domain/domain_service/execution/__init__.py`
     - 导出 SmartOrderExecutor、AdvancedOrderScheduler、ExecutionCoordinator
     - 定义 `__all__` 列表
     - _Requirements: 7.1, 7.2, 7.3_
 
-- [~] 9. Final checkpoint - 确保所有测试通过
+- [x] 9. Final checkpoint - 确保所有测试通过
   - 运行全部测试确认无破坏
   - Ensure all tests pass, ask the user if questions arise.
 
