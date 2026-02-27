@@ -18,7 +18,7 @@
     - 如有缺失则补充容错逻辑
     - _Requirements: 6.3, 6.4_
 
-  - [~] 1.3 编写 Property 2 属性测试：JsonSerializer 序列化往返一致性
+  - [x] 1.3 编写 Property 2 属性测试：JsonSerializer 序列化往返一致性
     - **Property 2: JsonSerializer 序列化往返一致性**
     - 在 `tests/strategy/infrastructure/persistence/test_persistence_serializer_properties.py` 中实现
     - 使用 Hypothesis 生成包含 DataFrame、datetime、date、set、Enum、dataclass 的嵌套字典
