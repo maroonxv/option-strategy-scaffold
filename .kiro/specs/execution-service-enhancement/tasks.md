@@ -98,7 +98,7 @@
   - Ensure all tests pass, ask the user if questions arise.
 
 - [ ] 7. 新增 ExecutionCoordinator 协调器
-  - [-] 7.1 创建 `src/strategy/domain/domain_service/execution/execution_coordinator.py`
+  - [x] 7.1 创建 `src/strategy/domain/domain_service/execution/execution_coordinator.py`
     - 实现 `__init__` 持有 SmartOrderExecutor 和 AdvancedOrderScheduler 引用
     - 实现 `process_pending_children`：从 scheduler 获取到期子单，用 executor 计算自适应价格，返回指令列表和事件列表
     - 实现 `on_child_order_submitted`：注册子单到 executor 超时管理
@@ -107,7 +107,7 @@
     - 不直接调用交易网关，仅返回领域事件列表
     - _Requirements: 4.1, 4.2, 4.3, 4.4, 4.5_
 
-  - [~] 7.2 创建 `tests/strategy/domain/domain_service/test_execution_coordinator_properties.py` 属性测试（属性 6, 7）
+  - [x] 7.2 创建 `tests/strategy/domain/domain_service/test_execution_coordinator_properties.py` 属性测试（属性 6, 7）
     - **Property 6: 协调器使用自适应价格计算**
     - **Validates: Requirements 4.2**
     - **Property 7: 协调器注册子单到超时管理**
