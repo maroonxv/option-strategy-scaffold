@@ -6,13 +6,13 @@
 
 ## Tasks
 
-- [ ] 1. JsonSerializer 增强：sort_keys 确定性输出与容错反序列化
-  - [ ] 1.1 修改 `json_serializer.py` 的 `serialize` 方法，添加 `sort_keys=True` 参数
+- [-] 1. JsonSerializer 增强：sort_keys 确定性输出与容错反序列化
+  - [x] 1.1 修改 `json_serializer.py` 的 `serialize` 方法，添加 `sort_keys=True` 参数
     - 确保 `json.dumps` 调用包含 `sort_keys=True`
     - 验证现有序列化行为不受影响
     - _Requirements: 2.5, 6.2_
 
-  - [ ] 1.2 确认并加固容错反序列化逻辑
+  - [x] 1.2 确认并加固容错反序列化逻辑
     - 确认 `_resolve_enum` 在找不到 Enum 类时返回原始字符串值而非抛出异常
     - 确认 `_resolve_dataclass` 在找不到 dataclass 类时返回原始字典而非抛出异常
     - 如有缺失则补充容错逻辑

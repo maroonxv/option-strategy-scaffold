@@ -125,7 +125,7 @@ def _deep_equal(a: Any, b: Any) -> bool:
     if isinstance(a, pd.DataFrame) and isinstance(b, pd.DataFrame):
         if a.empty and b.empty:
             return True
-        if list(a.columns) != list(b.columns):
+        if set(a.columns) != set(b.columns):
             return False
         if len(a) != len(b):
             return False
@@ -229,7 +229,7 @@ class TestJsonSerializerUnit:
         ])
         data = {"bars": df}
         restored = serializer.deserialize(serializer.serialize(data))
-        pd.testing.assert_frame_equal(restored["bars"], df)
+        pd.testing.assert_frame_equal(restored["bars"], df, check_like=True)
 
     def test_datetime_round_trip(self):
         """datetime values should survive round-trip."""

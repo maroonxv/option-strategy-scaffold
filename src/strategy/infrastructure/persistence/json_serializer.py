@@ -151,7 +151,7 @@ class JsonSerializer:
         - dataclass → dict
         """
         payload = {"schema_version": CURRENT_SCHEMA_VERSION, **data}
-        return json.dumps(payload, cls=_CustomEncoder, ensure_ascii=False)
+        return json.dumps(payload, cls=_CustomEncoder, ensure_ascii=False, sort_keys=True)
 
     def deserialize(self, json_str: str) -> Dict[str, Any]:
         """从 JSON 字符串反序列化。
