@@ -6,7 +6,7 @@
 
 ## 任务
 
-- [~] 1. 新增风险服务相关值对象和领域事件
+- [x] 1. 新增风险服务相关值对象和领域事件
   - [x] 1.1 创建止损相关值对象
     - 在 `src/strategy/domain/value_object/` 下新建或扩展 `risk.py`
     - 定义 `StopLossConfig`、`StopLossTrigger`、`PortfolioStopLossTrigger` 三个 frozen dataclass
@@ -34,7 +34,7 @@
     - _Requirements: 1.6, 2.3, 3.5, 4.4, 5.3_
 
 - [~] 2. 实现 StopLossManager（止损管理服务）
-  - [~] 2.1 创建 `src/strategy/domain/domain_service/risk/stop_loss_manager.py`
+  - [x] 2.1 创建 `src/strategy/domain/domain_service/risk/stop_loss_manager.py`
     - 实现 `__init__` 接受 `StopLossConfig` 参数
     - 实现 `check_position_stop_loss` 方法：检查单个持仓是否触发固定止损或移动止损
     - 实现 `check_portfolio_stop_loss` 方法：检查组合总亏损是否超过每日止损限额
