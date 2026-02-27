@@ -68,7 +68,7 @@
     - 测试 ZLIB: 前缀检测正确性
     - _Requirements: 3.4_
 
-- [ ] 4. StateRepository 自动清理旧快照
+- [x] 4. StateRepository 自动清理旧快照
   - [x] 4.1 实现 `cleanup` 方法
     - 在 `state_repository.py` 中添加 `cleanup(strategy_name, keep_days=7) -> int` 方法
     - 查询最新记录 ID，删除 `saved_at` 早于保留天数的记录，但排除最新记录
@@ -82,11 +82,11 @@
     - 验证 cleanup 后至少保留一条最新记录，且过期记录被正确删除
     - **Validates: Requirements 4.3, 4.4**
 
-- [~] 5. Checkpoint - 确保所有测试通过
+- [x] 5. Checkpoint - 确保所有测试通过
   - Ensure all tests pass, ask the user if questions arise.
 
 - [ ] 6. AutoSaveService 增强：Digest 去重与异步保存
-  - [~] 6.1 添加 digest 计算和去重逻辑
+  - [x] 6.1 添加 digest 计算和去重逻辑
     - 在 `auto_save_service.py` 中添加 `_compute_digest(json_str) -> str` 方法（SHA-256）
     - 添加 `_last_digest: Optional[str]` 内部状态
     - 修改 `_do_save` 方法：计算 digest，与 `_last_digest` 比较，相同则跳过

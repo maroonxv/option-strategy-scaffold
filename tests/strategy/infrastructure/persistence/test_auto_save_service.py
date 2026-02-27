@@ -62,19 +62,28 @@ class TestAutoSaveServiceProperties:
         For any sequence of maybe_save calls with associated timestamps,
         a save operation should occur if and only if the elapsed time since
         the last save is >= the configured interval.
+        
+        Note: 每次调用使用不同的快照数据以避免 digest 去重影响测试。
         """
         mock_repo = MagicMock()
-        snapshot_data = {"test": "data"}
-        snapshot_fn = MagicMock(return_value=snapshot_data)
-
+        
         # Track the monotonic clock manually
         current_time = 1000.0  # arbitrary start
+        call_counter = 0
 
         with patch("src.strategy.infrastructure.persistence.auto_save_service.time") as mock_time:
             mock_time.monotonic.return_value = current_time
+            mock_serializer = MagicMock()
+            
+            # 每次调用返回不同的序列化结果，避免 digest 去重
+            def serialize_side_effect(data):
+                return f'{{"test": "data", "counter": {data["counter"]}}}'
+            mock_serializer.serialize.side_effect = serialize_side_effect
+            
             service = AutoSaveService(
                 state_repository=mock_repo,
                 strategy_name="test_strategy",
+                serializer=mock_serializer,
                 interval_seconds=interval,
             )
 
@@ -85,6 +94,10 @@ class TestAutoSaveServiceProperties:
             for delta in deltas:
                 current_time += delta
                 mock_time.monotonic.return_value = current_time
+                
+                # 每次使用不同的快照数据
+                call_counter += 1
+                snapshot_fn = MagicMock(return_value={"test": "data", "counter": call_counter})
 
                 service.maybe_save(snapshot_fn)
 
@@ -108,15 +121,18 @@ class TestAutoSaveServiceUnit:
     def test_default_interval_is_60_seconds(self):
         """Requirement 1.2: 默认间隔 60 秒"""
         mock_repo = MagicMock()
+        mock_serializer = MagicMock()
         service = AutoSaveService(
             state_repository=mock_repo,
             strategy_name="test",
+            serializer=mock_serializer,
         )
         assert service._interval_seconds == 60.0
 
     def test_maybe_save_skips_when_interval_not_elapsed(self):
         """Requirement 1.3: 未到间隔时跳过保存"""
         mock_repo = MagicMock()
+        mock_serializer = MagicMock()
         snapshot_fn = MagicMock(return_value={"data": 1})
 
         with patch("src.strategy.infrastructure.persistence.auto_save_service.time") as mock_time:
@@ -124,6 +140,7 @@ class TestAutoSaveServiceUnit:
             service = AutoSaveService(
                 state_repository=mock_repo,
                 strategy_name="test",
+                serializer=mock_serializer,
                 interval_seconds=60.0,
             )
 
@@ -137,6 +154,8 @@ class TestAutoSaveServiceUnit:
     def test_maybe_save_triggers_when_interval_elapsed(self):
         """Requirement 1.1: 到达间隔时触发保存"""
         mock_repo = MagicMock()
+        mock_serializer = MagicMock()
+        mock_serializer.serialize.return_value = '{"data": 1}'
         snapshot_data = {"data": 1}
         snapshot_fn = MagicMock(return_value=snapshot_data)
 
@@ -145,6 +164,7 @@ class TestAutoSaveServiceUnit:
             service = AutoSaveService(
                 state_repository=mock_repo,
                 strategy_name="test",
+                serializer=mock_serializer,
                 interval_seconds=60.0,
             )
 
@@ -158,6 +178,8 @@ class TestAutoSaveServiceUnit:
     def test_force_save_always_saves(self):
         """force_save 应始终保存，不检查间隔"""
         mock_repo = MagicMock()
+        mock_serializer = MagicMock()
+        mock_serializer.serialize.return_value = '{"data": 1}'
         snapshot_data = {"data": 1}
         snapshot_fn = MagicMock(return_value=snapshot_data)
 
@@ -166,6 +188,7 @@ class TestAutoSaveServiceUnit:
             service = AutoSaveService(
                 state_repository=mock_repo,
                 strategy_name="test",
+                serializer=mock_serializer,
                 interval_seconds=60.0,
             )
 
@@ -179,6 +202,8 @@ class TestAutoSaveServiceUnit:
         """Requirement 1.5: 写入失败不中断策略执行"""
         mock_repo = MagicMock()
         mock_repo.save.side_effect = RuntimeError("DB connection lost")
+        mock_serializer = MagicMock()
+        mock_serializer.serialize.return_value = '{"data": 1}'
         snapshot_fn = MagicMock(return_value={"data": 1})
 
         with patch("src.strategy.infrastructure.persistence.auto_save_service.time") as mock_time:
@@ -186,6 +211,7 @@ class TestAutoSaveServiceUnit:
             service = AutoSaveService(
                 state_repository=mock_repo,
                 strategy_name="test",
+                serializer=mock_serializer,
                 interval_seconds=10.0,
             )
 
@@ -200,11 +226,14 @@ class TestAutoSaveServiceUnit:
         """Requirement 1.5: force_save 写入失败也不中断"""
         mock_repo = MagicMock()
         mock_repo.save.side_effect = Exception("disk full")
+        mock_serializer = MagicMock()
+        mock_serializer.serialize.return_value = '{"data": 1}'
         snapshot_fn = MagicMock(return_value={"data": 1})
 
         service = AutoSaveService(
             state_repository=mock_repo,
             strategy_name="test",
+            serializer=mock_serializer,
         )
 
         # Should NOT raise
@@ -214,6 +243,7 @@ class TestAutoSaveServiceUnit:
     def test_reset_resets_timer(self):
         """reset 应重置计时器"""
         mock_repo = MagicMock()
+        mock_serializer = MagicMock()
         snapshot_fn = MagicMock(return_value={"data": 1})
 
         with patch("src.strategy.infrastructure.persistence.auto_save_service.time") as mock_time:
@@ -221,6 +251,7 @@ class TestAutoSaveServiceUnit:
             service = AutoSaveService(
                 state_repository=mock_repo,
                 strategy_name="test",
+                serializer=mock_serializer,
                 interval_seconds=60.0,
             )
 
@@ -237,6 +268,7 @@ class TestAutoSaveServiceUnit:
     def test_snapshot_fn_not_called_when_skipping(self):
         """惰性求值: snapshot_fn 仅在需要保存时才被调用"""
         mock_repo = MagicMock()
+        mock_serializer = MagicMock()
         snapshot_fn = MagicMock(return_value={"data": 1})
 
         with patch("src.strategy.infrastructure.persistence.auto_save_service.time") as mock_time:
@@ -244,6 +276,7 @@ class TestAutoSaveServiceUnit:
             service = AutoSaveService(
                 state_repository=mock_repo,
                 strategy_name="test",
+                serializer=mock_serializer,
                 interval_seconds=60.0,
             )
 

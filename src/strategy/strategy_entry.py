@@ -296,8 +296,12 @@ class StrategyEntry(StrategyTemplate):
             monitor_db_config=monitor_db_config,
             logger=self.logger
         )
+        
+        # 创建 JsonSerializer 实例，供 StateRepository 和 AutoSaveService 共享
+        self.json_serializer = JsonSerializer(MigrationChain())
+        
         self.state_repository = StateRepository(
-            serializer=JsonSerializer(MigrationChain()),
+            serializer=self.json_serializer,
             database_factory=DatabaseFactory.get_instance(),
             logger=self.logger,
         )
@@ -307,6 +311,7 @@ class StrategyEntry(StrategyTemplate):
             self.auto_save_service = AutoSaveService(
                 state_repository=self.state_repository,
                 strategy_name=self.strategy_name,
+                serializer=self.json_serializer,
                 interval_seconds=60.0,
                 logger=self.logger,
             )
