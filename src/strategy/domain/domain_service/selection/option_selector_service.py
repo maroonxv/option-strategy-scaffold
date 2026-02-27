@@ -25,61 +25,14 @@ class OptionSelectorService:
     - 过滤到期日不合适的合约
     """
     
-    def __init__(
-        self,
-        config: Optional[OptionSelectorConfig] = None,
-        *,
-        strike_level: Optional[int] = None,
-        min_bid_price: Optional[float] = None,
-        min_bid_volume: Optional[int] = None,
-        min_trading_days: Optional[int] = None,
-        max_trading_days: Optional[int] = None,
-    ):
+    def __init__(self, config: Optional[OptionSelectorConfig] = None):
         """
         初始化期权选择服务
 
-        支持两种初始化方式:
-        1. 传入 config 对象 (推荐):
-           OptionSelectorService(config=OptionSelectorConfig(strike_level=2))
-        2. 向后兼容的关键字参数 (会覆盖 config 中的对应值):
-           OptionSelectorService(strike_level=2, min_bid_price=5.0)
-
         参数:
             config: 配置对象，未提供时使用默认配置
-            strike_level: 虚值档位 (覆盖 config)
-            min_bid_price: 最小买一价 (覆盖 config)
-            min_bid_volume: 最小买一量 (覆盖 config)
-            min_trading_days: 最小剩余交易日 (覆盖 config)
-            max_trading_days: 最大剩余交易日 (覆盖 config)
         """
-        base = config or OptionSelectorConfig()
-
-        # 关键字参数覆盖 config，保持向后兼容
-        self.config = OptionSelectorConfig(
-            strike_level=strike_level if strike_level is not None else base.strike_level,
-            min_bid_price=min_bid_price if min_bid_price is not None else base.min_bid_price,
-            min_bid_volume=min_bid_volume if min_bid_volume is not None else base.min_bid_volume,
-            min_trading_days=min_trading_days if min_trading_days is not None else base.min_trading_days,
-            max_trading_days=max_trading_days if max_trading_days is not None else base.max_trading_days,
-            # 其余字段沿用 base
-            liquidity_min_volume=base.liquidity_min_volume,
-            liquidity_min_bid_volume=base.liquidity_min_bid_volume,
-            liquidity_max_spread_ticks=base.liquidity_max_spread_ticks,
-            score_liquidity_weight=base.score_liquidity_weight,
-            score_otm_weight=base.score_otm_weight,
-            score_expiry_weight=base.score_expiry_weight,
-            liq_spread_weight=base.liq_spread_weight,
-            liq_volume_weight=base.liq_volume_weight,
-            delta_tolerance=base.delta_tolerance,
-            default_spread_width=base.default_spread_width,
-        )
-
-        # 便捷属性：保持与旧代码的兼容性
-        self.strike_level = self.config.strike_level
-        self.min_bid_price = self.config.min_bid_price
-        self.min_bid_volume = self.config.min_bid_volume
-        self.min_trading_days = self.config.min_trading_days
-        self.max_trading_days = self.config.max_trading_days
+        self.config = config or OptionSelectorConfig()
     
     def check_liquidity(
         self,
@@ -172,7 +125,7 @@ class OptionSelectorService:
              if log_func: log_func(f"[DEBUG-OPT] 错误: 无效的 option_type {option_type}")
              return None
 
-        level = strike_level or self.strike_level
+        level = strike_level if strike_level is not None else self.config.strike_level
         df = contracts.copy()
         
         if log_func:
@@ -196,7 +149,7 @@ class OptionSelectorService:
         df = self._filter_liquidity(df, log_func)
         
         if df.empty:
-            if log_func: log_func(f"[DEBUG-OPT] 筛选失败: 流动性过滤后为空 (最小买价: {self.min_bid_price}, 最小买量: {self.min_bid_volume})")
+            if log_func: log_func(f"[DEBUG-OPT] 筛选失败: 流动性过滤后为空 (最小买价: {self.config.min_bid_price}, 最小买量: {self.config.min_bid_volume})")
             return None
         
         # 3. 过滤到期日
@@ -210,7 +163,7 @@ class OptionSelectorService:
         df = self._filter_trading_days(df, log_func)
         
         if df.empty:
-            if log_func: log_func(f"[DEBUG-OPT] 筛选失败: 到期日过滤后为空 (最小天数: {self.min_trading_days}, 最大天数: {self.max_trading_days})")
+            if log_func: log_func(f"[DEBUG-OPT] 筛选失败: 到期日过滤后为空 (最小天数: {self.config.min_trading_days}, 最大天数: {self.config.max_trading_days})")
             return None
         
         # 4. 计算虚值程度并排序
@@ -251,15 +204,15 @@ class OptionSelectorService:
         start_len = len(result)
         
         if "bid_price" in result.columns:
-            result = result[result["bid_price"] >= self.min_bid_price]
+            result = result[result["bid_price"] >= self.config.min_bid_price]
             if log_func and len(result) < start_len:
-                log_func(f"[DEBUG-OPT] 价格过滤: {start_len} -> {len(result)} (min_bid_price={self.min_bid_price})")
+                log_func(f"[DEBUG-OPT] 价格过滤: {start_len} -> {len(result)} (min_bid_price={self.config.min_bid_price})")
         
         mid_len = len(result)
         if "bid_volume" in result.columns:
-            result = result[result["bid_volume"] >= self.min_bid_volume]
+            result = result[result["bid_volume"] >= self.config.min_bid_volume]
             if log_func and len(result) < mid_len:
-                log_func(f"[DEBUG-OPT] 销量过滤: {mid_len} -> {len(result)} (min_bid_volume={self.min_bid_volume})")
+                log_func(f"[DEBUG-OPT] 销量过滤: {mid_len} -> {len(result)} (min_bid_volume={self.config.min_bid_volume})")
         
         return result
     
@@ -271,11 +224,11 @@ class OptionSelectorService:
         result = df.copy()
         start_len = len(result)
         
-        result = result[result["days_to_expiry"] >= self.min_trading_days]
-        result = result[result["days_to_expiry"] <= self.max_trading_days]
+        result = result[result["days_to_expiry"] >= self.config.min_trading_days]
+        result = result[result["days_to_expiry"] <= self.config.max_trading_days]
         
         if log_func and len(result) < start_len:
-            log_func(f"[DEBUG-OPT] 到期日过滤: {start_len} -> {len(result)} (days={self.min_trading_days}-{self.max_trading_days})")
+            log_func(f"[DEBUG-OPT] 到期日过滤: {start_len} -> {len(result)} (days={self.config.min_trading_days}-{self.config.max_trading_days})")
         
         return result
     
@@ -681,7 +634,7 @@ class OptionSelectorService:
         虚值档位由 strike_level 决定。
         """
         combo_type = CombinationType.STRANGLE
-        level = strike_level or self.strike_level
+        level = strike_level if strike_level is not None else self.config.strike_level
         df = contracts.copy()
 
         # 过滤流动性和到期日
@@ -1024,12 +977,12 @@ class OptionSelectorService:
         - expiry_score = max(0, 1 - deviation / half_range)
         """
         days = int(row.get("days_to_expiry", 0))
-        midpoint = (self.min_trading_days + self.max_trading_days) / 2.0
-        half_range = (self.max_trading_days - self.min_trading_days) / 2.0
+        midpoint = (self.config.min_trading_days + self.config.max_trading_days) / 2.0
+        half_range = (self.config.max_trading_days - self.config.min_trading_days) / 2.0
 
         if half_range <= 0:
             # min == max 的退化情况
-            return 1.0 if days == self.min_trading_days else 0.0
+            return 1.0 if days == self.config.min_trading_days else 0.0
 
         deviation = abs(days - midpoint)
         return max(0.0, 1.0 - deviation / half_range)

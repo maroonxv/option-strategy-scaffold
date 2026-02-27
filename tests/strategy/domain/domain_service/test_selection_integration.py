@@ -74,6 +74,7 @@ from src.strategy.domain.domain_service.selection.future_selection_service impor
 from src.strategy.domain.domain_service.selection.option_selector_service import (  # noqa: E402
     OptionSelectorService,
 )
+from src.strategy.domain.value_object.option_selector_config import OptionSelectorConfig  # noqa: E402
 from src.strategy.domain.value_object.selection import (  # noqa: E402
     MarketData,
     RolloverRecommendation,
@@ -349,11 +350,13 @@ class TestOptionSelectorIntegration:
     @pytest.fixture
     def selector(self):
         return OptionSelectorService(
-            strike_level=2,
-            min_bid_price=10.0,
-            min_bid_volume=5,
-            min_trading_days=1,
-            max_trading_days=50,
+            config=OptionSelectorConfig(
+                strike_level=2,
+                min_bid_price=10.0,
+                min_bid_volume=5,
+                min_trading_days=1,
+                max_trading_days=50,
+            )
         )
 
     @pytest.fixture

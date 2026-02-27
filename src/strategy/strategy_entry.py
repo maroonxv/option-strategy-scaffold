@@ -32,6 +32,7 @@ from .domain.domain_service.signal.signal_service import SignalService
 # 使用前请根据策略需求实现 calculate_bar() / check_open_signal() / check_close_signal()
 from .domain.domain_service.risk.position_sizing_service import PositionSizingService
 from .domain.domain_service.selection.option_selector_service import OptionSelectorService
+from .domain.value_object.option_selector_config import OptionSelectorConfig
 from .domain.domain_service.selection.future_selection_service import BaseFutureSelector
 from .domain.domain_service.pricing import GreeksCalculator
 from .domain.domain_service.risk.portfolio_risk_aggregator import PortfolioRiskAggregator
@@ -228,7 +229,7 @@ class StrategyEntry(StrategyTemplate):
         )
         self.future_selection_service = BaseFutureSelector()
         self.option_selector_service = OptionSelectorService(
-            strike_level=self.strike_level
+            config=OptionSelectorConfig(strike_level=self.strike_level)
         )
 
         # ── Greeks 风控 & 订单执行增强 ──

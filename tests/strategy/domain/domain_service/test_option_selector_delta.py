@@ -32,6 +32,7 @@ import pandas as pd
 from src.strategy.domain.domain_service.selection.option_selector_service import (
     OptionSelectorService,
 )
+from src.strategy.domain.value_object.option_selector_config import OptionSelectorConfig
 from src.strategy.domain.value_object.greeks import GreeksResult
 
 
@@ -89,11 +90,13 @@ def _build_call_chain(underlying_price: float) -> tuple[pd.DataFrame, dict[str, 
 @pytest.fixture
 def selector() -> OptionSelectorService:
     return OptionSelectorService(
-        strike_level=3,
-        min_bid_price=10.0,
-        min_bid_volume=10,
-        min_trading_days=1,
-        max_trading_days=50,
+        config=OptionSelectorConfig(
+            strike_level=3,
+            min_bid_price=10.0,
+            min_bid_volume=10,
+            min_trading_days=1,
+            max_trading_days=50,
+        )
     )
 
 

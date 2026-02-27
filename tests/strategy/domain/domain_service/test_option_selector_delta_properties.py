@@ -37,6 +37,7 @@ from hypothesis import strategies as st
 from src.strategy.domain.domain_service.selection.option_selector_service import (
     OptionSelectorService,
 )
+from src.strategy.domain.value_object.option_selector_config import OptionSelectorConfig
 from src.strategy.domain.value_object.greeks import GreeksResult
 
 
@@ -148,11 +149,13 @@ def _build_option_chain_with_greeks(
 def _make_selector() -> OptionSelectorService:
     """Create a selector with relaxed thresholds suitable for property testing."""
     return OptionSelectorService(
-        strike_level=2,
-        min_bid_price=10.0,
-        min_bid_volume=5,
-        min_trading_days=1,
-        max_trading_days=50,
+        config=OptionSelectorConfig(
+            strike_level=2,
+            min_bid_price=10.0,
+            min_bid_volume=5,
+            min_trading_days=1,
+            max_trading_days=50,
+        )
     )
 
 
@@ -220,10 +223,10 @@ def test_delta_selection_optimality_call(
                     continue
                 r = row.iloc[0]
                 if (
-                    r.get("bid_price", 0) >= selector.min_bid_price
-                    and r.get("bid_volume", 0) >= selector.min_bid_volume
-                    and r.get("days_to_expiry", 0) >= selector.min_trading_days
-                    and r.get("days_to_expiry", 999) <= selector.max_trading_days
+                    r.get("bid_price", 0) >= selector.config.min_bid_price
+                    and r.get("bid_volume", 0) >= selector.config.min_bid_volume
+                    and r.get("days_to_expiry", 0) >= selector.config.min_trading_days
+                    and r.get("days_to_expiry", 999) <= selector.config.max_trading_days
                 ):
                     assert abs(gr.delta - target_delta) > delta_tolerance, (
                         f"select_by_delta returned None but {sym} has delta={gr.delta} "
@@ -249,10 +252,10 @@ def test_delta_selection_optimality_call(
         if r.get("option_type") != "call":
             continue
         if (
-            r.get("bid_price", 0) < selector.min_bid_price
-            or r.get("bid_volume", 0) < selector.min_bid_volume
-            or r.get("days_to_expiry", 0) < selector.min_trading_days
-            or r.get("days_to_expiry", 999) > selector.max_trading_days
+            r.get("bid_price", 0) < selector.config.min_bid_price
+            or r.get("bid_volume", 0) < selector.config.min_bid_volume
+            or r.get("days_to_expiry", 0) < selector.config.min_trading_days
+            or r.get("days_to_expiry", 999) > selector.config.max_trading_days
         ):
             continue
         if abs(gr.delta - target_delta) > delta_tolerance:
@@ -320,10 +323,10 @@ def test_delta_selection_optimality_put(
                     continue
                 r = row.iloc[0]
                 if (
-                    r.get("bid_price", 0) >= selector.min_bid_price
-                    and r.get("bid_volume", 0) >= selector.min_bid_volume
-                    and r.get("days_to_expiry", 0) >= selector.min_trading_days
-                    and r.get("days_to_expiry", 999) <= selector.max_trading_days
+                    r.get("bid_price", 0) >= selector.config.min_bid_price
+                    and r.get("bid_volume", 0) >= selector.config.min_bid_volume
+                    and r.get("days_to_expiry", 0) >= selector.config.min_trading_days
+                    and r.get("days_to_expiry", 999) <= selector.config.max_trading_days
                 ):
                     assert abs(gr.delta - target_delta) > delta_tolerance, (
                         f"select_by_delta returned None but {sym} has delta={gr.delta} "
@@ -345,10 +348,10 @@ def test_delta_selection_optimality_put(
         if r.get("option_type") != "put":
             continue
         if (
-            r.get("bid_price", 0) < selector.min_bid_price
-            or r.get("bid_volume", 0) < selector.min_bid_volume
-            or r.get("days_to_expiry", 0) < selector.min_trading_days
-            or r.get("days_to_expiry", 999) > selector.max_trading_days
+            r.get("bid_price", 0) < selector.config.min_bid_price
+            or r.get("bid_volume", 0) < selector.config.min_bid_volume
+            or r.get("days_to_expiry", 0) < selector.config.min_trading_days
+            or r.get("days_to_expiry", 999) > selector.config.max_trading_days
         ):
             continue
         if abs(gr.delta - target_delta) > delta_tolerance:

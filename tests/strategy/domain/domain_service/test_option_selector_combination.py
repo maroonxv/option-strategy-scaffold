@@ -32,6 +32,7 @@ import pandas as pd
 from src.strategy.domain.domain_service.selection.option_selector_service import (
     OptionSelectorService,
 )
+from src.strategy.domain.value_object.option_selector_config import OptionSelectorConfig
 from src.strategy.domain.value_object.combination import CombinationType
 from src.strategy.domain.value_object.selection import CombinationSelectionResult
 from src.strategy.domain.value_object.combination_rules import (
@@ -97,11 +98,13 @@ def _build_chain(underlying_price: float, strikes: list[float], expiry: str = "2
 def selector():
     """默认参数的 OptionSelectorService。"""
     return OptionSelectorService(
-        strike_level=2,
-        min_bid_price=10.0,
-        min_bid_volume=5,
-        min_trading_days=1,
-        max_trading_days=50,
+        config=OptionSelectorConfig(
+            strike_level=2,
+            min_bid_price=10.0,
+            min_bid_volume=5,
+            min_trading_days=1,
+            max_trading_days=50,
+        )
     )
 
 

@@ -37,6 +37,7 @@ from hypothesis import strategies as st
 from src.strategy.domain.domain_service.selection.option_selector_service import (
     OptionSelectorService,
 )
+from src.strategy.domain.value_object.option_selector_config import OptionSelectorConfig
 
 
 # ---------------------------------------------------------------------------
@@ -80,11 +81,13 @@ _weight = st.floats(min_value=0.01, max_value=1.0, allow_nan=False, allow_infini
 def _make_selector(min_days: int = 1, max_days: int = 50) -> OptionSelectorService:
     """Create a selector with relaxed thresholds suitable for property testing."""
     return OptionSelectorService(
-        strike_level=2,
-        min_bid_price=10.0,
-        min_bid_volume=5,
-        min_trading_days=min_days,
-        max_trading_days=max_days,
+        config=OptionSelectorConfig(
+            strike_level=2,
+            min_bid_price=10.0,
+            min_bid_volume=5,
+            min_trading_days=min_days,
+            max_trading_days=max_days,
+        )
     )
 
 

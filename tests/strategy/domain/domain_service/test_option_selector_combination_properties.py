@@ -39,6 +39,7 @@ from hypothesis import strategies as st
 from src.strategy.domain.domain_service.selection.option_selector_service import (
     OptionSelectorService,
 )
+from src.strategy.domain.value_object.option_selector_config import OptionSelectorConfig
 from src.strategy.domain.value_object.combination import CombinationType
 from src.strategy.domain.value_object.combination_rules import (
     VALIDATION_RULES,
@@ -154,11 +155,13 @@ def _build_illiquid_chain(
 def _make_selector() -> OptionSelectorService:
     """Create a selector with relaxed thresholds suitable for property testing."""
     return OptionSelectorService(
-        strike_level=2,
-        min_bid_price=10.0,
-        min_bid_volume=5,
-        min_trading_days=1,
-        max_trading_days=50,
+        config=OptionSelectorConfig(
+            strike_level=2,
+            min_bid_price=10.0,
+            min_bid_volume=5,
+            min_trading_days=1,
+            max_trading_days=50,
+        )
     )
 
 
@@ -303,11 +306,11 @@ def test_straddle_selects_closest_to_atm(
 
         # Collect all common strikes (available in both call and put after filtering)
         filtered_df = df.copy()
-        filtered_df = filtered_df[filtered_df["bid_price"] >= selector.min_bid_price]
-        filtered_df = filtered_df[filtered_df["bid_volume"] >= selector.min_bid_volume]
+        filtered_df = filtered_df[filtered_df["bid_price"] >= selector.config.min_bid_price]
+        filtered_df = filtered_df[filtered_df["bid_volume"] >= selector.config.min_bid_volume]
         if "days_to_expiry" in filtered_df.columns:
-            filtered_df = filtered_df[filtered_df["days_to_expiry"] >= selector.min_trading_days]
-            filtered_df = filtered_df[filtered_df["days_to_expiry"] <= selector.max_trading_days]
+            filtered_df = filtered_df[filtered_df["days_to_expiry"] >= selector.config.min_trading_days]
+            filtered_df = filtered_df[filtered_df["days_to_expiry"] <= selector.config.max_trading_days]
 
         call_strikes = set(
             filtered_df[filtered_df["option_type"] == "call"]["strike_price"].unique()
@@ -399,11 +402,11 @@ def test_strangle_selects_correct_otm_levels(
         # Verify OTM ranking position matches strike_level
         # Reconstruct the OTM ranking the same way the service does
         filtered_df = df.copy()
-        filtered_df = filtered_df[filtered_df["bid_price"] >= selector.min_bid_price]
-        filtered_df = filtered_df[filtered_df["bid_volume"] >= selector.min_bid_volume]
+        filtered_df = filtered_df[filtered_df["bid_price"] >= selector.config.min_bid_price]
+        filtered_df = filtered_df[filtered_df["bid_volume"] >= selector.config.min_bid_volume]
         if "days_to_expiry" in filtered_df.columns:
-            filtered_df = filtered_df[filtered_df["days_to_expiry"] >= selector.min_trading_days]
-            filtered_df = filtered_df[filtered_df["days_to_expiry"] <= selector.max_trading_days]
+            filtered_df = filtered_df[filtered_df["days_to_expiry"] >= selector.config.min_trading_days]
+            filtered_df = filtered_df[filtered_df["days_to_expiry"] <= selector.config.max_trading_days]
 
         # OTM calls: strike > underlying, sorted by distance ascending
         otm_calls = filtered_df[
