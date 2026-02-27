@@ -50,13 +50,13 @@
     - submit 方法未显式传入参数时使用 config 中的默认值
     - _Requirements: 3.3, 3.4_
 
-  - [-] 4.2 为 `SmartOrderExecutor` 添加 `from_yaml_config(config_dict)` 类方法
+  - [x] 4.2 为 `SmartOrderExecutor` 添加 `from_yaml_config(config_dict)` 类方法
     - 缺失字段使用 OrderExecutionConfig 默认值
     - 空字典使用全部默认值
     - 忽略未知字段
     - _Requirements: 2.1, 2.3, 2.4_
 
-  - [~] 4.3 为 `AdvancedOrderScheduler` 添加 `from_yaml_config(config_dict)` 类方法
+  - [-] 4.3 为 `AdvancedOrderScheduler` 添加 `from_yaml_config(config_dict)` 类方法
     - 缺失字段使用 AdvancedSchedulerConfig 默认值
     - 空字典使用全部默认值
     - 忽略未知字段

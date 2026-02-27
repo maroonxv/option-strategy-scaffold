@@ -30,6 +30,20 @@ class AdvancedOrderScheduler:
         self.config = config or AdvancedSchedulerConfig()
         self._orders: Dict[str, AdvancedOrder] = {}
 
+    @classmethod
+    def from_yaml_config(cls, config_dict: dict) -> "AdvancedOrderScheduler":
+        """从 YAML 配置字典创建实例，缺失字段使用 AdvancedSchedulerConfig 默认值"""
+        defaults = AdvancedSchedulerConfig()
+        config = AdvancedSchedulerConfig(
+            default_batch_size=config_dict.get("default_batch_size", defaults.default_batch_size),
+            default_interval_seconds=config_dict.get("default_interval_seconds", defaults.default_interval_seconds),
+            default_num_slices=config_dict.get("default_num_slices", defaults.default_num_slices),
+            default_volume_randomize_ratio=config_dict.get("default_volume_randomize_ratio", defaults.default_volume_randomize_ratio),
+            default_price_offset_ticks=config_dict.get("default_price_offset_ticks", defaults.default_price_offset_ticks),
+            default_price_tick=config_dict.get("default_price_tick", defaults.default_price_tick),
+        )
+        return cls(config)
+
     def submit_iceberg(self, instruction: OrderInstruction, batch_size: int) -> AdvancedOrder:
         """提交冰山单，拆分为子单"""
         total_volume = instruction.volume
