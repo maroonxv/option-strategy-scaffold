@@ -1,0 +1,12 @@
+# 智能订单执行器配置
+# 对应 OrderExecutionConfig
+
+[timeout]
+seconds = 30                    # 超时秒数
+
+[retry]
+max_retries = 3                 # 最大重试次数
+
+[price]
+slippage_ticks = 2              # 滑点跳数
+price_tick = 0.2                # 最小变动价位

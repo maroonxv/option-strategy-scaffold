@@ -1,0 +1,16 @@
+# 高级订单调度器配置
+# 对应 AdvancedSchedulerConfig
+
+[iceberg]
+default_batch_size = 10         # 默认冰山单批量
+
+[split]
+default_interval_seconds = 60   # 默认拆单间隔(秒)
+default_num_slices = 5          # 默认分片数
+
+[randomize]
+default_volume_randomize_ratio = 0.1  # 默认量随机比例
+
+[price]
+default_price_offset_ticks = 1  # 默认价格偏移跳数
+default_price_tick = 0.01       # 默认最小变动价位

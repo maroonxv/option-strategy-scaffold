@@ -19,11 +19,11 @@
     - _Requirements: 6.1, 6.2, 6.3_
 
 - [ ] 2. 新增 AdvancedSchedulerConfig 配置值对象与 TOML 配置
-  - [-] 2.1 在 `src/strategy/domain/value_object/trading/order_execution.py` 中新增 `AdvancedSchedulerConfig` frozen dataclass
+  - [x] 2.1 在 `src/strategy/domain/value_object/trading/order_execution.py` 中新增 `AdvancedSchedulerConfig` frozen dataclass
     - 包含字段：default_batch_size(10)、default_interval_seconds(60)、default_num_slices(5)、default_volume_randomize_ratio(0.1)、default_price_offset_ticks(1)、default_price_tick(0.01)
     - _Requirements: 3.1, 3.2_
 
-  - [~] 2.2 创建 TOML 配置文件
+  - [x] 2.2 创建 TOML 配置文件
     - 创建 `config/domain_service/execution/smart_order_executor.toml`，包含 timeout、retry、price 分节
     - 创建 `config/domain_service/execution/advanced_scheduler.toml`，包含 iceberg、split、randomize、price 分节
     - _Requirements: 1.5_
