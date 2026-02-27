@@ -82,13 +82,13 @@
     - from_dict 支持可选 config 参数，未提供时从字典恢复
     - _Requirements: 9.1, 9.2, 9.3_
 
-  - [-] 5.2 为 `AdvancedOrderScheduler` 添加 `to_dict()` 和 `from_dict(data, config)` 方法
+  - [x] 5.2 为 `AdvancedOrderScheduler` 添加 `to_dict()` 和 `from_dict(data, config)` 方法
     - 序列化 config 和 _orders 字典为 JSON 兼容字典
     - _orders 中每个 AdvancedOrder 委托 AdvancedOrder.to_dict()
     - from_dict 支持可选 config 参数，未提供时从字典恢复
     - _Requirements: 9.4, 9.5_
 
-  - [~] 5.3 创建 `tests/strategy/domain/domain_service/test_execution_serialization_properties.py` 属性测试（属性 10, 11）
+  - [-] 5.3 创建 `tests/strategy/domain/domain_service/test_execution_serialization_properties.py` 属性测试（属性 10, 11）
     - **Property 10: SmartOrderExecutor 序列化 round-trip**
     - **Validates: Requirements 9.1, 9.2, 9.3**
     - **Property 11: AdvancedOrderScheduler 序列化 round-trip**
