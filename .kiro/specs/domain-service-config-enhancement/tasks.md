@@ -55,14 +55,14 @@
     - 所有字段提供与 BaseFutureSelector 原默认参数一致的默认值
     - _需求: 4.1, 4.2, 4.3_
 
-  - [-] 4.2 重构 BaseFutureSelector 使用配置对象
+  - [x] 4.2 重构 BaseFutureSelector 使用配置对象
     - 添加 `__init__` 方法接收配置对象
     - 修改 `select_dominant_contract` 方法，从配置读取 volume_weight 和 oi_weight
     - 修改 `check_rollover` 方法，从配置读取 rollover_days
     - 移除方法签名中的对应参数
     - _需求: 4.4, 4.5, 4.6, 4.7_
 
-  - [~] 4.3 编写 BaseFutureSelector 一致性属性测试
+  - [x] 4.3 编写 BaseFutureSelector 一致性属性测试
     - **属性 4: BaseFutureSelector 主力合约选择一致性**
     - **属性 5: BaseFutureSelector 移仓检查一致性**
     - **验证需求: 5.3**
