@@ -116,14 +116,14 @@
     - 调用 `self._executor.shutdown(wait=True)` 关闭线程池
     - _Requirements: 5.4_
 
-  - [-] 6.6 编写 Property 5 属性测试：Digest 去重正确性
+  - [x] 6.6 编写 Property 5 属性测试：Digest 去重正确性
     - **Property 5: Digest 去重正确性**
     - 在 `tests/strategy/infrastructure/persistence/test_persistence_autosave_properties.py` 中实现
     - 使用 Hypothesis 生成随机 Snapshot 字典对（相同/不同）
     - 验证相同 Snapshot 第二次保存被跳过，不同 Snapshot 第二次保存执行
     - **Validates: Requirements 2.2, 2.3**
 
-  - [~] 6.7 编写 Property 8 属性测试：异步保存跳过未完成请求
+  - [x] 6.7 编写 Property 8 属性测试：异步保存跳过未完成请求
     - **Property 8: 异步保存跳过未完成请求**
     - 在同一测试文件中实现
     - 验证上一次异步保存未完成时新请求被跳过

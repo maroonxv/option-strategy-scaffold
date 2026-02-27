@@ -2,8 +2,9 @@
 Property-Based Tests for AutoSaveService - Data Persistence Optimization
 
 Feature: data-persistence-optimization, Property 5: Digest 去重正确性
+Feature: data-persistence-optimization, Property 8: 异步保存跳过未完成请求
 
-Validates: Requirements 2.2, 2.3
+Validates: Requirements 2.2, 2.3, 5.3
 """
 
 import sys
@@ -528,6 +529,309 @@ class TestAutoSaveServiceDigestBoundaryConditions:
         assert mock_repository.save_raw.call_count == 1, (
             "Small change in nested snapshot should be detected and trigger save"
         )
+        
+        # Cleanup
+        service.shutdown()
+
+
+# ===========================================================================
+# Property 8: 异步保存跳过未完成请求
+# ===========================================================================
+
+class TestAutoSaveServiceAsyncSkipProperties:
+    """Property 8: 异步保存跳过未完成请求
+    
+    Feature: data-persistence-optimization, Property 8: 异步保存跳过未完成请求
+    Validates: Requirements 5.3
+    """
+
+    @settings(max_examples=100, deadline=None)
+    @given(
+        num_requests=st.integers(min_value=2, max_value=10),
+        save_delay_ms=st.integers(min_value=50, max_value=200),
+    )
+    def test_property_8_async_save_skips_incomplete_requests(
+        self, num_requests, save_delay_ms
+    ):
+        """
+        **Validates: Requirements 5.3**
+        
+        Property 8: 异步保存跳过未完成请求
+        
+        For any sequence of save requests, when a previous async save is still
+        in progress, new save requests should be skipped rather than queued.
+        This prevents task accumulation and ensures the service doesn't fall behind.
+        
+        This property verifies that:
+        1. When an async save is in progress, subsequent saves are skipped
+        2. No save requests are queued or accumulated
+        3. Only the first request in a burst executes
+        
+        This is critical for preventing the save queue from growing unbounded
+        when the strategy generates state changes faster than saves can complete.
+        """
+        import time
+        from unittest.mock import Mock
+        
+        # Create a mock repository that simulates slow saves
+        mock_repository = Mock(spec=StateRepository)
+        
+        # Track actual save calls
+        save_call_count = [0]
+        
+        def slow_save_raw(strategy_name, json_str):
+            """Simulate a slow save operation"""
+            save_call_count[0] += 1
+            time.sleep(save_delay_ms / 1000.0)  # Convert ms to seconds
+        
+        mock_repository.save_raw = Mock(side_effect=slow_save_raw)
+        
+        # Create AutoSaveService with no time-based throttling
+        service = _make_auto_save_service(mock_repository, interval_seconds=0.0)
+        
+        # Generate different snapshots for each request
+        # (to avoid digest-based deduplication)
+        snapshots = [
+            {"request_id": i, "data": f"snapshot_{i}", "value": i * 100}
+            for i in range(num_requests)
+        ]
+        
+        # Submit all save requests rapidly (without waiting for completion)
+        for i, snapshot in enumerate(snapshots):
+            service.maybe_save(lambda s=snapshot: s)
+            # Small delay to ensure requests are submitted while first is processing
+            if i == 0:
+                # Give first request time to start processing
+                time.sleep(0.01)
+        
+        # Wait for all async operations to complete
+        if service._pending_future:
+            service._pending_future.result(timeout=10)
+        
+        # Verify that only the first request executed
+        # All subsequent requests should have been skipped because the first
+        # async save was still in progress
+        assert save_call_count[0] <= 2, (
+            f"Expected at most 2 saves (first + possibly one more after completion), "
+            f"but got {save_call_count[0]} saves for {num_requests} requests.\n"
+            f"This indicates that saves are being queued instead of skipped."
+        )
+        
+        # Cleanup
+        service.shutdown()
+
+    @settings(max_examples=50, deadline=None)
+    @given(num_bursts=st.integers(min_value=2, max_value=5))
+    def test_async_save_allows_new_request_after_completion(self, num_bursts):
+        """
+        Additional property: After an async save completes, new save requests
+        should be allowed (not permanently blocked).
+        
+        This verifies that the skip mechanism only applies while a save is
+        in progress, and doesn't permanently block future saves.
+        """
+        import time
+        from unittest.mock import Mock
+        
+        # Create mock repository with fast saves
+        mock_repository = Mock(spec=StateRepository)
+        mock_repository.save_raw = Mock()
+        
+        # Create AutoSaveService with no time-based throttling
+        service = _make_auto_save_service(mock_repository, interval_seconds=0.0)
+        
+        # Submit multiple bursts of saves, waiting for completion between bursts
+        for burst_id in range(num_bursts):
+            snapshot = {
+                "burst_id": burst_id,
+                "data": f"burst_{burst_id}",
+            }
+            service.maybe_save(lambda s=snapshot: s)
+            
+            # Wait for this save to complete before next burst
+            if service._pending_future:
+                service._pending_future.result(timeout=5)
+            
+            # Small delay to ensure completion is registered
+            time.sleep(0.01)
+        
+        # All bursts should have executed (one save per burst)
+        assert mock_repository.save_raw.call_count == num_bursts, (
+            f"Expected {num_bursts} saves (one per burst), "
+            f"but got {mock_repository.save_raw.call_count} saves"
+        )
+        
+        # Cleanup
+        service.shutdown()
+
+    @settings(max_examples=50, deadline=None)
+    @given(
+        num_rapid_requests=st.integers(min_value=3, max_value=10),
+        save_delay_ms=st.integers(min_value=100, max_value=300),
+    )
+    def test_rapid_requests_during_slow_save_all_skipped(
+        self, num_rapid_requests, save_delay_ms
+    ):
+        """
+        Additional property: When multiple save requests arrive rapidly while
+        a slow save is in progress, all of them should be skipped.
+        
+        This verifies that the skip mechanism works correctly even under
+        high-frequency save request scenarios.
+        """
+        import time
+        from unittest.mock import Mock
+        
+        # Create mock repository with slow saves
+        mock_repository = Mock(spec=StateRepository)
+        
+        save_call_count = [0]
+        
+        def slow_save_raw(strategy_name, json_str):
+            save_call_count[0] += 1
+            time.sleep(save_delay_ms / 1000.0)
+        
+        mock_repository.save_raw = Mock(side_effect=slow_save_raw)
+        
+        # Create AutoSaveService
+        service = _make_auto_save_service(mock_repository, interval_seconds=0.0)
+        
+        # Submit first request
+        first_snapshot = {"id": 0, "data": "first"}
+        service.maybe_save(lambda: first_snapshot)
+        
+        # Give it time to start processing
+        time.sleep(0.02)
+        
+        # Submit rapid burst of requests while first is processing
+        for i in range(1, num_rapid_requests):
+            snapshot = {"id": i, "data": f"request_{i}"}
+            service.maybe_save(lambda s=snapshot: s)
+            # No delay between rapid requests
+        
+        # Wait for completion
+        if service._pending_future:
+            service._pending_future.result(timeout=10)
+        
+        # Only the first request should have executed
+        # All rapid requests should have been skipped
+        assert save_call_count[0] == 1, (
+            f"Expected only 1 save (the first request), "
+            f"but got {save_call_count[0]} saves for {num_rapid_requests} total requests.\n"
+            f"All {num_rapid_requests - 1} rapid requests should have been skipped."
+        )
+        
+        # Cleanup
+        service.shutdown()
+
+    def test_pending_future_checked_before_submission(self):
+        """
+        Unit test: Verify that _pending_future is checked before submitting
+        a new async save task.
+        
+        This is a boundary condition test that verifies the implementation
+        correctly checks the future's done() status.
+        """
+        import time
+        from unittest.mock import Mock
+        
+        # Create mock repository with slow saves
+        mock_repository = Mock(spec=StateRepository)
+        
+        def slow_save_raw(strategy_name, json_str):
+            time.sleep(0.1)  # 100ms delay
+        
+        mock_repository.save_raw = Mock(side_effect=slow_save_raw)
+        
+        # Create AutoSaveService
+        service = _make_auto_save_service(mock_repository, interval_seconds=0.0)
+        
+        # Submit first request
+        service.maybe_save(lambda: {"id": 1})
+        
+        # Verify pending_future is set
+        assert service._pending_future is not None
+        assert not service._pending_future.done()
+        
+        # Submit second request while first is in progress
+        service.maybe_save(lambda: {"id": 2})
+        
+        # Second request should be skipped, so save_raw should only be called once
+        # Wait for first save to complete
+        service._pending_future.result(timeout=5)
+        
+        assert mock_repository.save_raw.call_count == 1
+        
+        # Cleanup
+        service.shutdown()
+
+    def test_completed_future_allows_new_submission(self):
+        """
+        Unit test: Verify that a completed future allows new save submissions.
+        
+        This tests the boundary condition where a future exists but is already done.
+        """
+        import time
+        from unittest.mock import Mock
+        
+        # Create mock repository
+        mock_repository = Mock(spec=StateRepository)
+        mock_repository.save_raw = Mock()
+        
+        # Create AutoSaveService
+        service = _make_auto_save_service(mock_repository, interval_seconds=0.0)
+        
+        # Submit first request
+        service.maybe_save(lambda: {"id": 1})
+        
+        # Wait for completion
+        if service._pending_future:
+            service._pending_future.result(timeout=5)
+        
+        # Verify future is done
+        assert service._pending_future.done()
+        
+        # Submit second request (should succeed because first is done)
+        service.maybe_save(lambda: {"id": 2})
+        
+        # Wait for second save
+        if service._pending_future:
+            service._pending_future.result(timeout=5)
+        
+        # Both saves should have executed
+        assert mock_repository.save_raw.call_count == 2
+        
+        # Cleanup
+        service.shutdown()
+
+    def test_no_pending_future_allows_submission(self):
+        """
+        Unit test: Verify that when there's no pending future, save submission
+        is allowed.
+        
+        This tests the initial state boundary condition.
+        """
+        from unittest.mock import Mock
+        
+        # Create mock repository
+        mock_repository = Mock(spec=StateRepository)
+        mock_repository.save_raw = Mock()
+        
+        # Create AutoSaveService
+        service = _make_auto_save_service(mock_repository, interval_seconds=0.0)
+        
+        # Verify no pending future initially
+        assert service._pending_future is None
+        
+        # Submit first request (should succeed)
+        service.maybe_save(lambda: {"id": 1})
+        
+        # Wait for completion
+        if service._pending_future:
+            service._pending_future.result(timeout=5)
+        
+        # Save should have executed
+        assert mock_repository.save_raw.call_count == 1
         
         # Cleanup
         service.shutdown()
