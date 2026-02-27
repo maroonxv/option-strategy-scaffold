@@ -12,6 +12,7 @@ from ...value_object.combination import CombinationType
 from ...value_object.selection import CombinationSelectionResult, SelectionScore
 from ...value_object.combination_rules import VALIDATION_RULES, LegStructure
 from ...value_object.greeks import GreeksResult
+from ...value_object.option_selector_config import OptionSelectorConfig
 
 
 class OptionSelectorService:
@@ -26,35 +27,67 @@ class OptionSelectorService:
     
     def __init__(
         self,
-        strike_level: int = 3,          # 目标虚值档位
-        min_bid_price: float = 10.0,    # 最小买一价 (过滤价格过低的合约)
-        min_bid_volume: int = 10,       # 最小买一量 (过滤深度不足的合约)
-        min_trading_days: int = 1,      # 最小剩余交易日 (过滤即将到期的合约)
-        max_trading_days: int = 50      # 最大剩余交易日 (过滤远月合约)
+        config: Optional[OptionSelectorConfig] = None,
+        *,
+        strike_level: Optional[int] = None,
+        min_bid_price: Optional[float] = None,
+        min_bid_volume: Optional[int] = None,
+        min_trading_days: Optional[int] = None,
+        max_trading_days: Optional[int] = None,
     ):
         """
         初始化期权选择服务
-        
+
+        支持两种初始化方式:
+        1. 传入 config 对象 (推荐):
+           OptionSelectorService(config=OptionSelectorConfig(strike_level=2))
+        2. 向后兼容的关键字参数 (会覆盖 config 中的对应值):
+           OptionSelectorService(strike_level=2, min_bid_price=5.0)
+
         参数:
-            strike_level: 虚值档位
-            min_bid_price: 最小买一价 (过滤价格过低的合约)
-            min_bid_volume: 最小买一量 (过滤深度不足的合约)
-            min_trading_days: 最小剩余交易日 (过滤即将到期的合约)
-            max_trading_days: 最大剩余交易日 (过滤远月合约)
+            config: 配置对象，未提供时使用默认配置
+            strike_level: 虚值档位 (覆盖 config)
+            min_bid_price: 最小买一价 (覆盖 config)
+            min_bid_volume: 最小买一量 (覆盖 config)
+            min_trading_days: 最小剩余交易日 (覆盖 config)
+            max_trading_days: 最大剩余交易日 (覆盖 config)
         """
-        self.strike_level = strike_level
-        self.min_bid_price = min_bid_price
-        self.min_bid_volume = min_bid_volume
-        self.min_trading_days = min_trading_days
-        self.max_trading_days = max_trading_days
+        base = config or OptionSelectorConfig()
+
+        # 关键字参数覆盖 config，保持向后兼容
+        self.config = OptionSelectorConfig(
+            strike_level=strike_level if strike_level is not None else base.strike_level,
+            min_bid_price=min_bid_price if min_bid_price is not None else base.min_bid_price,
+            min_bid_volume=min_bid_volume if min_bid_volume is not None else base.min_bid_volume,
+            min_trading_days=min_trading_days if min_trading_days is not None else base.min_trading_days,
+            max_trading_days=max_trading_days if max_trading_days is not None else base.max_trading_days,
+            # 其余字段沿用 base
+            liquidity_min_volume=base.liquidity_min_volume,
+            liquidity_min_bid_volume=base.liquidity_min_bid_volume,
+            liquidity_max_spread_ticks=base.liquidity_max_spread_ticks,
+            score_liquidity_weight=base.score_liquidity_weight,
+            score_otm_weight=base.score_otm_weight,
+            score_expiry_weight=base.score_expiry_weight,
+            liq_spread_weight=base.liq_spread_weight,
+            liq_volume_weight=base.liq_volume_weight,
+            delta_tolerance=base.delta_tolerance,
+            default_spread_width=base.default_spread_width,
+        )
+
+        # 便捷属性：保持与旧代码的兼容性
+        self.strike_level = self.config.strike_level
+        self.min_bid_price = self.config.min_bid_price
+        self.min_bid_volume = self.config.min_bid_volume
+        self.min_trading_days = self.config.min_trading_days
+        self.max_trading_days = self.config.max_trading_days
     
     def check_liquidity(
         self,
         tick: Any,
         contract: Any,
-        min_volume: int = 100,
-        min_bid_volume: int = 1,
-        max_spread_ticks: int = 3,
+        min_volume: Optional[int] = None,
+        min_bid_volume: Optional[int] = None,
+        max_spread_ticks: Optional[int] = None,
         log_func: Optional[Callable] = None
     ) -> bool:
         """
@@ -63,9 +96,9 @@ class OptionSelectorService:
         参数:
             tick: TickData
             contract: ContractData
-            min_volume: 当日最小成交量
-            min_bid_volume: 最小买一量
-            max_spread_ticks: 最大买卖价差
+            min_volume: 当日最小成交量 (默认使用 config)
+            min_bid_volume: 最小买一量 (默认使用 config)
+            max_spread_ticks: 最大买卖价差 (默认使用 config)
             log_func: 日志记录函数
             
         返回:
@@ -73,6 +106,10 @@ class OptionSelectorService:
         """
         if not tick or not contract:
             return False
+
+        min_volume = min_volume if min_volume is not None else self.config.liquidity_min_volume
+        min_bid_volume = min_bid_volume if min_bid_volume is not None else self.config.liquidity_min_bid_volume
+        max_spread_ticks = max_spread_ticks if max_spread_ticks is not None else self.config.liquidity_max_spread_ticks
             
         vt_symbol = tick.vt_symbol
         
@@ -446,7 +483,7 @@ class OptionSelectorService:
         underlying_price: float,
         target_delta: float,
         greeks_data: Dict[str, GreeksResult],
-        delta_tolerance: float = 0.05,
+        delta_tolerance: Optional[float] = None,
         log_func: Optional[Callable] = None
     ) -> Optional[OptionContract]:
         """
@@ -459,12 +496,13 @@ class OptionSelectorService:
             underlying_price: 标的当前价格
             target_delta: 目标 Delta 值
             greeks_data: Greeks 数据字典 (key 为 vt_symbol)
-            delta_tolerance: Delta 容差范围，默认 0.05
+            delta_tolerance: Delta 容差范围 (默认使用 config)
             log_func: 日志回调函数
 
         返回:
             选中的期权合约，如果没有符合条件的则返回 None
         """
+        delta_tolerance = delta_tolerance if delta_tolerance is not None else self.config.delta_tolerance
         if contracts.empty:
             if log_func:
                 log_func("[DELTA] 筛选失败: 传入合约列表为空")
@@ -729,7 +767,7 @@ class OptionSelectorService:
         行权价间距由 spread_width 档位数决定。
         """
         combo_type = CombinationType.VERTICAL_SPREAD
-        width = spread_width or 1
+        width = spread_width if spread_width is not None else self.config.default_spread_width
         opt_type = (option_type_for_spread or "call").lower()
 
         if opt_type not in ("call", "put"):
@@ -818,9 +856,9 @@ class OptionSelectorService:
         contracts: pd.DataFrame,
         option_type: str,
         underlying_price: float,
-        liquidity_weight: float = 0.4,
-        otm_weight: float = 0.3,
-        expiry_weight: float = 0.3,
+        liquidity_weight: Optional[float] = None,
+        otm_weight: Optional[float] = None,
+        expiry_weight: Optional[float] = None,
         log_func: Optional[Callable] = None,
     ) -> List[SelectionScore]:
         """
@@ -830,14 +868,17 @@ class OptionSelectorService:
             contracts: 合约 DataFrame
             option_type: 期权类型 ("CALL" | "PUT", 大小写不敏感)
             underlying_price: 标的当前价格
-            liquidity_weight: 流动性得分权重 (默认 0.4)
-            otm_weight: 虚值程度得分权重 (默认 0.3)
-            expiry_weight: 到期日得分权重 (默认 0.3)
+            liquidity_weight: 流动性得分权重 (默认使用 config)
+            otm_weight: 虚值程度得分权重 (默认使用 config)
+            expiry_weight: 到期日得分权重 (默认使用 config)
             log_func: 日志回调函数
 
         返回:
             List[SelectionScore] 按 total_score 降序排列
         """
+        liquidity_weight = liquidity_weight if liquidity_weight is not None else self.config.score_liquidity_weight
+        otm_weight = otm_weight if otm_weight is not None else self.config.score_otm_weight
+        expiry_weight = expiry_weight if expiry_weight is not None else self.config.score_expiry_weight
         # 空合约列表 → 空结果
         if contracts.empty:
             if log_func:
@@ -868,9 +909,11 @@ class OptionSelectorService:
                 log_func(
                     f"[SCORE] 警告: 权重参数非法 "
                     f"(liq={liquidity_weight}, otm={otm_weight}, exp={expiry_weight})，"
-                    "使用默认权重 (0.4, 0.3, 0.3)"
+                    "使用默认权重"
                 )
-            liquidity_weight, otm_weight, expiry_weight = 0.4, 0.3, 0.3
+            liquidity_weight = self.config.score_liquidity_weight
+            otm_weight = self.config.score_otm_weight
+            expiry_weight = self.config.score_expiry_weight
 
         df = contracts.copy()
 
@@ -934,15 +977,14 @@ class OptionSelectorService:
     # 内部评分函数
     # ------------------------------------------------------------------
 
-    @staticmethod
-    def _calc_liquidity_score(row: pd.Series) -> float:
+    def _calc_liquidity_score(self, row: pd.Series) -> float:
         """
         流动性得分 [0, 1]。
 
         基于买卖价差跳数和买一量：
         - spread_component = 1 / (1 + spread)   价差越小得分越高
         - volume_component = 1 - 1 / (1 + bid_volume)  买一量越大得分越高
-        - liquidity_score = 0.6 × spread_component + 0.4 × volume_component
+        - liquidity_score = liq_spread_weight × spread_component + liq_volume_weight × volume_component
         """
         bid_price = float(row.get("bid_price", 0))
         ask_price = float(row.get("ask_price", 0))
@@ -956,7 +998,7 @@ class OptionSelectorService:
         # 买一量归一化：使用 1 - 1/(1+volume) 使得量越大得分越高
         volume_component = 1.0 - 1.0 / (1.0 + max(0, bid_volume))
 
-        return 0.6 * spread_component + 0.4 * volume_component
+        return self.config.liq_spread_weight * spread_component + self.config.liq_volume_weight * volume_component
 
     @staticmethod
     def _calc_otm_score(row: pd.Series) -> float:
