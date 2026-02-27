@@ -58,7 +58,7 @@
     - **Property 3: 止损计算一致性**
     - **Validates: Requirements 1.2**
 
-- [~] 3. 实现 RiskBudgetAllocator（风险预算分配服务）
+- [x] 3. 实现 RiskBudgetAllocator（风险预算分配服务）
   - [x] 3.1 创建 `src/strategy/domain/domain_service/risk/risk_budget_allocator.py`
     - 实现 `__init__` 接受 `RiskBudgetConfig` 参数
     - 实现 `allocate_budget_by_underlying` 方法：按品种分配 Greeks 预算
@@ -89,7 +89,7 @@
     - **Property 8: 多维度预算分配**
     - **Validates: Requirements 2.1, 2.2, 2.6**
 
-- [~] 4. 检查点 - 止损和预算服务验证
+- [-] 4. 检查点 - 止损和预算服务验证
   - 确保所有测试通过，如有问题请向用户确认。
 
 - [~] 5. 实现 LiquidityRiskMonitor（持仓流动性监控服务）
