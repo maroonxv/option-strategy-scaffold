@@ -129,7 +129,7 @@
     - 验证上一次异步保存未完成时新请求被跳过
     - **Validates: Requirements 5.3**
 
-  - [~] 6.8 编写 AutoSaveService 单元测试
+  - [x] 6.8 编写 AutoSaveService 单元测试
     - 测试 force_save 忽略 digest 比较（Requirements 2.4）
     - 测试 force_save 等待异步完成（Requirements 5.4）
     - 测试 cleanup 频率控制（Requirements 4.2）
