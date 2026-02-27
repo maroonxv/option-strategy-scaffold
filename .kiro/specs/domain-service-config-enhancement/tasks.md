@@ -47,7 +47,7 @@
     - **属性 3: PricingEngine 行为一致性**
     - **验证需求: 3.6, 5.2**
 
-- [ ] 4. 实现 FutureSelectorConfig 配置值对象
+- [x] 4. 实现 FutureSelectorConfig 配置值对象
   - [x] 4.1 创建 FutureSelectorConfig 类
     - 在 `src/strategy/domain/value_object/config/future_selector_config.py` 创建配置类
     - 使用 `@dataclass(frozen=True)` 定义不可变值对象
@@ -67,11 +67,11 @@
     - **属性 5: BaseFutureSelector 移仓检查一致性**
     - **验证需求: 5.3**
 
-- [~] 5. 检查点 - 确保核心功能测试通过
+- [x] 5. 检查点 - 确保核心功能测试通过
   - 确保所有测试通过，如有问题请询问用户
 
 - [ ] 6. 更新 __init__.py 导出和调用方适配
-  - [~] 6.1 更新配置目录 __init__.py
+  - [-] 6.1 更新配置目录 __init__.py
     - 导出 PositionSizingConfig、PricingEngineConfig、FutureSelectorConfig
     - _需求: 1.3_
 
