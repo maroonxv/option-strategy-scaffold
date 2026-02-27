@@ -41,7 +41,7 @@
     - 实现内部辅助方法 `_calculate_position_pnl`、`_check_fixed_stop`、`_check_trailing_stop`
     - _Requirements: 1.1, 1.2, 1.3, 1.4, 1.5, 1.6_
 
-  - [~] 2.2 编写 StopLossManager 单元测试
+  - [x] 2.2 编写 StopLossManager 单元测试
     - 创建 `tests/strategy/domain/domain_service/risk/test_stop_loss_manager.py`
     - 测试固定止损触发场景
     - 测试移动止损触发场景
