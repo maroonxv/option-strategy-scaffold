@@ -76,7 +76,7 @@ class TestBacktestConfig:
 
     def test_defaults(self):
         cfg = BacktestConfig()
-        assert cfg.config_path == "config/strategy_config.yaml"
+        assert cfg.config_path == "config/strategy_config.toml"
         assert cfg.start_date is None
         assert cfg.end_date is None
         assert cfg.capital == 1_000_000
@@ -167,7 +167,7 @@ class TestBacktestConfig:
         assert cfg.start_date == "2025-03-01"
         assert cfg.capital == 2_000_000
         # 其余保持默认
-        assert cfg.config_path == "config/strategy_config.yaml"
+        assert cfg.config_path == "config/strategy_config.toml"
         assert cfg.rate == 2.5e-5
 
     def test_from_args_missing_attrs_uses_defaults(self):
@@ -175,5 +175,5 @@ class TestBacktestConfig:
         args = argparse.Namespace(start="2025-05-01")
         cfg = BacktestConfig.from_args(args)
         assert cfg.start_date == "2025-05-01"
-        assert cfg.config_path == "config/strategy_config.yaml"
+        assert cfg.config_path == "config/strategy_config.toml"
         assert cfg.show_chart is True

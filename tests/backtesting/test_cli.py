@@ -43,7 +43,7 @@ class TestCliArgParsing:
     def test_all_args_provided(self):
         """Req 10.1: 支持所有参数。"""
         args = self._parse([
-            "--config", "my.yaml",
+            "--config", "my.toml",
             "--start", "2025-01-01",
             "--end", "2025-06-30",
             "--capital", "500000",
@@ -53,7 +53,7 @@ class TestCliArgParsing:
             "--pricetick", "0.1",
             "--no-chart",
         ])
-        assert args.config == "my.yaml"
+        assert args.config == "my.toml"
         assert args.start == "2025-01-01"
         assert args.end == "2025-06-30"
         assert args.capital == 500000

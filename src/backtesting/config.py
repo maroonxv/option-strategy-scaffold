@@ -89,7 +89,7 @@ DEFAULT_PRODUCT_SPEC: Tuple[int, float] = (10, 1.0)
 class BacktestConfig:
     """回测参数配置，封装所有回测所需参数。"""
 
-    config_path: str = "config/strategy_config.yaml"
+    config_path: str = "config/strategy_config.toml"
     start_date: Optional[str] = None
     end_date: Optional[str] = None
     capital: int = 1_000_000

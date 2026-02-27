@@ -203,16 +203,16 @@ class StrategyEntry(StrategyTemplate):
         from src.main.config.config_loader import ConfigLoader
         self.target_products = ConfigLoader.load_target_products()
         if not self.target_products:
-            self.logger.error("未配置任何交易品种，请先检查并配置 target_products.yaml")
+            self.logger.error("未配置任何交易品种，请先检查并配置 trading_target.toml")
             raise RuntimeError("策略初始化失败：未配置交易品种")
         self.logger.info(f"已加载配置的标的: {len(self.target_products)} 个品种")
 
         # ______________________________  2. 创建领域服务  ______________________________
 
-        # ── 加载 strategy_config.yaml ──
+        # ── 加载 strategy_config.toml ──
         try:
-            strategy_config_path = str(Path(__file__).resolve().parents[2] / "config" / "strategy_config.yaml")
-            full_config = ConfigLoader.load_yaml(strategy_config_path)
+            strategy_config_path = str(Path(__file__).resolve().parents[2] / "config" / "strategy_config.toml")
+            full_config = ConfigLoader.load_toml(strategy_config_path)
         except Exception:
             full_config = {}
 

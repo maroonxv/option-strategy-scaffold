@@ -48,7 +48,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--config",
         type=str,
-        default="config/strategy_config.yaml",
+        default="config/strategy_config.toml",
         help="策略配置文件路径"
     )
 
@@ -179,7 +179,7 @@ def main() -> None:
     log_name = "strategy.log"
     if args.override_config:
         path = Path(args.override_config)
-        timeframe = path.stem  # 例如 "config/timeframe/15m.yaml" 中的 "15m"
+        timeframe = path.stem  # 例如 "config/timeframe/15m.toml" 中的 "15m"
         
         # 如果提供了覆盖配置，且看起来像时间窗口配置
         # 将日志目录修改为对应的子目录: data/logs/15m

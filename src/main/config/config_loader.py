@@ -2,15 +2,21 @@
 config_loader.py - 配置加载器
 
 支持:
-1. YAML 配置文件 (策略配置)
+1. TOML 配置文件 (策略配置)
 2. 环境变量 (网关配置)
 3. 配置验证
 """
 import os
-import yaml
+import sys
 from pathlib import Path
 from typing import Dict, Any, Optional
 from dotenv import load_dotenv
+
+# Python 3.11+ 内置 tomllib，之前版本使用 tomli
+if sys.version_info >= (3, 11):
+    import tomllib
+else:
+    import tomli as tomllib
 
 
 class ConfigLoader:
@@ -22,8 +28,15 @@ class ConfigLoader:
     """
     
     @staticmethod
+    def load_toml(path: str) -> Dict[str, Any]:
+        """加载 TOML 配置文件"""
+        with open(path, "rb") as f:
+            return tomllib.load(f)
+    
+    @staticmethod
     def load_yaml(path: str) -> Dict[str, Any]:
-        """加载 YAML 配置文件"""
+        """加载 YAML 配置文件（已弃用，保留用于向后兼容）"""
+        import yaml
         with open(path, "r", encoding="utf-8") as f:
             return yaml.safe_load(f)
     
@@ -174,7 +187,7 @@ class ConfigLoader:
         return merged
                 
     @staticmethod
-    def load_target_products(path: str = "config/general/trading_target.yaml") -> list[str]:
+    def load_target_products(path: str = "config/general/trading_target.toml") -> list[str]:
         """
         加载交易目标品种列表
         
@@ -191,7 +204,15 @@ class ConfigLoader:
             
         if not os.path.exists(path):
             return []
-            
+        
+        # 尝试 TOML 格式
+        if path.endswith('.toml'):
+            with open(path, "rb") as f:
+                data = tomllib.load(f)
+                return data.get("targets", [])
+        
+        # 向后兼容：尝试 YAML 格式
+        import yaml
         with open(path, "r", encoding="utf-8") as f:
             return yaml.safe_load(f)
 

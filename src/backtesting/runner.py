@@ -47,7 +47,7 @@ class BacktestRunner:
         # 2. 获取品种列表
         target_products: List[str] = vt_symbols_config
         if not vt_symbols_config:
-            logger.info("vt_symbols 为空，正在从 trading_target.yaml 加载品种列表...")
+            logger.info("vt_symbols 为空，正在从 trading_target.toml 加载品种列表...")
             target_products = ConfigLoader.load_target_products()
 
         # 3. 生成 vt_symbols

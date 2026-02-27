@@ -115,13 +115,13 @@ order_execution:
         assert order_cfg.max_retries == 3  # default
 
     def test_actual_config_file_parseable(self):
-        """验证实际的 strategy_config.yaml 可以正确解析"""
-        config_path = os.path.join("config", "strategy_config.yaml")
+        """验证实际的 strategy_config.toml 可以正确解析"""
+        config_path = os.path.join("config", "strategy_config.toml")
         if not os.path.exists(config_path):
-            pytest.skip("config/strategy_config.yaml not found")
+            pytest.skip("config/strategy_config.toml not found")
 
-        with open(config_path, "r", encoding="utf-8") as f:
-            config = yaml.safe_load(f)
+        with open(config_path, "rb") as f:
+            config = tomllib.load(f)
 
         thresholds = _build_risk_thresholds(config)
         order_cfg = _build_order_config(config)
@@ -216,13 +216,13 @@ advanced_orders:
         assert ao["default_time_window_seconds"] == 300
 
     def test_actual_config_file_hedging(self):
-        """验证实际的 strategy_config.yaml 中的对冲配置"""
-        config_path = os.path.join("config", "strategy_config.yaml")
+        """验证实际的 strategy_config.toml 中的对冲配置"""
+        config_path = os.path.join("config", "strategy_config.toml")
         if not os.path.exists(config_path):
-            pytest.skip("config/strategy_config.yaml not found")
+            pytest.skip("config/strategy_config.toml not found")
 
-        with open(config_path, "r", encoding="utf-8") as f:
-            config = yaml.safe_load(f)
+        with open(config_path, "rb") as f:
+            config = tomllib.load(f)
 
         hedging = ConfigLoader.load_hedging_config(config)
         ao = ConfigLoader.load_advanced_orders_config(config)
@@ -275,13 +275,13 @@ combination_risk:
         assert risk_config.vega_limit == 200.0  # default
 
     def test_actual_config_file_combination_risk(self):
-        """验证实际的 strategy_config.yaml 中的组合风控配置"""
-        config_path = os.path.join("config", "strategy_config.yaml")
+        """验证实际的 strategy_config.toml 中的组合风控配置"""
+        config_path = os.path.join("config", "strategy_config.toml")
         if not os.path.exists(config_path):
-            pytest.skip("config/strategy_config.yaml not found")
+            pytest.skip("config/strategy_config.toml not found")
 
-        with open(config_path, "r", encoding="utf-8") as f:
-            config = yaml.safe_load(f)
+        with open(config_path, "rb") as f:
+            config = tomllib.load(f)
 
         risk_config = ConfigLoader.load_combination_risk_config(config)
 
