@@ -12,14 +12,14 @@
   - _需求: 1.1, 1.2, 1.3_
 
 - [ ] 2. 实现 PositionSizingConfig 配置值对象
-  - [-] 2.1 创建 PositionSizingConfig 类
+  - [x] 2.1 创建 PositionSizingConfig 类
     - 在 `src/strategy/domain/value_object/config/position_sizing_config.py` 创建配置类
     - 使用 `@dataclass(frozen=True)` 定义不可变值对象
     - 包含 7 个字段：max_positions、global_daily_limit、contract_daily_limit、margin_ratio、min_margin_ratio、margin_usage_limit、max_volume_per_order
     - 所有字段提供与 PositionSizingService 原默认参数一致的默认值
     - _需求: 2.1, 2.2, 2.3_
 
-  - [~] 2.2 重构 PositionSizingService 使用配置对象
+  - [-] 2.2 重构 PositionSizingService 使用配置对象
     - 修改 `__init__` 方法签名为 `__init__(self, config: Optional[PositionSizingConfig] = None)`
     - 未提供配置时使用默认配置 `PositionSizingConfig()`
     - 从配置对象读取所有原先的散装参数

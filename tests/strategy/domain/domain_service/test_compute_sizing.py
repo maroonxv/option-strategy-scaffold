@@ -5,6 +5,7 @@ compute_sizing 单元测试
 """
 import pytest
 from src.strategy.domain.domain_service.risk.position_sizing_service import PositionSizingService
+from src.strategy.domain.value_object.config.position_sizing_config import PositionSizingConfig
 from src.strategy.domain.value_object.greeks import GreeksResult
 from src.strategy.domain.value_object.risk import PortfolioGreeks, RiskThresholds
 from src.strategy.domain.value_object.sizing import SizingResult
@@ -89,7 +90,7 @@ class TestComputeSizingRejections:
 
     def test_reject_usage_limit_exceeded(self):
         """保证金使用率已超限"""
-        svc = PositionSizingService(margin_usage_limit=0.6)
+        svc = PositionSizingService(config=PositionSizingConfig(margin_usage_limit=0.6))
         result = svc.compute_sizing(
             account_balance=500_000.0,
             total_equity=100_000.0,
@@ -174,12 +175,12 @@ class TestComputeSizingHappyPath:
         )
         assert result.passed
         assert result.final_volume >= 1
-        assert result.final_volume <= svc.max_volume_per_order
+        assert result.final_volume <= svc._config.max_volume_per_order
         assert result.reject_reason == ""
 
     def test_final_volume_is_min_of_three(self):
         """最终手数是三维度最小值"""
-        svc = PositionSizingService(max_volume_per_order=100)
+        svc = PositionSizingService(config=PositionSizingConfig(max_volume_per_order=100))
         result = svc.compute_sizing(
             **DEFAULT_KWARGS,
             greeks=_make_greeks(),
@@ -188,11 +189,11 @@ class TestComputeSizingHappyPath:
         )
         assert result.passed
         expected_min = min(result.margin_volume, result.usage_volume, result.greeks_volume)
-        assert result.final_volume == min(expected_min, svc.max_volume_per_order)
+        assert result.final_volume == min(expected_min, svc._config.max_volume_per_order)
 
     def test_clamp_to_max_volume(self):
         """手数被 clamp 到 max_volume_per_order"""
-        svc = PositionSizingService(max_volume_per_order=2)
+        svc = PositionSizingService(config=PositionSizingConfig(max_volume_per_order=2))
         result = svc.compute_sizing(
             **DEFAULT_KWARGS,
             greeks=_make_greeks(),

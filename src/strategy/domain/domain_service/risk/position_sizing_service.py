@@ -19,6 +19,8 @@ from ...value_object.sizing import SizingResult
 
 from ...entity.position import Position
 
+from ...value_object.config.position_sizing_config import PositionSizingConfig
+
 
 
 class PositionSizingService:
@@ -35,24 +37,7 @@ class PositionSizingService:
     DEFAULT_MAX_POSITIONS = 5           # 最大持仓数量
     
 
-    def __init__(
-        self,
-
-        max_positions: int = 5,
-
-        global_daily_limit: int = 50,
-
-        contract_daily_limit: int = 2,
-
-        margin_ratio: float = 0.12,
-
-        min_margin_ratio: float = 0.07,
-
-        margin_usage_limit: float = 0.6,
-
-        max_volume_per_order: int = 10,
-
-    ):
+    def __init__(self, config: Optional[PositionSizingConfig] = None):
 
         """
 
@@ -61,35 +46,11 @@ class PositionSizingService:
 
         参数:
 
-            max_positions: 最大持仓数量
-
-            global_daily_limit: 全局日开仓限制
-
-            contract_daily_limit: 单合约日开仓限制
-
-            margin_ratio: 保证金比例（默认 0.12）
-
-            min_margin_ratio: 最低保证金比例（默认 0.07）
-
-            margin_usage_limit: 保证金使用率上限（默认 0.6）
-
-            max_volume_per_order: 单笔最大手数（默认 10）
+            config: 仓位管理服务配置对象，未提供时使用默认配置
 
         """
 
-        self.max_positions = max_positions
-
-        self.global_daily_limit = global_daily_limit
-
-        self.contract_daily_limit = contract_daily_limit
-
-        self.margin_ratio = margin_ratio
-
-        self.min_margin_ratio = min_margin_ratio
-
-        self.margin_usage_limit = margin_usage_limit
-
-        self.max_volume_per_order = max_volume_per_order
+        self._config = config or PositionSizingConfig()
 
 
     def estimate_margin(
@@ -135,9 +96,9 @@ class PositionSizingService:
 
         margin = premium + max(
 
-            underlying_price * multiplier * self.margin_ratio - out_of_money,
+            underlying_price * multiplier * self._config.margin_ratio - out_of_money,
 
-            underlying_price * multiplier * self.min_margin_ratio,
+            underlying_price * multiplier * self._config.min_margin_ratio,
 
         )
         return margin
@@ -170,7 +131,7 @@ class PositionSizingService:
 
             return 0
 
-        available = total_equity * self.margin_usage_limit - used_margin
+        available = total_equity * self._config.margin_usage_limit - used_margin
 
         if available <= 0:
 
@@ -410,7 +371,7 @@ class PositionSizingService:
 
         # 7. Clamp 到 [1, max_volume_per_order]
 
-        final_volume = min(max(final_volume, 1), self.max_volume_per_order)
+        final_volume = min(max(final_volume, 1), self._config.max_volume_per_order)
 
 
         return SizingResult(
@@ -529,18 +490,18 @@ class PositionSizingService:
 
         active_positions = [p for p in current_positions if p.is_active]
 
-        if len(active_positions) >= self.max_positions:
+        if len(active_positions) >= self._config.max_positions:
 
             return None
 
 
         # 2. 风控检查: 每日开仓限额
 
-        if current_daily_open_count + 1 > self.global_daily_limit:
+        if current_daily_open_count + 1 > self._config.global_daily_limit:
 
             return None
 
-        if current_contract_open_count + 1 > self.contract_daily_limit:
+        if current_contract_open_count + 1 > self._config.contract_daily_limit:
 
             return None
 

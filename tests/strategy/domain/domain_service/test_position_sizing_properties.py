@@ -8,6 +8,7 @@ from hypothesis import given, settings
 from hypothesis import strategies as st
 
 from src.strategy.domain.domain_service.risk.position_sizing_service import PositionSizingService
+from src.strategy.domain.value_object.config.position_sizing_config import PositionSizingConfig
 
 
 # ---------------------------------------------------------------------------
@@ -47,7 +48,7 @@ class TestProperty1MarginEstimateFormula:
         """Feature: dynamic-position-sizing, Property 1: 保证金估算公式正确性
         **Validates: Requirements 1.1**
         """
-        service = PositionSizingService(margin_ratio=0.12, min_margin_ratio=0.07)
+        service = PositionSizingService(config=PositionSizingConfig(margin_ratio=0.12, min_margin_ratio=0.07))
         result = service.estimate_margin(
             contract_price, underlying_price, strike_price, option_type, multiplier
         )
@@ -96,7 +97,7 @@ class TestProperty2UsageVolumeInvariant:
         """Feature: dynamic-position-sizing, Property 2: 保证金使用率不变量
         **Validates: Requirements 2.2**
         """
-        service = PositionSizingService(margin_usage_limit=margin_usage_limit)
+        service = PositionSizingService(config=PositionSizingConfig(margin_usage_limit=margin_usage_limit))
         n = service._calc_usage_volume(total_equity, used_margin, margin_per_lot)
 
         # n should be non-negative
@@ -268,8 +269,10 @@ class TestProperty4ComputeSizingInvariant:
         )
 
         svc = PositionSizingService(
-            margin_usage_limit=0.6,
-            max_volume_per_order=max_volume_per_order,
+            config=PositionSizingConfig(
+                margin_usage_limit=0.6,
+                max_volume_per_order=max_volume_per_order,
+            )
         )
 
         # Pre-check: estimate margin and verify all dimensions >= 1

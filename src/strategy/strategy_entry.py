@@ -31,6 +31,7 @@ from .domain.domain_service.signal.signal_service import SignalService
 # NOTE: IndicatorService 和 SignalService 是模板类，
 # 使用前请根据策略需求实现 calculate_bar() / check_open_signal() / check_close_signal()
 from .domain.domain_service.risk.position_sizing_service import PositionSizingService
+from .domain.value_object.config.position_sizing_config import PositionSizingConfig
 from .domain.domain_service.selection.option_selector_service import OptionSelectorService
 from .domain.value_object.option_selector_config import OptionSelectorConfig
 from .domain.domain_service.selection.future_selection_service import BaseFutureSelector
@@ -221,11 +222,13 @@ class StrategyEntry(StrategyTemplate):
         # ── 从 position_sizing 配置节读取动态仓位参数 ──
         ps_cfg = full_config.get("position_sizing", {})
         self.position_sizing_service = PositionSizingService(
-            max_positions=self.max_positions,
-            margin_ratio=ps_cfg.get("margin_ratio", 0.12),
-            min_margin_ratio=ps_cfg.get("min_margin_ratio", 0.07),
-            margin_usage_limit=ps_cfg.get("margin_usage_limit", 0.6),
-            max_volume_per_order=ps_cfg.get("max_volume_per_order", 10),
+            config=PositionSizingConfig(
+                max_positions=self.max_positions,
+                margin_ratio=ps_cfg.get("margin_ratio", 0.12),
+                min_margin_ratio=ps_cfg.get("min_margin_ratio", 0.07),
+                margin_usage_limit=ps_cfg.get("margin_usage_limit", 0.6),
+                max_volume_per_order=ps_cfg.get("max_volume_per_order", 10),
+            )
         )
         self.future_selection_service = BaseFutureSelector()
         self.option_selector_service = OptionSelectorService(

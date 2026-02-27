@@ -12,6 +12,7 @@ calculate_open_volume / calculate_close_volume 编排逻辑与边界条件单元
 import pytest
 
 from src.strategy.domain.domain_service.risk.position_sizing_service import PositionSizingService
+from src.strategy.domain.value_object.config.position_sizing_config import PositionSizingConfig
 from src.strategy.domain.value_object.order_instruction import OrderInstruction, Direction, Offset
 from src.strategy.domain.value_object.greeks import GreeksResult
 from src.strategy.domain.value_object.risk import PortfolioGreeks, RiskThresholds
@@ -81,18 +82,18 @@ class TestPreCheckRetention:
     """前置风控检查保留验证"""
 
     def test_returns_none_when_max_positions_reached(self):
-        svc = PositionSizingService(max_positions=2)
+        svc = PositionSizingService(config=PositionSizingConfig(max_positions=2))
         positions = [_active_position(f"OPT-{i}.SSE") for i in range(2)]
         result = svc.calculate_open_volume(**{**_OPEN_KWARGS, "current_positions": positions})
         assert result is None
 
     def test_returns_none_when_global_daily_limit_exceeded(self):
-        svc = PositionSizingService(global_daily_limit=5)
+        svc = PositionSizingService(config=PositionSizingConfig(global_daily_limit=5))
         result = svc.calculate_open_volume(**{**_OPEN_KWARGS, "current_daily_open_count": 5})
         assert result is None
 
     def test_returns_none_when_contract_daily_limit_exceeded(self):
-        svc = PositionSizingService(contract_daily_limit=2)
+        svc = PositionSizingService(config=PositionSizingConfig(contract_daily_limit=2))
         result = svc.calculate_open_volume(**{**_OPEN_KWARGS, "current_contract_open_count": 2})
         assert result is None
 
@@ -129,7 +130,7 @@ class TestComputeSizingRejectionPropagation:
 
     def test_returns_none_when_margin_usage_exceeded(self):
         """used_margin 过高 → 使用率超限"""
-        svc = PositionSizingService(margin_usage_limit=0.6)
+        svc = PositionSizingService(config=PositionSizingConfig(margin_usage_limit=0.6))
         result = svc.calculate_open_volume(**{
             **_OPEN_KWARGS,
             "total_equity": 100_000.0,
@@ -206,19 +207,19 @@ class TestConfigurationDefaults:
 
     def test_default_margin_ratio(self):
         svc = PositionSizingService()
-        assert svc.margin_ratio == 0.12
+        assert svc._config.margin_ratio == 0.12
 
     def test_default_min_margin_ratio(self):
         svc = PositionSizingService()
-        assert svc.min_margin_ratio == 0.07
+        assert svc._config.min_margin_ratio == 0.07
 
     def test_default_margin_usage_limit(self):
         svc = PositionSizingService()
-        assert svc.margin_usage_limit == 0.6
+        assert svc._config.margin_usage_limit == 0.6
 
     def test_default_max_volume_per_order(self):
         svc = PositionSizingService()
-        assert svc.max_volume_per_order == 10
+        assert svc._config.max_volume_per_order == 10
 
 
 # ===========================================================================
@@ -261,7 +262,7 @@ class TestHappyPath:
     """calculate_open_volume 正常路径"""
 
     def test_returns_order_instruction_with_correct_volume(self):
-        svc = PositionSizingService(max_volume_per_order=10)
+        svc = PositionSizingService(config=PositionSizingConfig(max_volume_per_order=10))
         result = svc.calculate_open_volume(**_OPEN_KWARGS)
         assert result is not None
         assert isinstance(result, OrderInstruction)

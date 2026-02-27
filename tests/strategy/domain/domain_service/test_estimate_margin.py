@@ -1,11 +1,12 @@
 """estimate_margin 单元测试"""
 import pytest
 from src.strategy.domain.domain_service.risk.position_sizing_service import PositionSizingService
+from src.strategy.domain.value_object.config.position_sizing_config import PositionSizingConfig
 
 
 @pytest.fixture
 def service():
-    return PositionSizingService(margin_ratio=0.12, min_margin_ratio=0.07)
+    return PositionSizingService(config=PositionSizingConfig(margin_ratio=0.12, min_margin_ratio=0.07))
 
 
 class TestEstimateMargin:
