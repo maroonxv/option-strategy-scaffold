@@ -37,13 +37,13 @@
     - 所有字段提供与 PricingEngine 原默认参数一致的默认值
     - _需求: 3.1, 3.2, 3.3_
 
-  - [-] 3.2 重构 PricingEngine 使用配置对象
+  - [x] 3.2 重构 PricingEngine 使用配置对象
     - 修改 `__init__` 方法签名为 `__init__(self, config: Optional[PricingEngineConfig] = None)`
     - 未提供配置时使用默认配置 `PricingEngineConfig()`
     - 从配置对象读取所有原先的散装参数
     - _需求: 3.4, 3.5, 3.6_
 
-  - [~] 3.3 编写 PricingEngine 行为一致性属性测试
+  - [-] 3.3 编写 PricingEngine 行为一致性属性测试
     - **属性 3: PricingEngine 行为一致性**
     - **验证需求: 3.6, 5.2**
 
