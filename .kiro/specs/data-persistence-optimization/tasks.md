@@ -85,7 +85,7 @@
 - [x] 5. Checkpoint - 确保所有测试通过
   - Ensure all tests pass, ask the user if questions arise.
 
-- [ ] 6. AutoSaveService 增强：Digest 去重与异步保存
+- [x] 6. AutoSaveService 增强：Digest 去重与异步保存
   - [x] 6.1 添加 digest 计算和去重逻辑
     - 在 `auto_save_service.py` 中添加 `_compute_digest(json_str) -> str` 方法（SHA-256）
     - 添加 `_last_digest: Optional[str]` 内部状态
@@ -137,7 +137,7 @@
     - 测试异步保存异常不影响主线程（Requirements 5.5）
     - _Requirements: 2.4, 4.2, 4.5, 5.4, 5.5_
 
-- [~] 7. Checkpoint - 确保所有测试通过
+- [-] 7. Checkpoint - 确保所有测试通过
   - Ensure all tests pass, ask the user if questions arise.
 
 - [ ] 8. CombinationAggregate 持久化补全
