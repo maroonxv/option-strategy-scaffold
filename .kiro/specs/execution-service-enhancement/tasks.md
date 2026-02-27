@@ -45,7 +45,7 @@
   - Ensure all tests pass, ask the user if questions arise.
 
 - [ ] 4. 添加工厂方法与修改构造函数
-  - [~] 4.1 修改 `AdvancedOrderScheduler.__init__` 接受可选 `AdvancedSchedulerConfig` 参数
+  - [-] 4.1 修改 `AdvancedOrderScheduler.__init__` 接受可选 `AdvancedSchedulerConfig` 参数
     - 默认创建 `AdvancedSchedulerConfig()` 实例
     - submit 方法未显式传入参数时使用 config 中的默认值
     - _Requirements: 3.3, 3.4_

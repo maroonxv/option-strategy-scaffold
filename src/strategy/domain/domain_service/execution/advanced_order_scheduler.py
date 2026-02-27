@@ -10,6 +10,7 @@ from datetime import datetime, timedelta
 from typing import Dict, List, Optional, Tuple
 
 from src.strategy.domain.value_object.trading.order_instruction import OrderInstruction
+from src.strategy.domain.value_object.trading.order_execution import AdvancedSchedulerConfig
 from src.strategy.domain.value_object.trading.advanced_order import (
     AdvancedOrder, AdvancedOrderRequest, AdvancedOrderStatus,
     AdvancedOrderType, ChildOrder, SliceEntry,
@@ -25,7 +26,8 @@ from src.strategy.domain.event.event_types import (
 class AdvancedOrderScheduler:
     """高级订单调度器"""
 
-    def __init__(self):
+    def __init__(self, config: Optional[AdvancedSchedulerConfig] = None):
+        self.config = config or AdvancedSchedulerConfig()
         self._orders: Dict[str, AdvancedOrder] = {}
 
     def submit_iceberg(self, instruction: OrderInstruction, batch_size: int) -> AdvancedOrder:
