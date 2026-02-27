@@ -153,7 +153,7 @@
     - 旧版快照（无 `combination_aggregate` 字段）时创建空实例（向后兼容）
     - _Requirements: 1.1, 1.2, 1.3_
 
-  - [~] 8.3 编写 Property 1 属性测试：CombinationAggregate 快照往返一致性
+  - [x] 8.3 编写 Property 1 属性测试：CombinationAggregate 快照往返一致性
     - **Property 1: CombinationAggregate 快照往返一致性**
     - 在 `tests/strategy/infrastructure/persistence/test_persistence_combination_properties.py` 中实现
     - 使用 Hypothesis 生成随机 Combination 实体（随机 legs、status、timestamps）
