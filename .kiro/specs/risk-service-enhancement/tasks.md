@@ -89,11 +89,11 @@
     - **Property 8: 多维度预算分配**
     - **Validates: Requirements 2.1, 2.2, 2.6**
 
-- [-] 4. 检查点 - 止损和预算服务验证
+- [x] 4. 检查点 - 止损和预算服务验证
   - 确保所有测试通过，如有问题请向用户确认。
 
 - [~] 5. 实现 LiquidityRiskMonitor（持仓流动性监控服务）
-  - [~] 5.1 创建 `src/strategy/domain/domain_service/risk/liquidity_risk_monitor.py`
+  - [x] 5.1 创建 `src/strategy/domain/domain_service/risk/liquidity_risk_monitor.py`
     - 实现 `__init__` 接受 `LiquidityMonitorConfig` 参数
     - 实现 `calculate_liquidity_score` 方法：计算流动性评分（成交量、价差、持仓量三个维度）
     - 实现 `monitor_positions` 方法：监控所有持仓的流动性并生成警告
