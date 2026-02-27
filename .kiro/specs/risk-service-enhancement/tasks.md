@@ -20,7 +20,7 @@
     - 在 `risk.py` 中定义 `LiquidityMonitorConfig`、`MarketData`、`LiquidityScore`、`LiquidityWarning` 四个 frozen dataclass
     - _Requirements: 3.1, 3.2, 3.3, 3.4, 3.5, 3.6, 3.7, 3.8_
 
-  - [~] 1.4 创建集中度监控相关值对象
+  - [x] 1.4 创建集中度监控相关值对象
     - 在 `risk.py` 中定义 `ConcentrationConfig`、`ConcentrationMetrics`、`ConcentrationWarning` 三个 dataclass
     - _Requirements: 4.1, 4.2, 4.3, 4.4, 4.5, 4.6, 4.7_
 

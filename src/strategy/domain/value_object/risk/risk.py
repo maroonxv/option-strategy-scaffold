@@ -324,3 +324,72 @@ class LiquidityWarning:
     threshold: float
     trend: str
     message: str
+
+
+# ============================================================================
+# 集中度监控相关值对象
+# ============================================================================
+
+@dataclass(frozen=True)
+class ConcentrationConfig:
+    """
+    集中度监控配置
+    
+    Attributes:
+        underlying_concentration_limit: 单一品种占比上限
+        expiry_concentration_limit: 单一到期日占比上限
+        strike_concentration_limit: 单一行权价区间占比上限
+        hhi_threshold: HHI 超过此值视为高集中度
+        concentration_basis: 计算基准 ("notional" | "margin")
+    """
+    underlying_concentration_limit: float = 0.5
+    expiry_concentration_limit: float = 0.6
+    strike_concentration_limit: float = 0.4
+    hhi_threshold: float = 0.25
+    concentration_basis: str = "notional"
+
+
+@dataclass
+class ConcentrationMetrics:
+    """
+    集中度指标
+    
+    Attributes:
+        underlying_concentration: 品种 -> 占比
+        max_underlying_ratio: 最大品种占比
+        expiry_concentration: 到期日 -> 占比
+        max_expiry_ratio: 最大到期日占比
+        strike_concentration: 行权价区间 -> 占比
+        max_strike_ratio: 最大行权价区间占比
+        underlying_hhi: 品种 HHI
+        expiry_hhi: 到期日 HHI
+        strike_hhi: 行权价 HHI
+    """
+    underlying_concentration: Dict[str, float]
+    max_underlying_ratio: float
+    expiry_concentration: Dict[str, float]
+    max_expiry_ratio: float
+    strike_concentration: Dict[str, float]
+    max_strike_ratio: float
+    underlying_hhi: float
+    expiry_hhi: float
+    strike_hhi: float
+
+
+@dataclass(frozen=True)
+class ConcentrationWarning:
+    """
+    集中度警告
+    
+    Attributes:
+        dimension: 维度 ("underlying" | "expiry" | "strike" | "hhi")
+        key: 具体的品种/到期日/行权价
+        concentration: 集中度值
+        limit: 限制阈值
+        message: 警告消息
+    """
+    dimension: str
+    key: str
+    concentration: float
+    limit: float
+    message: str
