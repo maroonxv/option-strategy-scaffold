@@ -11,6 +11,7 @@ from hypothesis import given, settings
 from hypothesis import strategies as st
 
 from src.strategy.domain.domain_service.pricing import PricingEngine
+from src.strategy.domain.value_object.config.pricing_engine_config import PricingEngineConfig
 from src.strategy.domain.value_object.pricing import (
     ExerciseStyle,
     PricingInput,
@@ -30,8 +31,8 @@ _vol = st.floats(min_value=0.05, max_value=3.0, allow_nan=False, allow_infinity=
 _opt_type = st.sampled_from(["call", "put"])
 _exercise_style = st.sampled_from([ExerciseStyle.EUROPEAN, ExerciseStyle.AMERICAN])
 
-_engine_baw = PricingEngine(american_model=PricingModel.BAW)
-_engine_crr = PricingEngine(american_model=PricingModel.CRR, crr_steps=100)
+_engine_baw = PricingEngine(config=PricingEngineConfig(american_model=PricingModel.BAW))
+_engine_crr = PricingEngine(config=PricingEngineConfig(american_model=PricingModel.CRR, crr_steps=100))
 
 
 def _valid_pricing_input():

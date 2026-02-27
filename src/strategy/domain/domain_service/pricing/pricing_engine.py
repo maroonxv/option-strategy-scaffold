@@ -5,26 +5,26 @@ PricingEngine 领域服务
 - EUROPEAN → BlackScholesPricer
 - AMERICAN → BAWPricer（默认）或 CRRPricer（可配置）
 """
+from typing import Optional
+
 from .pricers.bs_pricer import BlackScholesPricer
 from .pricers.baw_pricer import BAWPricer
 from .pricers.crr_pricer import CRRPricer
 from .iv.greeks_calculator import GreeksCalculator
 from ...value_object.pricing import ExerciseStyle, PricingInput, PricingResult, PricingModel
+from ...value_object.config.pricing_engine_config import PricingEngineConfig
 
 
 class PricingEngine:
     """统一定价引擎入口"""
 
-    def __init__(
-        self,
-        american_model: PricingModel = PricingModel.BAW,
-        crr_steps: int = 100,
-    ):
+    def __init__(self, config: Optional[PricingEngineConfig] = None):
+        self._config = config or PricingEngineConfig()
         self._greeks_calc = GreeksCalculator()
         self._bs_pricer = BlackScholesPricer(self._greeks_calc)
         self._baw_pricer = BAWPricer()
-        self._crr_pricer = CRRPricer(steps=crr_steps)
-        self._american_model = american_model
+        self._crr_pricer = CRRPricer(steps=self._config.crr_steps)
+        self._american_model = self._config.american_model
 
     def price(self, params: PricingInput) -> PricingResult:
         """

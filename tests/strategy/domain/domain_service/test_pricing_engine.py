@@ -6,6 +6,7 @@ PricingEngine 单元测试
 import pytest
 
 from src.strategy.domain.domain_service.pricing import PricingEngine
+from src.strategy.domain.value_object.config.pricing_engine_config import PricingEngineConfig
 from src.strategy.domain.value_object.pricing import (
     ExerciseStyle,
     PricingInput,
@@ -43,7 +44,7 @@ def engine():
 @pytest.fixture
 def crr_engine():
     """配置美式使用 CRR 的 PricingEngine"""
-    return PricingEngine(american_model=PricingModel.CRR, crr_steps=100)
+    return PricingEngine(config=PricingEngineConfig(american_model=PricingModel.CRR, crr_steps=100))
 
 
 # ── 路由逻辑测试 ──────────────────────────────────────────────────────────

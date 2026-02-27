@@ -30,14 +30,14 @@
     - **验证需求: 2.6, 5.1**
 
 - [ ] 3. 实现 PricingEngineConfig 配置值对象
-  - [-] 3.1 创建 PricingEngineConfig 类
+  - [x] 3.1 创建 PricingEngineConfig 类
     - 在 `src/strategy/domain/value_object/config/pricing_engine_config.py` 创建配置类
     - 使用 `@dataclass(frozen=True)` 定义不可变值对象
     - 包含 2 个字段：american_model、crr_steps
     - 所有字段提供与 PricingEngine 原默认参数一致的默认值
     - _需求: 3.1, 3.2, 3.3_
 
-  - [~] 3.2 重构 PricingEngine 使用配置对象
+  - [-] 3.2 重构 PricingEngine 使用配置对象
     - 修改 `__init__` 方法签名为 `__init__(self, config: Optional[PricingEngineConfig] = None)`
     - 未提供配置时使用默认配置 `PricingEngineConfig()`
     - 从配置对象读取所有原先的散装参数
