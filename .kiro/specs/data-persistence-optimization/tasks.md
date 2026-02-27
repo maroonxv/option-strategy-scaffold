@@ -100,7 +100,7 @@
     - 后台线程异常时记录错误日志，不影响主线程
     - _Requirements: 5.1, 5.2, 5.3, 5.5_
 
-  - [~] 6.3 实现 `force_save` 方法
+  - [x] 6.3 实现 `force_save` 方法
     - 等待当前异步保存完成（timeout=30）
     - 无条件执行同步保存，忽略 digest 比较
     - _Requirements: 2.4, 5.4_

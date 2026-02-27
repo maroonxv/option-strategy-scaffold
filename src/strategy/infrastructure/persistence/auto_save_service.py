@@ -59,8 +59,36 @@ class AutoSaveService:
         self._do_save(snapshot_fn)
 
     def force_save(self, snapshot_fn: Callable[[], Dict[str, Any]]) -> None:
-        """强制立即保存（用于 on_stop）。"""
-        self._do_save(snapshot_fn)
+        """强制立即保存（用于 on_stop）。
+        
+        等待当前异步保存完成（timeout=30），然后无条件执行同步保存，
+        忽略 digest 比较。确保 on_stop 时最终状态被保存。
+        
+        Requirements: 2.4, 5.4
+        """
+        try:
+            # 等待当前异步保存完成
+            if self._pending_future and not self._pending_future.done():
+                self._logger.debug(
+                    f"等待当前异步保存完成 [{self._strategy_name}]"
+                )
+                try:
+                    self._pending_future.result(timeout=30)
+                except Exception as e:
+                    self._logger.error(
+                        f"等待异步保存超时或失败 [{self._strategy_name}]: {e}",
+                        exc_info=True,
+                    )
+            
+            # 无条件执行同步保存，忽略 digest 比较
+            data = snapshot_fn()
+            self._repository.save(self._strategy_name, data)
+            self._logger.info(f"强制保存完成 [{self._strategy_name}]")
+        except Exception as e:
+            self._logger.error(
+                f"强制保存失败 [{self._strategy_name}]: {e}",
+                exc_info=True,
+            )
 
     def reset(self) -> None:
         """重置计时器。"""

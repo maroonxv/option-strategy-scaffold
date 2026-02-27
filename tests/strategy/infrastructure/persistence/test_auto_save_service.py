@@ -9,6 +9,7 @@ Unit tests: 默认间隔 60 秒、写入失败不中断 — Requirements: 1.2, 1
 """
 
 import sys
+from concurrent.futures import ThreadPoolExecutor
 from unittest.mock import MagicMock, call, patch
 
 import pytest
@@ -193,7 +194,7 @@ class TestAutoSaveServiceUnit:
             snapshot_fn.assert_called_once()
 
     def test_force_save_always_saves(self):
-        """force_save 应始终保存，不检查间隔"""
+        """force_save 应始终保存，不检查间隔，且忽略 digest 比较"""
         mock_repo = MagicMock()
         mock_serializer = MagicMock()
         mock_serializer.serialize.return_value = '{"data": 1}'
@@ -209,13 +210,12 @@ class TestAutoSaveServiceUnit:
                 interval_seconds=60.0,
             )
 
-            # Immediately force save — no interval check
+            # Immediately force save — no interval check, no digest check
             mock_time.monotonic.return_value = 100.0
             service.force_save(snapshot_fn)
 
-            # 等待异步保存完成
-            service._executor.shutdown(wait=True)
-            mock_repo.save_raw.assert_called_once_with("test", '{"data": 1}')
+            # force_save 是同步的，直接调用 save
+            mock_repo.save.assert_called_once_with("test", snapshot_data)
 
     def test_save_failure_does_not_interrupt(self):
         """Requirement 1.5: 写入失败不中断策略执行"""
@@ -246,7 +246,7 @@ class TestAutoSaveServiceUnit:
     def test_force_save_failure_does_not_interrupt(self):
         """Requirement 1.5: force_save 写入失败也不中断"""
         mock_repo = MagicMock()
-        mock_repo.save_raw.side_effect = Exception("disk full")
+        mock_repo.save.side_effect = Exception("disk full")
         mock_serializer = MagicMock()
         mock_serializer.serialize.return_value = '{"data": 1}'
         snapshot_fn = MagicMock(return_value={"data": 1})
@@ -259,9 +259,8 @@ class TestAutoSaveServiceUnit:
 
         # Should NOT raise
         service.force_save(snapshot_fn)
-        # 等待异步保存完成（即使失败也不应抛出异常）
-        service._executor.shutdown(wait=True)
-        mock_repo.save_raw.assert_called_once()
+        # force_save 是同步的，异常被捕获
+        mock_repo.save.assert_called_once()
 
     def test_reset_resets_timer(self):
         """reset 应重置计时器"""
@@ -307,3 +306,73 @@ class TestAutoSaveServiceUnit:
             mock_time.monotonic.return_value = 110.0
             service.maybe_save(snapshot_fn)
             snapshot_fn.assert_not_called()
+
+    def test_force_save_waits_for_pending_async(self):
+        """Requirement 5.4: force_save 等待当前异步保存完成"""
+        import time as real_time
+        mock_repo = MagicMock()
+        
+        # 模拟慢速保存操作
+        def slow_save_raw(strategy_name, json_str):
+            real_time.sleep(0.1)  # 100ms
+        
+        mock_repo.save_raw.side_effect = slow_save_raw
+        mock_serializer = MagicMock()
+        mock_serializer.serialize.return_value = '{"data": 1}'
+        
+        with patch("src.strategy.infrastructure.persistence.auto_save_service.time") as mock_time:
+            mock_time.monotonic.return_value = 100.0
+            service = AutoSaveService(
+                state_repository=mock_repo,
+                strategy_name="test",
+                serializer=mock_serializer,
+                interval_seconds=10.0,
+            )
+            
+            # 触发异步保存
+            mock_time.monotonic.return_value = 200.0
+            service.maybe_save(lambda: {"data": 1})
+            
+            # 立即调用 force_save，应该等待异步保存完成
+            service.force_save(lambda: {"data": 2})
+            
+            # 验证：save_raw 被调用一次（异步），save 被调用一次（force_save）
+            assert mock_repo.save_raw.call_count == 1
+            assert mock_repo.save.call_count == 1
+            
+            service._executor.shutdown(wait=True)
+
+    def test_force_save_ignores_digest(self):
+        """Requirement 2.4: force_save 忽略 digest 比较，无条件保存"""
+        mock_repo = MagicMock()
+        mock_serializer = MagicMock()
+        mock_serializer.serialize.return_value = '{"data": 1}'
+        
+        with patch("src.strategy.infrastructure.persistence.auto_save_service.time") as mock_time:
+            mock_time.monotonic.return_value = 100.0
+            service = AutoSaveService(
+                state_repository=mock_repo,
+                strategy_name="test",
+                serializer=mock_serializer,
+                interval_seconds=10.0,
+            )
+            
+            # 第一次保存
+            mock_time.monotonic.return_value = 200.0
+            service.maybe_save(lambda: {"data": 1})
+            service._executor.shutdown(wait=True)
+            
+            # 第二次 maybe_save 相同数据，应该被 digest 去重跳过
+            service._executor = ThreadPoolExecutor(max_workers=1)
+            mock_time.monotonic.return_value = 300.0
+            service.maybe_save(lambda: {"data": 1})
+            service._executor.shutdown(wait=True)
+            
+            # 验证：save_raw 只被调用一次（第二次被跳过）
+            assert mock_repo.save_raw.call_count == 1
+            
+            # 但 force_save 应该忽略 digest，无条件保存
+            service.force_save(lambda: {"data": 1})
+            
+            # 验证：save 被调用一次（force_save 不检查 digest）
+            assert mock_repo.save.call_count == 1
