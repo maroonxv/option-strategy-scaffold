@@ -103,3 +103,70 @@ class PositionGreeksEntry:
     greeks: GreeksResult
     volume: int
     multiplier: float
+
+
+# ============================================================================
+# 止损相关值对象
+# ============================================================================
+
+@dataclass(frozen=True)
+class StopLossConfig:
+    """
+    止损配置
+    
+    Attributes:
+        enable_fixed_stop: 是否启用固定止损
+        fixed_stop_loss_amount: 单笔止损金额
+        fixed_stop_loss_percent: 单笔止损百分比（相对开仓价值）
+        enable_trailing_stop: 是否启用移动止损
+        trailing_stop_percent: 回撤百分比触发移动止损
+        enable_portfolio_stop: 是否启用组合级止损
+        daily_loss_limit: 每日最大亏损限额
+    """
+    enable_fixed_stop: bool = True
+    fixed_stop_loss_amount: float = 1000.0
+    fixed_stop_loss_percent: float = 0.5
+    enable_trailing_stop: bool = False
+    trailing_stop_percent: float = 0.3
+    enable_portfolio_stop: bool = True
+    daily_loss_limit: float = 5000.0
+
+
+@dataclass(frozen=True)
+class StopLossTrigger:
+    """
+    止损触发结果
+    
+    Attributes:
+        vt_symbol: 合约代码
+        trigger_type: 触发类型 ("fixed" | "trailing")
+        current_loss: 当前亏损金额
+        threshold: 止损阈值
+        current_price: 当前价格
+        open_price: 开仓价格
+        message: 触发消息
+    """
+    vt_symbol: str
+    trigger_type: str
+    current_loss: float
+    threshold: float
+    current_price: float
+    open_price: float
+    message: str
+
+
+@dataclass(frozen=True)
+class PortfolioStopLossTrigger:
+    """
+    组合级止损触发结果
+    
+    Attributes:
+        total_loss: 组合总亏损
+        daily_limit: 每日止损限额
+        positions_to_close: 需要平仓的合约代码列表
+        message: 触发消息
+    """
+    total_loss: float
+    daily_limit: float
+    positions_to_close: list[str]
+    message: str
