@@ -97,7 +97,7 @@
 - [x] 6. Checkpoint - 确保工厂方法和序列化测试通过
   - Ensure all tests pass, ask the user if questions arise.
 
-- [ ] 7. 新增 ExecutionCoordinator 协调器
+- [x] 7. 新增 ExecutionCoordinator 协调器
   - [x] 7.1 创建 `src/strategy/domain/domain_service/execution/execution_coordinator.py`
     - 实现 `__init__` 持有 SmartOrderExecutor 和 AdvancedOrderScheduler 引用
     - 实现 `process_pending_children`：从 scheduler 获取到期子单，用 executor 计算自适应价格，返回指令列表和事件列表
@@ -113,7 +113,7 @@
     - **Property 7: 协调器注册子单到超时管理**
     - **Validates: Requirements 4.3**
 
-  - [-] 7.3 创建 `tests/strategy/domain/domain_service/test_execution_integration.py` 集成测试
+  - [x] 7.3 创建 `tests/strategy/domain/domain_service/test_execution_integration.py` 集成测试
     - 验证高级订单子单使用自适应价格计算后的价格
     - 验证子单超时后触发重试流程
     - 验证重试耗尽时产生 OrderRetryExhaustedEvent 事件
@@ -121,7 +121,7 @@
     - _Requirements: 8.1, 8.2, 8.3, 8.4_
 
 - [ ] 8. 补充 `__init__.py` 导出并完成最终集成
-  - [~] 8.1 更新 `src/strategy/domain/domain_service/execution/__init__.py`
+  - [-] 8.1 更新 `src/strategy/domain/domain_service/execution/__init__.py`
     - 导出 SmartOrderExecutor、AdvancedOrderScheduler、ExecutionCoordinator
     - 定义 `__all__` 列表
     - _Requirements: 7.1, 7.2, 7.3_
