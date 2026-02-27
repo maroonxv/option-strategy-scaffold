@@ -16,7 +16,7 @@
     - 在 `risk.py` 中定义 `RiskBudgetConfig`、`GreeksBudget`、`GreeksUsage`、`BudgetCheckResult` 四个 dataclass
     - _Requirements: 2.1, 2.2, 2.3, 2.4, 2.5, 2.6, 2.7_
 
-  - [~] 1.3 创建流动性监控相关值对象
+  - [x] 1.3 创建流动性监控相关值对象
     - 在 `risk.py` 中定义 `LiquidityMonitorConfig`、`MarketData`、`LiquidityScore`、`LiquidityWarning` 四个 frozen dataclass
     - _Requirements: 3.1, 3.2, 3.3, 3.4, 3.5, 3.6, 3.7, 3.8_
 

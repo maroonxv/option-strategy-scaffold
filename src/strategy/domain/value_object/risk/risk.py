@@ -240,3 +240,87 @@ class BudgetCheckResult:
     usage: GreeksUsage
     budget: GreeksBudget
     message: str = ""
+
+
+# ============================================================================
+# 流动性监控相关值对象
+# ============================================================================
+
+@dataclass(frozen=True)
+class LiquidityMonitorConfig:
+    """
+    流动性监控配置
+    
+    Attributes:
+        volume_weight: 成交量权重
+        spread_weight: 价差权重
+        open_interest_weight: 持仓量权重
+        liquidity_score_threshold: 流动性评分阈值（低于此分数触发警告）
+        lookback_days: 历史数据窗口（天数）
+    """
+    volume_weight: float = 0.4
+    spread_weight: float = 0.3
+    open_interest_weight: float = 0.3
+    liquidity_score_threshold: float = 0.3
+    lookback_days: int = 5
+
+
+@dataclass(frozen=True)
+class MarketData:
+    """
+    市场数据快照
+    
+    Attributes:
+        vt_symbol: 合约代码
+        timestamp: 时间戳
+        volume: 成交量
+        bid_price: 买价
+        ask_price: 卖价
+        open_interest: 持仓量
+    """
+    vt_symbol: str
+    timestamp: datetime
+    volume: float
+    bid_price: float
+    ask_price: float
+    open_interest: float
+
+
+@dataclass(frozen=True)
+class LiquidityScore:
+    """
+    流动性评分
+    
+    Attributes:
+        vt_symbol: 合约代码
+        overall_score: 综合评分 [0, 1]
+        volume_score: 成交量评分
+        spread_score: 价差评分
+        open_interest_score: 持仓量评分
+        trend: 流动性趋势 ("improving" | "stable" | "deteriorating")
+    """
+    vt_symbol: str
+    overall_score: float
+    volume_score: float
+    spread_score: float
+    open_interest_score: float
+    trend: str
+
+
+@dataclass(frozen=True)
+class LiquidityWarning:
+    """
+    流动性警告
+    
+    Attributes:
+        vt_symbol: 合约代码
+        current_score: 当前流动性评分
+        threshold: 流动性阈值
+        trend: 流动性趋势
+        message: 警告消息
+    """
+    vt_symbol: str
+    current_score: float
+    threshold: float
+    trend: str
+    message: str
