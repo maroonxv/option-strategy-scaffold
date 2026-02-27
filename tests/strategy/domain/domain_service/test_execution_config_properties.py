@@ -262,3 +262,191 @@ class TestProperty5AdvancedSchedulerConfigImmutability:
         for field in dataclasses.fields(config):
             with pytest.raises(dataclasses.FrozenInstanceError):
                 setattr(config, field.name, 999)
+
+
+# ---------------------------------------------------------------------------
+# 导入 SmartOrderExecutor 和 AdvancedOrderScheduler
+# ---------------------------------------------------------------------------
+from src.strategy.domain.domain_service.execution.smart_order_executor import (  # noqa: E402
+    SmartOrderExecutor,
+)
+from src.strategy.domain.domain_service.execution.advanced_order_scheduler import (  # noqa: E402
+    AdvancedOrderScheduler,
+)
+
+# ---------------------------------------------------------------------------
+# 辅助策略：生成含随机子集已知字段 + 随机未知字段的 config_dict
+# ---------------------------------------------------------------------------
+
+_unknown_keys = st.text(
+    alphabet=st.characters(whitelist_categories=("L", "N"), whitelist_characters="_"),
+    min_size=1,
+    max_size=20,
+).filter(lambda k: k not in {
+    "timeout_seconds", "max_retries", "slippage_ticks", "price_tick",
+    "default_batch_size", "default_interval_seconds", "default_num_slices",
+    "default_volume_randomize_ratio", "default_price_offset_ticks", "default_price_tick",
+})
+
+_unknown_values = st.one_of(
+    st.integers(min_value=-1000, max_value=1000),
+    st.floats(min_value=-1000, max_value=1000, allow_nan=False, allow_infinity=False),
+    st.text(min_size=0, max_size=10),
+)
+
+
+@st.composite
+def _soe_yaml_config_dict(draw):
+    """
+    为 SmartOrderExecutor.from_yaml_config 生成配置字典。
+    每个已知字段独立决定是否出现；额外附加 0~3 个未知字段。
+    """
+    config = {}
+    if draw(st.booleans()):
+        config["timeout_seconds"] = draw(_timeout_seconds)
+    if draw(st.booleans()):
+        config["max_retries"] = draw(_max_retries)
+    if draw(st.booleans()):
+        config["slippage_ticks"] = draw(_slippage_ticks)
+    if draw(st.booleans()):
+        config["price_tick"] = draw(_price_tick_soe)
+
+    # 添加未知字段
+    unknown = draw(st.dictionaries(_unknown_keys, _unknown_values, min_size=0, max_size=3))
+    config.update(unknown)
+    return config
+
+
+@st.composite
+def _as_yaml_config_dict(draw):
+    """
+    为 AdvancedOrderScheduler.from_yaml_config 生成配置字典。
+    每个已知字段独立决定是否出现；额外附加 0~3 个未知字段。
+    """
+    config = {}
+    if draw(st.booleans()):
+        config["default_batch_size"] = draw(_default_batch_size)
+    if draw(st.booleans()):
+        config["default_interval_seconds"] = draw(_default_interval_seconds)
+    if draw(st.booleans()):
+        config["default_num_slices"] = draw(_default_num_slices)
+    if draw(st.booleans()):
+        config["default_volume_randomize_ratio"] = draw(_default_volume_randomize_ratio)
+    if draw(st.booleans()):
+        config["default_price_offset_ticks"] = draw(_default_price_offset_ticks)
+    if draw(st.booleans()):
+        config["default_price_tick"] = draw(_default_price_tick_as)
+
+    # 添加未知字段
+    unknown = draw(st.dictionaries(_unknown_keys, _unknown_values, min_size=0, max_size=3))
+    config.update(unknown)
+    return config
+
+
+# ===========================================================================
+# Feature: execution-service-enhancement, Property 3: SmartOrderExecutor from_yaml_config 一致性
+# ===========================================================================
+
+
+class TestProperty3SmartOrderExecutorFromYamlConfigConsistency:
+    """
+    Property 3: SmartOrderExecutor from_yaml_config 一致性
+
+    对于任意配置字典（可能缺少部分字段或包含未知字段），
+    SmartOrderExecutor.from_yaml_config(config_dict) 生成的 OrderExecutionConfig 中，
+    已提供的已知字段应与字典值一致，缺失的字段应等于 OrderExecutionConfig 的默认值，
+    未知字段应被忽略。
+
+    **Validates: Requirements 2.1, 2.3, 2.4**
+    """
+
+    @given(config_dict=_soe_yaml_config_dict())
+    @settings(max_examples=100)
+    def test_smart_order_executor_from_yaml_config_consistency(self, config_dict: dict):
+        """
+        # Feature: execution-service-enhancement, Property 3: SmartOrderExecutor from_yaml_config 一致性
+
+        **Validates: Requirements 2.1, 2.3, 2.4**
+        """
+        defaults = OrderExecutionConfig()
+        executor = SmartOrderExecutor.from_yaml_config(config_dict)
+        result = executor.config
+
+        # 已知字段列表
+        known_fields = ["timeout_seconds", "max_retries", "slippage_ticks", "price_tick"]
+
+        for field_name in known_fields:
+            actual = getattr(result, field_name)
+            if field_name in config_dict:
+                expected = config_dict[field_name]
+            else:
+                expected = getattr(defaults, field_name)
+            assert actual == expected, (
+                f"字段 {field_name}: 期望 {expected}, 实际 {actual}. "
+                f"config_dict={config_dict}"
+            )
+
+        # 验证未知字段被忽略：结果只有已知字段，不会多出属性
+        import dataclasses as _dc
+        result_field_names = {f.name for f in _dc.fields(result)}
+        assert result_field_names == set(known_fields), (
+            f"结果字段集合不符: {result_field_names}"
+        )
+
+
+# ===========================================================================
+# Feature: execution-service-enhancement, Property 4: AdvancedOrderScheduler from_yaml_config 一致性
+# ===========================================================================
+
+
+class TestProperty4AdvancedOrderSchedulerFromYamlConfigConsistency:
+    """
+    Property 4: AdvancedOrderScheduler from_yaml_config 一致性
+
+    对于任意配置字典（可能缺少部分字段或包含未知字段），
+    AdvancedOrderScheduler.from_yaml_config(config_dict) 生成的 AdvancedSchedulerConfig 中，
+    已提供的已知字段应与字典值一致，缺失的字段应等于 AdvancedSchedulerConfig 的默认值，
+    未知字段应被忽略。
+
+    **Validates: Requirements 2.2, 2.3, 2.4**
+    """
+
+    @given(config_dict=_as_yaml_config_dict())
+    @settings(max_examples=100)
+    def test_advanced_scheduler_from_yaml_config_consistency(self, config_dict: dict):
+        """
+        # Feature: execution-service-enhancement, Property 4: AdvancedOrderScheduler from_yaml_config 一致性
+
+        **Validates: Requirements 2.2, 2.3, 2.4**
+        """
+        defaults = AdvancedSchedulerConfig()
+        scheduler = AdvancedOrderScheduler.from_yaml_config(config_dict)
+        result = scheduler.config
+
+        # 已知字段列表
+        known_fields = [
+            "default_batch_size",
+            "default_interval_seconds",
+            "default_num_slices",
+            "default_volume_randomize_ratio",
+            "default_price_offset_ticks",
+            "default_price_tick",
+        ]
+
+        for field_name in known_fields:
+            actual = getattr(result, field_name)
+            if field_name in config_dict:
+                expected = config_dict[field_name]
+            else:
+                expected = getattr(defaults, field_name)
+            assert actual == expected, (
+                f"字段 {field_name}: 期望 {expected}, 实际 {actual}. "
+                f"config_dict={config_dict}"
+            )
+
+        # 验证未知字段被忽略：结果只有已知字段，不会多出属性
+        import dataclasses as _dc
+        result_field_names = {f.name for f in _dc.fields(result)}
+        assert result_field_names == set(known_fields), (
+            f"结果字段集合不符: {result_field_names}"
+        )
