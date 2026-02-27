@@ -8,7 +8,7 @@ from datetime import datetime
 from enum import Enum
 from typing import Optional
 
-from ..value_object.order_instruction import Direction, Offset
+from ..value_object.trading.order_instruction import Direction, Offset
 
 
 class OrderStatus(Enum):

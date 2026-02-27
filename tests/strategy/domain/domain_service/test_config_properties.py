@@ -71,7 +71,7 @@ from src.strategy.domain.value_object.config import (  # noqa: E402
     PositionSizingConfig,
     PricingEngineConfig,
 )
-from src.strategy.domain.value_object.pricing import PricingModel  # noqa: E402
+from src.strategy.domain.value_object.pricing.pricing import PricingModel  # noqa: E402
 from src.strategy.domain.domain_service.risk.position_sizing_service import PositionSizingService  # noqa: E402
 from src.strategy.domain.domain_service.pricing.pricing_engine import PricingEngine  # noqa: E402
 from src.strategy.domain.domain_service.selection.future_selection_service import BaseFutureSelector  # noqa: E402

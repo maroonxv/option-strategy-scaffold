@@ -15,12 +15,12 @@ from hypothesis import given, settings, assume
 from hypothesis import strategies as st
 
 from src.strategy.domain.entity.combination import Combination
-from src.strategy.domain.value_object.combination import (
+from src.strategy.domain.value_object.combination.combination import (
     CombinationStatus,
     CombinationType,
     Leg,
 )
-from src.strategy.domain.value_object.combination_rules import (
+from src.strategy.domain.value_object.combination.combination_rules import (
     LegStructure,
     VALIDATION_RULES,
     validate_straddle,

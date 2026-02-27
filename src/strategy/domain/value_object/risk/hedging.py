@@ -6,7 +6,7 @@
 from dataclasses import dataclass
 from typing import Optional
 
-from .order_instruction import OrderInstruction, Direction
+from src.strategy.domain.value_object.trading.order_instruction import OrderInstruction, Direction
 
 
 @dataclass(frozen=True)

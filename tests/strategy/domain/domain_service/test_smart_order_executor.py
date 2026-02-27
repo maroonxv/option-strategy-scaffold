@@ -9,10 +9,10 @@ from datetime import datetime, timedelta
 from hypothesis import given, strategies as st, settings, assume
 
 from src.strategy.domain.domain_service.execution.smart_order_executor import SmartOrderExecutor
-from src.strategy.domain.value_object.order_instruction import (
+from src.strategy.domain.value_object.trading.order_instruction import (
     OrderInstruction, Direction, Offset, OrderType,
 )
-from src.strategy.domain.value_object.order_execution import OrderExecutionConfig, ManagedOrder
+from src.strategy.domain.value_object.trading.order_execution import OrderExecutionConfig, ManagedOrder
 from src.strategy.domain.event.event_types import OrderTimeoutEvent, OrderRetryExhaustedEvent
 
 

@@ -13,9 +13,9 @@ import pytest
 
 from src.strategy.domain.domain_service.risk.position_sizing_service import PositionSizingService
 from src.strategy.domain.value_object.config.position_sizing_config import PositionSizingConfig
-from src.strategy.domain.value_object.order_instruction import OrderInstruction, Direction, Offset
-from src.strategy.domain.value_object.greeks import GreeksResult
-from src.strategy.domain.value_object.risk import PortfolioGreeks, RiskThresholds
+from src.strategy.domain.value_object.trading.order_instruction import OrderInstruction, Direction, Offset
+from src.strategy.domain.value_object.pricing.greeks import GreeksResult
+from src.strategy.domain.value_object.risk.risk import PortfolioGreeks, RiskThresholds
 from src.strategy.domain.entity.position import Position
 
 

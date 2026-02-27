@@ -9,7 +9,7 @@ Property 7: Direction.reverse round-trip
 from hypothesis import given, settings
 from hypothesis import strategies as st
 
-from src.strategy.domain.value_object.order_instruction import Direction
+from src.strategy.domain.value_object.trading.order_instruction import Direction
 
 
 # ---------------------------------------------------------------------------

@@ -6,7 +6,7 @@ CRRPricer 领域服务
 """
 import math
 
-from ....value_object.pricing import ExerciseStyle, PricingInput, PricingResult
+from ....value_object.pricing.pricing import ExerciseStyle, PricingInput, PricingResult
 
 
 class CRRPricer:

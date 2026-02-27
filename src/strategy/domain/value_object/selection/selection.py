@@ -10,8 +10,8 @@ Selection 选择服务相关值对象
 from dataclasses import dataclass
 from typing import List
 
-from src.strategy.domain.value_object.combination import CombinationType
-from src.strategy.domain.value_object.option_contract import OptionContract
+from src.strategy.domain.value_object.combination.combination import CombinationType
+from src.strategy.domain.value_object.market.option_contract import OptionContract
 
 
 @dataclass(frozen=True)

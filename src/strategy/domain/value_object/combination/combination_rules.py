@@ -6,7 +6,7 @@ Combination Rules 共享结构约束规则集
 from dataclasses import dataclass
 from typing import Callable, Dict, List, Optional
 
-from src.strategy.domain.value_object.combination import CombinationType
+from src.strategy.domain.value_object.combination.combination import CombinationType
 
 
 @dataclass(frozen=True)

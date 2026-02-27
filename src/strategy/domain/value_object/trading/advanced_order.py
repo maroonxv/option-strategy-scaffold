@@ -9,7 +9,7 @@ from datetime import datetime
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
-from .order_instruction import OrderInstruction, Direction, Offset, OrderType
+from src.strategy.domain.value_object.trading.order_instruction import OrderInstruction, Direction, Offset, OrderType
 
 
 class AdvancedOrderType(Enum):

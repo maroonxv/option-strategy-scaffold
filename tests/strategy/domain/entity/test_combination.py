@@ -4,7 +4,7 @@ from datetime import datetime
 import pytest
 
 from src.strategy.domain.entity.combination import Combination
-from src.strategy.domain.value_object.combination import (
+from src.strategy.domain.value_object.combination.combination import (
     CombinationStatus,
     CombinationType,
     Leg,

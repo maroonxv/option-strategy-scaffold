@@ -13,11 +13,11 @@ from hypothesis import given, strategies as st, settings, assume
 
 from src.strategy.domain.domain_service.hedging.gamma_scalping_service import GammaScalpingService
 
-from src.strategy.domain.value_object.hedging import GammaScalpConfig, ScalpResult
+from src.strategy.domain.value_object.risk.hedging import GammaScalpConfig, ScalpResult
 
-from src.strategy.domain.value_object.risk import PortfolioGreeks
+from src.strategy.domain.value_object.risk.risk import PortfolioGreeks
 
-from src.strategy.domain.value_object.order_instruction import Direction
+from src.strategy.domain.value_object.trading.order_instruction import Direction
 
 from src.strategy.domain.event.event_types import GammaScalpEvent
 

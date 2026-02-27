@@ -9,13 +9,13 @@ import math
 from typing import List, Optional, Tuple
 
 
-from ...value_object.order_instruction import OrderInstruction, Direction, Offset
+from ...value_object.trading.order_instruction import OrderInstruction, Direction, Offset
 
-from ...value_object.greeks import GreeksResult
+from ...value_object.pricing.greeks import GreeksResult
 
-from ...value_object.risk import PortfolioGreeks, RiskThresholds
+from ...value_object.risk.risk import PortfolioGreeks, RiskThresholds
 
-from ...value_object.sizing import SizingResult
+from ...value_object.risk.sizing import SizingResult
 
 from ...entity.position import Position
 

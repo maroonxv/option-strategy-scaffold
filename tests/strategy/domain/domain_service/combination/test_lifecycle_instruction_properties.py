@@ -23,7 +23,7 @@ from src.strategy.domain.value_object.combination import (
     CombinationType,
     Leg,
 )
-from src.strategy.domain.value_object.order_instruction import (
+from src.strategy.domain.value_object.trading.order_instruction import (
     Direction,
     Offset,
 )

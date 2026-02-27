@@ -8,7 +8,7 @@ import pytest
 from hypothesis import given, strategies as st, settings, assume
 
 from src.strategy.domain.domain_service.pricing import GreeksCalculator
-from src.strategy.domain.value_object.greeks import GreeksInput
+from src.strategy.domain.value_object.pricing.greeks import GreeksInput
 
 
 # ========== 生成器 ==========

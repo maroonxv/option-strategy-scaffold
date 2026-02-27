@@ -7,7 +7,7 @@ import pytest
 
 from src.strategy.domain.domain_service.pricing import PricingEngine
 from src.strategy.domain.value_object.config.pricing_engine_config import PricingEngineConfig
-from src.strategy.domain.value_object.pricing import (
+from src.strategy.domain.value_object.pricing.pricing import (
     ExerciseStyle,
     PricingInput,
     PricingModel,

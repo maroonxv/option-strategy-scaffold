@@ -37,7 +37,7 @@ from hypothesis import strategies as st
 from src.strategy.domain.domain_service.selection.option_selector_service import (
     OptionSelectorService,
 )
-from src.strategy.domain.value_object.option_selector_config import OptionSelectorConfig
+from src.strategy.domain.value_object.selection.option_selector_config import OptionSelectorConfig
 
 
 # ---------------------------------------------------------------------------

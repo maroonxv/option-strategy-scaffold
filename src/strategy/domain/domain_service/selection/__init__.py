@@ -12,7 +12,7 @@ Selection 合约选择领域服务
 
 from src.strategy.domain.domain_service.selection.future_selection_service import BaseFutureSelector
 from src.strategy.domain.domain_service.selection.option_selector_service import OptionSelectorService
-from src.strategy.domain.value_object.selection import (
+from src.strategy.domain.value_object.selection.selection import (
     MarketData,
     RolloverRecommendation,
     CombinationSelectionResult,

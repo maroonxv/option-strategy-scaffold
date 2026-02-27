@@ -8,8 +8,8 @@ import pytest
 from hypothesis import given, strategies as st, settings
 
 from src.strategy.domain.domain_service.risk.portfolio_risk_aggregator import PortfolioRiskAggregator
-from src.strategy.domain.value_object.greeks import GreeksResult
-from src.strategy.domain.value_object.risk import (
+from src.strategy.domain.value_object.pricing.greeks import GreeksResult
+from src.strategy.domain.value_object.risk.risk import (
     RiskThresholds,
     RiskCheckResult,
     PortfolioGreeks,

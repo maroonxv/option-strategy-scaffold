@@ -8,8 +8,8 @@ import yaml
 import tempfile
 import pytest
 
-from src.strategy.domain.value_object.risk import RiskThresholds
-from src.strategy.domain.value_object.order_execution import OrderExecutionConfig
+from src.strategy.domain.value_object.risk.risk import RiskThresholds
+from src.strategy.domain.value_object.trading.order_execution import OrderExecutionConfig
 
 
 def _load_config(yaml_content: str) -> dict:

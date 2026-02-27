@@ -8,7 +8,7 @@ import math
 from enum import Enum
 from typing import List
 
-from ....value_object.greeks import GreeksInput, IVQuote, IVResult
+from ....value_object.pricing.greeks import GreeksInput, IVQuote, IVResult
 
 
 def _norm_cdf(x: float) -> float:

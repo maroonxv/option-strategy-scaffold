@@ -32,10 +32,10 @@ import pandas as pd
 from src.strategy.domain.domain_service.selection.option_selector_service import (
     OptionSelectorService,
 )
-from src.strategy.domain.value_object.option_selector_config import OptionSelectorConfig
-from src.strategy.domain.value_object.combination import CombinationType
-from src.strategy.domain.value_object.selection import CombinationSelectionResult
-from src.strategy.domain.value_object.combination_rules import (
+from src.strategy.domain.value_object.selection.option_selector_config import OptionSelectorConfig
+from src.strategy.domain.value_object.combination.combination import CombinationType
+from src.strategy.domain.value_object.selection.selection import CombinationSelectionResult
+from src.strategy.domain.value_object.combination.combination_rules import (
     VALIDATION_RULES,
     LegStructure,
 )

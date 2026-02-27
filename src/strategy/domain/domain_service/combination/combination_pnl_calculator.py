@@ -12,7 +12,7 @@ from datetime import datetime
 from typing import Dict, Optional
 
 from src.strategy.domain.entity.combination import Combination
-from src.strategy.domain.value_object.combination import (
+from src.strategy.domain.value_object.combination.combination import (
     CombinationPnL,
     LegPnL,
 )

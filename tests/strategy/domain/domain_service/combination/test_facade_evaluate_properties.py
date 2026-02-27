@@ -40,7 +40,7 @@ from src.strategy.domain.value_object.combination import (
     CombinationType,
     Leg,
 )
-from src.strategy.domain.value_object.greeks import GreeksResult
+from src.strategy.domain.value_object.pricing.greeks import GreeksResult
 
 
 # ---------------------------------------------------------------------------

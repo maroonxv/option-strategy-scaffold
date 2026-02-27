@@ -7,7 +7,7 @@ CombinationLifecycleService 领域服务
 from typing import Dict, List
 
 from src.strategy.domain.entity.combination import Combination
-from src.strategy.domain.value_object.order_instruction import (
+from src.strategy.domain.value_object.trading.order_instruction import (
     Direction,
     Offset,
     OrderInstruction,

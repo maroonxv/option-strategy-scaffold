@@ -4,7 +4,7 @@ QuoteRequest 值对象 - 报价请求
 用于做市策略发送双边报价的请求对象。
 """
 from dataclasses import dataclass
-from .order_instruction import Offset
+from src.strategy.domain.value_object.trading.order_instruction import Offset
 
 
 @dataclass(frozen=True)

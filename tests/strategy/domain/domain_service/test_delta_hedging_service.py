@@ -13,11 +13,11 @@ from hypothesis import given, strategies as st, settings, assume
 
 from src.strategy.domain.domain_service.hedging.delta_hedging_service import DeltaHedgingService
 
-from src.strategy.domain.value_object.hedging import HedgingConfig, HedgeResult
+from src.strategy.domain.value_object.risk.hedging import HedgingConfig, HedgeResult
 
-from src.strategy.domain.value_object.risk import PortfolioGreeks
+from src.strategy.domain.value_object.risk.risk import PortfolioGreeks
 
-from src.strategy.domain.value_object.order_instruction import Direction
+from src.strategy.domain.value_object.trading.order_instruction import Direction
 
 from src.strategy.domain.event.event_types import HedgeExecutedEvent
 

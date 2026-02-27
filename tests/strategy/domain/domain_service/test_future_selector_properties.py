@@ -75,7 +75,7 @@ from src.strategy.domain.domain_service.selection.future_selection_service impor
     BaseFutureSelector,
 )
 from src.strategy.domain.value_object.config.future_selector_config import FutureSelectorConfig  # noqa: E402
-from src.strategy.domain.value_object.selection import MarketData, RolloverRecommendation  # noqa: E402
+from src.strategy.domain.value_object.selection.selection import MarketData, RolloverRecommendation  # noqa: E402
 from src.strategy.infrastructure.parsing.contract_helper import ContractHelper  # noqa: E402
 
 

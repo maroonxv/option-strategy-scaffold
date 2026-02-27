@@ -74,16 +74,16 @@ from src.strategy.domain.domain_service.selection.future_selection_service impor
 from src.strategy.domain.domain_service.selection.option_selector_service import (  # noqa: E402
     OptionSelectorService,
 )
-from src.strategy.domain.value_object.option_selector_config import OptionSelectorConfig  # noqa: E402
-from src.strategy.domain.value_object.selection import (  # noqa: E402
+from src.strategy.domain.value_object.selection.option_selector_config import OptionSelectorConfig  # noqa: E402
+from src.strategy.domain.value_object.selection.selection import (  # noqa: E402
     MarketData,
     RolloverRecommendation,
     CombinationSelectionResult,
     SelectionScore,
 )
-from src.strategy.domain.value_object.combination import CombinationType  # noqa: E402
-from src.strategy.domain.value_object.greeks import GreeksResult  # noqa: E402
-from src.strategy.domain.value_object.combination_rules import (  # noqa: E402
+from src.strategy.domain.value_object.combination.combination import CombinationType  # noqa: E402
+from src.strategy.domain.value_object.pricing.greeks import GreeksResult  # noqa: E402
+from src.strategy.domain.value_object.combination.combination_rules import (  # noqa: E402
     VALIDATION_RULES,
     LegStructure,
 )

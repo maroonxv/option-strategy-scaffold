@@ -11,7 +11,7 @@ from .pricers.bs_pricer import BlackScholesPricer
 from .pricers.baw_pricer import BAWPricer
 from .pricers.crr_pricer import CRRPricer
 from .iv.greeks_calculator import GreeksCalculator
-from ...value_object.pricing import ExerciseStyle, PricingInput, PricingResult, PricingModel
+from ...value_object.pricing.pricing import ExerciseStyle, PricingInput, PricingResult, PricingModel
 from ...value_object.config.pricing_engine_config import PricingEngineConfig
 
 

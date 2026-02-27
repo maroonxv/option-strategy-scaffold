@@ -127,8 +127,8 @@ class TestProperty2UsageVolumeInvariant:
 # ---------------------------------------------------------------------------
 # 策略：Greeks 相关参数
 # ---------------------------------------------------------------------------
-from src.strategy.domain.value_object.greeks import GreeksResult
-from src.strategy.domain.value_object.risk import PortfolioGreeks, RiskThresholds
+from src.strategy.domain.value_object.pricing.greeks import GreeksResult
+from src.strategy.domain.value_object.risk.risk import PortfolioGreeks, RiskThresholds
 
 
 # Feature: dynamic-position-sizing, Property 3: Greeks 预算计算正确性

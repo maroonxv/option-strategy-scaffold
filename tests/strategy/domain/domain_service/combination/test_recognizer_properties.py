@@ -24,7 +24,7 @@ from src.strategy.domain.domain_service.combination.combination_recognizer impor
 )
 from src.strategy.domain.entity.position import Position
 from src.strategy.domain.value_object.combination import CombinationType
-from src.strategy.domain.value_object.option_contract import OptionContract
+from src.strategy.domain.value_object.market.option_contract import OptionContract
 
 
 # ---------------------------------------------------------------------------

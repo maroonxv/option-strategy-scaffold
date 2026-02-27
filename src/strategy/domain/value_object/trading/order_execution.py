@@ -7,7 +7,7 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Any, Dict
 
-from .order_instruction import OrderInstruction, Direction, Offset, OrderType
+from src.strategy.domain.value_object.trading.order_instruction import OrderInstruction, Direction, Offset, OrderType
 
 
 @dataclass(frozen=True)

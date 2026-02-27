@@ -7,7 +7,7 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Any, Dict
 
-from .greeks import GreeksResult
+from src.strategy.domain.value_object.pricing.greeks import GreeksResult
 
 
 @dataclass(frozen=True)

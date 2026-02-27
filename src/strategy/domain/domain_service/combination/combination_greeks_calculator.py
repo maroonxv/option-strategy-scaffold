@@ -9,8 +9,8 @@ CombinationGreeksCalculator 领域服务
 from typing import Dict
 
 from src.strategy.domain.entity.combination import Combination
-from src.strategy.domain.value_object.combination import CombinationGreeks
-from src.strategy.domain.value_object.greeks import GreeksResult
+from src.strategy.domain.value_object.combination.combination import CombinationGreeks
+from src.strategy.domain.value_object.pricing.greeks import GreeksResult
 
 
 class CombinationGreeksCalculator:

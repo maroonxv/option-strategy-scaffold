@@ -9,8 +9,8 @@ import uuid
 from datetime import datetime, timedelta
 from typing import Dict, List, Optional, Tuple
 
-from src.strategy.domain.value_object.order_instruction import OrderInstruction
-from src.strategy.domain.value_object.advanced_order import (
+from src.strategy.domain.value_object.trading.order_instruction import OrderInstruction
+from src.strategy.domain.value_object.trading.advanced_order import (
     AdvancedOrder, AdvancedOrderRequest, AdvancedOrderStatus,
     AdvancedOrderType, ChildOrder, SliceEntry,
 )

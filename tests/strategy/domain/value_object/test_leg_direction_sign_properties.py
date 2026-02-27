@@ -9,7 +9,7 @@ Property 1: direction_sign 正确性
 from hypothesis import given, settings
 from hypothesis import strategies as st
 
-from src.strategy.domain.value_object.combination import Leg
+from src.strategy.domain.value_object.combination.combination import Leg
 
 
 # ---------------------------------------------------------------------------

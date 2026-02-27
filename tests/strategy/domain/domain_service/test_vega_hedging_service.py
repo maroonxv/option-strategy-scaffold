@@ -18,9 +18,9 @@ from hypothesis import given, strategies as st, settings, assume
 
 from src.strategy.domain.domain_service.hedging.vega_hedging_service import VegaHedgingService
 
-from src.strategy.domain.value_object.hedging import VegaHedgingConfig, VegaHedgeResult
+from src.strategy.domain.value_object.risk.hedging import VegaHedgingConfig, VegaHedgeResult
 
-from src.strategy.domain.value_object.risk import PortfolioGreeks
+from src.strategy.domain.value_object.risk.risk import PortfolioGreeks
 
 
 
@@ -273,7 +273,7 @@ class TestVegaHedgingProperty3:
 
         """
 
-        from src.strategy.domain.value_object.order_instruction import Direction
+        from src.strategy.domain.value_object.trading.order_instruction import Direction
 
 
         greeks = data.draw(portfolio_greeks_exceeding_band_st(config))
@@ -362,7 +362,7 @@ class TestVegaHedgingProperty4:
 
         """
 
-        from src.strategy.domain.value_object.order_instruction import Direction
+        from src.strategy.domain.value_object.trading.order_instruction import Direction
 
 
         greeks = data.draw(portfolio_greeks_exceeding_band_st(config))
@@ -454,7 +454,7 @@ class TestVegaHedgingProperty5:
 
         """
 
-        from src.strategy.domain.value_object.order_instruction import Direction
+        from src.strategy.domain.value_object.trading.order_instruction import Direction
 
 
         greeks = data.draw(portfolio_greeks_exceeding_band_st(config))
@@ -926,7 +926,7 @@ class TestVegaHedgingUnitScenarios:
 
         """
 
-        from src.strategy.domain.value_object.order_instruction import Direction
+        from src.strategy.domain.value_object.trading.order_instruction import Direction
 
 
         config = VegaHedgingConfig(
@@ -982,7 +982,7 @@ class TestVegaHedgingUnitScenarios:
 
         """
 
-        from src.strategy.domain.value_object.order_instruction import Direction
+        from src.strategy.domain.value_object.trading.order_instruction import Direction
 
 
         config = VegaHedgingConfig(

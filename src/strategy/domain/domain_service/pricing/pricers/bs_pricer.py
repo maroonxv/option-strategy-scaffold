@@ -4,8 +4,8 @@ BlackScholesPricer 领域服务
 基于 Black-Scholes 模型的欧式期权定价器，委托给现有 GreeksCalculator.bs_price 实现。
 纯计算服务，无副作用。
 """
-from ....value_object.greeks import GreeksInput
-from ....value_object.pricing import PricingInput, PricingResult
+from ....value_object.pricing.greeks import GreeksInput
+from ....value_object.pricing.pricing import PricingInput, PricingResult
 from ..iv.greeks_calculator import GreeksCalculator
 
 

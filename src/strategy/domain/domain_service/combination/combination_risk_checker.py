@@ -4,11 +4,11 @@
 基于组合级 Greeks 和阈值配置，判断组合是否超限。
 独立于 PortfolioRiskAggregator 运行，不影响整体组合级风控。
 """
-from src.strategy.domain.value_object.combination import (
+from src.strategy.domain.value_object.combination.combination import (
     CombinationGreeks,
     CombinationRiskConfig,
 )
-from src.strategy.domain.value_object.risk import RiskCheckResult
+from src.strategy.domain.value_object.risk.risk import RiskCheckResult
 
 
 class CombinationRiskChecker:

@@ -7,7 +7,7 @@ import bisect
 from datetime import datetime
 from typing import Dict, List, Optional, Tuple
 
-from ....value_object.vol_surface import (
+from ....value_object.pricing.vol_surface import (
     VolQuote, VolQueryResult, VolSmile, TermStructure, VolSurfaceSnapshot,
 )
 

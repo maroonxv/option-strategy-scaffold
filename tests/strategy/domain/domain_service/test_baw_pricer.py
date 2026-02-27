@@ -9,7 +9,7 @@ from hypothesis import given, settings, assume
 from hypothesis import strategies as st
 
 from src.strategy.domain.domain_service.pricing import BAWPricer, BlackScholesPricer, GreeksCalculator
-from src.strategy.domain.value_object.pricing import (
+from src.strategy.domain.value_object.pricing.pricing import (
     ExerciseStyle,
     PricingInput,
     PricingResult,

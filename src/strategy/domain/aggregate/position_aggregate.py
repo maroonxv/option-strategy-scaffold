@@ -9,7 +9,7 @@ from typing import Any, Dict, List, Optional, Set
 
 from ..entity.position import Position
 from ..entity.order import Order, OrderStatus
-from ..value_object.order_instruction import Offset
+from ..value_object.trading.order_instruction import Offset
 from ..event.event_types import (
     DomainEvent,
     ManualCloseDetectedEvent,

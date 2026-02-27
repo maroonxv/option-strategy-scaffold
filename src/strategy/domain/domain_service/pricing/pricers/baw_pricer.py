@@ -7,7 +7,7 @@ BAWPricer 领域服务
 """
 import math
 
-from ....value_object.pricing import PricingInput, PricingResult
+from ....value_object.pricing.pricing import PricingInput, PricingResult
 
 
 def _norm_cdf(x: float) -> float:

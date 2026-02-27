@@ -3,7 +3,7 @@ from datetime import date
 from typing import Dict, List, Optional, Callable, Tuple
 from vnpy.trader.object import ContractData
 from src.strategy.infrastructure.parsing.contract_helper import ContractHelper
-from src.strategy.domain.value_object.selection import MarketData, RolloverRecommendation
+from src.strategy.domain.value_object.selection.selection import MarketData, RolloverRecommendation
 
 
 

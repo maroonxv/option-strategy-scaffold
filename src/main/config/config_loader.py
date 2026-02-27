@@ -262,7 +262,7 @@ class ConfigLoader:
             CombinationRiskConfig 实例，缺失字段使用默认值
             默认值: delta_limit=2.0, gamma_limit=0.5, vega_limit=200.0
         """
-        from src.strategy.domain.value_object.combination import CombinationRiskConfig
+        from src.strategy.domain.value_object.combination.combination import CombinationRiskConfig
 
         combination_risk = config.get("combination_risk", {})
 
@@ -284,7 +284,7 @@ def load_combination_risk_config(config: dict) -> "CombinationRiskConfig":
         CombinationRiskConfig 实例，缺失字段使用默认值
         默认值: delta_limit=2.0, gamma_limit=0.5, vega_limit=200.0
     """
-    from src.strategy.domain.value_object.combination import CombinationRiskConfig
+    from src.strategy.domain.value_object.combination.combination import CombinationRiskConfig
 
     combination_risk = config.get("combination_risk", {})
 

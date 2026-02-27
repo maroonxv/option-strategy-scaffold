@@ -9,7 +9,7 @@ IV 求解已委托给 IVSolver，保持原有接口不变。
 import math
 from typing import Optional
 
-from ....value_object.greeks import GreeksInput, GreeksResult, IVResult
+from ....value_object.pricing.greeks import GreeksInput, GreeksResult, IVResult
 from .iv_solver import IVSolver
 
 

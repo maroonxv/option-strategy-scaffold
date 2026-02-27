@@ -17,8 +17,8 @@ from src.strategy.domain.domain_service.combination.combination_risk_checker imp
     CombinationRiskChecker,
 )
 from src.strategy.domain.entity.combination import Combination
-from src.strategy.domain.value_object.combination import CombinationEvaluation
-from src.strategy.domain.value_object.greeks import GreeksResult
+from src.strategy.domain.value_object.combination.combination import CombinationEvaluation
+from src.strategy.domain.value_object.pricing.greeks import GreeksResult
 
 
 class CombinationFacade:

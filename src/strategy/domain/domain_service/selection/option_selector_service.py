@@ -7,12 +7,12 @@ from typing import Optional, List, Callable, Any, Dict
 
 import pandas as pd
 
-from ...value_object.option_contract import OptionContract, OptionType
+from ...value_object.market.option_contract import OptionContract, OptionType
 from ...value_object.combination import CombinationType
-from ...value_object.selection import CombinationSelectionResult, SelectionScore
-from ...value_object.combination_rules import VALIDATION_RULES, LegStructure
-from ...value_object.greeks import GreeksResult
-from ...value_object.option_selector_config import OptionSelectorConfig
+from ...value_object.selection.selection import CombinationSelectionResult, SelectionScore
+from ...value_object.combination.combination_rules import VALIDATION_RULES, LegStructure
+from ...value_object.pricing.greeks import GreeksResult
+from ...value_object.selection.option_selector_config import OptionSelectorConfig
 
 
 class OptionSelectorService:

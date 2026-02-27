@@ -8,8 +8,8 @@ from dataclasses import dataclass
 from typing import Callable, Dict, List
 
 from src.strategy.domain.entity.position import Position
-from src.strategy.domain.value_object.combination import CombinationType
-from src.strategy.domain.value_object.combination_rules import (
+from src.strategy.domain.value_object.combination.combination import CombinationType
+from src.strategy.domain.value_object.combination.combination_rules import (
     LegStructure,
     validate_straddle,
     validate_strangle,
@@ -17,7 +17,7 @@ from src.strategy.domain.value_object.combination_rules import (
     validate_calendar_spread,
     validate_iron_condor,
 )
-from src.strategy.domain.value_object.option_contract import OptionContract
+from src.strategy.domain.value_object.market.option_contract import OptionContract
 
 
 @dataclass(frozen=True)

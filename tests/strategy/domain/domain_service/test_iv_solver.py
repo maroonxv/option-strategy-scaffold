@@ -7,7 +7,7 @@ import math
 import pytest
 
 from src.strategy.domain.domain_service.pricing import IVSolver, SolveMethod, GreeksCalculator
-from src.strategy.domain.value_object.greeks import GreeksInput, IVQuote, IVResult
+from src.strategy.domain.value_object.pricing.greeks import GreeksInput, IVQuote, IVResult
 
 
 @pytest.fixture

@@ -6,9 +6,9 @@ compute_sizing 单元测试
 import pytest
 from src.strategy.domain.domain_service.risk.position_sizing_service import PositionSizingService
 from src.strategy.domain.value_object.config.position_sizing_config import PositionSizingConfig
-from src.strategy.domain.value_object.greeks import GreeksResult
-from src.strategy.domain.value_object.risk import PortfolioGreeks, RiskThresholds
-from src.strategy.domain.value_object.sizing import SizingResult
+from src.strategy.domain.value_object.pricing.greeks import GreeksResult
+from src.strategy.domain.value_object.risk.risk import PortfolioGreeks, RiskThresholds
+from src.strategy.domain.value_object.risk.sizing import SizingResult
 
 
 def _make_greeks(delta=-0.3, gamma=0.05, vega=0.15, theta=-0.02):

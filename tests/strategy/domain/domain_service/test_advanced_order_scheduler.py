@@ -10,10 +10,10 @@ from datetime import datetime, timedelta
 from hypothesis import given, strategies as st, settings, assume
 
 from src.strategy.domain.domain_service.execution.advanced_order_scheduler import AdvancedOrderScheduler
-from src.strategy.domain.value_object.order_instruction import (
+from src.strategy.domain.value_object.trading.order_instruction import (
     OrderInstruction, Direction, Offset, OrderType,
 )
-from src.strategy.domain.value_object.advanced_order import (
+from src.strategy.domain.value_object.trading.advanced_order import (
     AdvancedOrder, AdvancedOrderStatus, AdvancedOrderType,
 )
 from src.strategy.domain.event.event_types import (
