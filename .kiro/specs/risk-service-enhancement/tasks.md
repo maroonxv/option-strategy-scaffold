@@ -24,7 +24,7 @@
     - 在 `risk.py` 中定义 `ConcentrationConfig`、`ConcentrationMetrics`、`ConcentrationWarning` 三个 dataclass
     - _Requirements: 4.1, 4.2, 4.3, 4.4, 4.5, 4.6, 4.7_
 
-  - [~] 1.5 创建时间衰减监控相关值对象
+  - [x] 1.5 创建时间衰减监控相关值对象
     - 在 `risk.py` 中定义 `TimeDecayConfig`、`ThetaMetrics`、`ExpiringPosition`、`ExpiryGroup` 四个 dataclass
     - _Requirements: 5.1, 5.2, 5.3, 5.4, 5.5, 5.6, 5.7_
 

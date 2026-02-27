@@ -393,3 +393,77 @@ class ConcentrationWarning:
     concentration: float
     limit: float
     message: str
+
+
+# ============================================================================
+# 时间衰减监控相关值对象
+# ============================================================================
+
+@dataclass(frozen=True)
+class TimeDecayConfig:
+    """
+    时间衰减监控配置
+    
+    Attributes:
+        expiry_warning_days: 距离到期 N 天时提醒
+        critical_expiry_days: 距离到期 N 天时视为紧急
+    """
+    expiry_warning_days: int = 7
+    critical_expiry_days: int = 3
+
+
+@dataclass
+class ThetaMetrics:
+    """
+    Theta 指标
+    
+    Attributes:
+        total_theta: 组合总 Theta
+        daily_decay_amount: 每日预期衰减金额
+        position_count: 持仓数量
+        timestamp: 时间戳
+    """
+    total_theta: float
+    daily_decay_amount: float
+    position_count: int
+    timestamp: datetime = field(default_factory=datetime.now)
+
+
+@dataclass(frozen=True)
+class ExpiringPosition:
+    """
+    临近到期持仓
+    
+    Attributes:
+        vt_symbol: 合约代码
+        expiry_date: 到期日
+        days_to_expiry: 距离到期天数
+        volume: 持仓手数
+        theta: Theta 值
+        urgency: 紧急程度 ("warning" | "critical")
+    """
+    vt_symbol: str
+    expiry_date: str
+    days_to_expiry: int
+    volume: int
+    theta: float
+    urgency: str
+
+
+@dataclass
+class ExpiryGroup:
+    """
+    到期日分组
+    
+    Attributes:
+        expiry_date: 到期日
+        position_count: 持仓数量
+        total_volume: 总持仓手数
+        total_theta: 总 Theta 值
+        positions: 合约代码列表
+    """
+    expiry_date: str
+    position_count: int
+    total_volume: int
+    total_theta: float
+    positions: list[str]
