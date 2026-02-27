@@ -27,6 +27,18 @@ class SmartOrderExecutor:
         self.config = config
         self._orders: Dict[str, ManagedOrder] = {}
 
+    @classmethod
+    def from_yaml_config(cls, config_dict: dict) -> "SmartOrderExecutor":
+        """从 YAML 配置字典创建实例，缺失字段使用 OrderExecutionConfig 默认值"""
+        defaults = OrderExecutionConfig()
+        config = OrderExecutionConfig(
+            timeout_seconds=config_dict.get("timeout_seconds", defaults.timeout_seconds),
+            max_retries=config_dict.get("max_retries", defaults.max_retries),
+            slippage_ticks=config_dict.get("slippage_ticks", defaults.slippage_ticks),
+            price_tick=config_dict.get("price_tick", defaults.price_tick),
+        )
+        return cls(config)
+
     def calculate_adaptive_price(
         self,
         instruction: OrderInstruction,
