@@ -31,7 +31,7 @@
     - 验证连续两次 `serialize()` 产生完全相同的 JSON 字符串
     - **Validates: Requirements 2.5, 6.2**
 
-  - [~] 1.5 编写 Property 4 属性测试：JsonSerializer 输出合法性
+  - [x] 1.5 编写 Property 4 属性测试：JsonSerializer 输出合法性
     - **Property 4: JsonSerializer 输出合法性**
     - 在同一测试文件中实现
     - 验证 `serialize()` 输出能被 `json.loads()` 成功解析

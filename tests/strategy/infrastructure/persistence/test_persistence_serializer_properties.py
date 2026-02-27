@@ -277,3 +277,56 @@ class TestJsonSerializerDeterminismProperties:
         assert json_str_1.encode('utf-8') == json_str_2.encode('utf-8'), (
             "Serialization outputs are string-equal but not byte-equal"
         )
+
+
+class TestJsonSerializerOutputValidityProperties:
+    """Property 4: JsonSerializer 输出合法性
+    
+    Feature: data-persistence-optimization, Property 4: JsonSerializer 输出合法性
+    Validates: Requirements 6.5
+    """
+
+    @settings(max_examples=100, deadline=None)
+    @given(snapshot=_snapshot_with_all_types_strategy())
+    def test_property_4_serialization_output_validity(
+        self, snapshot: Dict[str, Any]
+    ):
+        """
+        **Validates: Requirements 6.5**
+        
+        Property 4: JsonSerializer 输出合法性
+        
+        For any valid Snapshot dictionary, JsonSerializer.serialize() output 
+        should be parseable by json.loads() without raising exceptions. This 
+        ensures the output is valid JSON.
+        
+        This property verifies that the custom encoder correctly handles all 
+        special types (DataFrame, datetime, Enum, dataclass, set) and produces 
+        valid JSON that can be parsed by the standard library.
+        """
+        import json
+        
+        serializer = _make_serializer()
+
+        # Serialize the snapshot to JSON string
+        json_str = serializer.serialize(snapshot)
+
+        # Verify the output is valid JSON by parsing it with json.loads
+        try:
+            parsed = json.loads(json_str)
+        except json.JSONDecodeError as e:
+            pytest.fail(
+                f"JsonSerializer.serialize() produced invalid JSON:\n"
+                f"Error: {e}\n"
+                f"JSON output (first 500 chars): {json_str[:500]}"
+            )
+
+        # Verify the parsed result is a dictionary (expected structure)
+        assert isinstance(parsed, dict), (
+            f"Expected parsed JSON to be a dict, got {type(parsed).__name__}"
+        )
+
+        # Verify schema_version is present (injected by serialize)
+        assert "schema_version" in parsed, (
+            "Parsed JSON missing 'schema_version' field"
+        )
