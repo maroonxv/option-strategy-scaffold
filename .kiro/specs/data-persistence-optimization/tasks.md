@@ -160,7 +160,7 @@
     - 验证 `to_snapshot()` 后 `from_snapshot()` 恢复的实例与原始实例等价
     - **Validates: Requirements 1.1, 1.2, 1.5**
 
-  - [~] 8.4 编写旧版快照兼容性单元测试
+  - [x] 8.4 编写旧版快照兼容性单元测试
     - 测试旧版快照（无 combination_aggregate 字段）恢复为空实例
     - _Requirements: 1.3_
 
