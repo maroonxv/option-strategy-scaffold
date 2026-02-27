@@ -18,7 +18,7 @@
     - 未耗尽时返回 `(new_instruction, [])`
     - _Requirements: 6.1, 6.2, 6.3_
 
-- [ ] 2. 新增 AdvancedSchedulerConfig 配置值对象与 TOML 配置
+- [x] 2. 新增 AdvancedSchedulerConfig 配置值对象与 TOML 配置
   - [x] 2.1 在 `src/strategy/domain/value_object/trading/order_execution.py` 中新增 `AdvancedSchedulerConfig` frozen dataclass
     - 包含字段：default_batch_size(10)、default_interval_seconds(60)、default_num_slices(5)、default_volume_randomize_ratio(0.1)、default_price_offset_ticks(1)、default_price_tick(0.01)
     - _Requirements: 3.1, 3.2_
@@ -41,7 +41,7 @@
     - **Property 5: AdvancedSchedulerConfig 不可变性**
     - **Validates: Requirements 3.2**
 
-- [~] 3. Checkpoint - 确保配置加载和缺陷修复测试通过
+- [x] 3. Checkpoint - 确保配置加载和缺陷修复测试通过
   - Ensure all tests pass, ask the user if questions arise.
 
 - [ ] 4. 添加工厂方法与修改构造函数
