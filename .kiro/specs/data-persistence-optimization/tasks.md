@@ -171,7 +171,7 @@
     - 在 `on_stop` 中调用 `force_save` 和 `shutdown`
     - _Requirements: 1.1, 2.4, 4.1, 5.4_
 
-  - [~] 9.2 确保向后兼容性
+  - [x] 9.2 确保向后兼容性
     - 验证旧版未压缩快照可正常加载
     - 验证旧版无 combination_aggregate 的快照可正常恢复
     - 验证现有 MigrationChain 与新功能兼容
