@@ -164,7 +164,7 @@
     - 测试旧版快照（无 combination_aggregate 字段）恢复为空实例
     - _Requirements: 1.3_
 
-- [ ] 9. 集成与连接
+- [x] 9. 集成与连接
   - [x] 9.1 更新 StrategyEntry 中 AutoSaveService 的初始化
     - 传入新增的构造参数（cleanup_interval_hours、keep_days）
     - 传入 JsonSerializer 引用
@@ -177,7 +177,7 @@
     - 验证现有 MigrationChain 与新功能兼容
     - _Requirements: 1.3, 3.2_
 
-- [~] 10. Final Checkpoint - 确保所有测试通过
+- [-] 10. Final Checkpoint - 确保所有测试通过
   - Ensure all tests pass, ask the user if questions arise.
 
 ## Notes
