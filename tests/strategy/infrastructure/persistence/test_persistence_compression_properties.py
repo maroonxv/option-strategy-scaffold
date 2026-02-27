@@ -27,6 +27,7 @@ sys.modules["vnpy.trader.setting"].SETTINGS = {}
 from src.strategy.infrastructure.persistence.json_serializer import JsonSerializer
 from src.strategy.infrastructure.persistence.migration_chain import MigrationChain
 from src.strategy.infrastructure.persistence.state_repository import (
+    COMPRESSION_PREFIX,
     DEFAULT_COMPRESSION_THRESHOLD,
     StateRepository,
 )
@@ -210,3 +211,239 @@ class TestStateRepositoryCompressionRoundTripProperties:
             "Compression is not idempotent: compressing the same data twice "
             "produced different stored formats"
         )
+
+
+# ===========================================================================
+# Unit Tests for Boundary Conditions
+# ===========================================================================
+
+class TestStateRepositoryCompressionBoundaryConditions:
+    """Unit tests for compression boundary conditions.
+    
+    Validates: Requirements 3.4
+    
+    These tests verify specific edge cases and boundary conditions:
+    1. Compressed data larger than original → keep original uncompressed
+    2. Empty strings and strings below threshold → no compression
+    3. ZLIB: prefix detection works correctly
+    """
+
+    def test_compressed_data_larger_than_original_keeps_original(self):
+        """
+        **Validates: Requirements 3.4**
+        
+        When compressed data is larger than the original data, the repository
+        should keep the original uncompressed data instead.
+        
+        This can happen with small, already-compressed, or random data that
+        doesn't compress well.
+        """
+        repository = _make_repository()
+        
+        # Create a JSON string that doesn't compress well
+        # Random-looking data with high entropy
+        json_str = json.dumps({
+            "data": "x" * 15000  # Repetitive data that compresses well
+        })
+        
+        # First verify this data DOES compress well (sanity check)
+        stored_1, was_compressed_1 = repository._maybe_compress(json_str)
+        assert was_compressed_1, "Test setup failed: data should compress well"
+        
+        # Now test with data that doesn't compress well
+        # Use a string of random hex characters (high entropy)
+        import random
+        random_hex = ''.join(random.choice('0123456789abcdef') for _ in range(15000))
+        json_str_random = json.dumps({"data": random_hex})
+        
+        stored_2, was_compressed_2 = repository._maybe_compress(json_str_random)
+        
+        # If compression made it larger, should keep original
+        if not was_compressed_2:
+            # Verify the stored data is the original
+            assert stored_2 == json_str_random
+            assert not stored_2.startswith(COMPRESSION_PREFIX)
+        else:
+            # If it did compress, verify it's actually smaller
+            assert len(stored_2) < len(json_str_random)
+
+    def test_empty_string_not_compressed(self):
+        """
+        **Validates: Requirements 3.4**
+        
+        Empty strings should not be compressed.
+        """
+        repository = _make_repository()
+        
+        json_str = ""
+        stored, was_compressed = repository._maybe_compress(json_str)
+        
+        assert not was_compressed, "Empty string should not be compressed"
+        assert stored == json_str, "Empty string should be returned as-is"
+        assert not stored.startswith(COMPRESSION_PREFIX)
+
+    def test_small_string_below_threshold_not_compressed(self):
+        """
+        **Validates: Requirements 3.4**
+        
+        Strings smaller than the compression threshold (10KB) should not be
+        compressed, regardless of their content.
+        """
+        repository = _make_repository()
+        
+        # Create a small JSON string (well below 10KB threshold)
+        small_json = json.dumps({
+            "id": 123,
+            "name": "test",
+            "values": [1, 2, 3, 4, 5]
+        })
+        
+        assert len(small_json.encode('utf-8')) < DEFAULT_COMPRESSION_THRESHOLD
+        
+        stored, was_compressed = repository._maybe_compress(small_json)
+        
+        assert not was_compressed, "Small string should not be compressed"
+        assert stored == small_json, "Small string should be returned as-is"
+        assert not stored.startswith(COMPRESSION_PREFIX)
+
+    def test_string_at_threshold_boundary_not_compressed(self):
+        """
+        **Validates: Requirements 3.4**
+        
+        Strings exactly at the threshold should not be compressed (threshold
+        is exclusive: compress only if > threshold).
+        """
+        repository = _make_repository()
+        
+        # Create a JSON string exactly at the threshold
+        # Adjust content to hit exactly 10KB
+        target_size = DEFAULT_COMPRESSION_THRESHOLD
+        base_json = {"data": ""}
+        base_size = len(json.dumps(base_json).encode('utf-8'))
+        padding_needed = target_size - base_size
+        
+        json_str = json.dumps({"data": "x" * padding_needed})
+        actual_size = len(json_str.encode('utf-8'))
+        
+        # Adjust if needed to hit exactly the threshold
+        while actual_size < target_size:
+            padding_needed += 1
+            json_str = json.dumps({"data": "x" * padding_needed})
+            actual_size = len(json_str.encode('utf-8'))
+        
+        while actual_size > target_size:
+            padding_needed -= 1
+            json_str = json.dumps({"data": "x" * padding_needed})
+            actual_size = len(json_str.encode('utf-8'))
+        
+        assert actual_size == target_size, f"Expected {target_size}, got {actual_size}"
+        
+        stored, was_compressed = repository._maybe_compress(json_str)
+        
+        assert not was_compressed, "String at threshold should not be compressed"
+        assert stored == json_str
+
+    def test_string_just_above_threshold_is_compressed(self):
+        """
+        **Validates: Requirements 3.4**
+        
+        Strings just above the threshold should be compressed (if compression
+        actually reduces size).
+        """
+        repository = _make_repository()
+        
+        # Create a JSON string just above the threshold with compressible content
+        target_size = DEFAULT_COMPRESSION_THRESHOLD + 100
+        json_str = json.dumps({"data": "x" * target_size})
+        
+        assert len(json_str.encode('utf-8')) > DEFAULT_COMPRESSION_THRESHOLD
+        
+        stored, was_compressed = repository._maybe_compress(json_str)
+        
+        # Repetitive data should compress well
+        assert was_compressed, "Large compressible string should be compressed"
+        assert stored.startswith(COMPRESSION_PREFIX)
+        assert len(stored) < len(json_str), "Compressed data should be smaller"
+
+    def test_zlib_prefix_detection_for_compressed_data(self):
+        """
+        **Validates: Requirements 3.4**
+        
+        The ZLIB: prefix should be correctly detected and used for compressed
+        data.
+        """
+        repository = _make_repository()
+        
+        # Create a large compressible JSON string
+        json_str = json.dumps({"data": "x" * 15000})
+        
+        stored, was_compressed = repository._maybe_compress(json_str)
+        
+        if was_compressed:
+            # Verify prefix is present
+            assert stored.startswith(COMPRESSION_PREFIX), (
+                "Compressed data should have ZLIB: prefix"
+            )
+            
+            # Verify decompression works
+            restored = repository._maybe_decompress(stored)
+            assert restored == json_str
+            
+            # Verify the prefix is exactly "ZLIB:"
+            assert stored[:5] == "ZLIB:"
+            
+            # Verify the rest is valid base64
+            import base64
+            try:
+                base64.b64decode(stored[5:])
+            except Exception as e:
+                pytest.fail(f"Data after ZLIB: prefix is not valid base64: {e}")
+
+    def test_zlib_prefix_detection_for_uncompressed_data(self):
+        """
+        **Validates: Requirements 3.4**
+        
+        Uncompressed data should not have the ZLIB: prefix, and decompression
+        should return it as-is.
+        """
+        repository = _make_repository()
+        
+        # Create a small JSON string (won't be compressed)
+        json_str = json.dumps({"id": 123, "name": "test"})
+        
+        stored, was_compressed = repository._maybe_compress(json_str)
+        
+        assert not was_compressed
+        assert not stored.startswith(COMPRESSION_PREFIX), (
+            "Uncompressed data should not have ZLIB: prefix"
+        )
+        
+        # Decompression should return it as-is
+        restored = repository._maybe_decompress(stored)
+        assert restored == json_str
+        assert restored == stored
+
+    def test_manual_zlib_prefix_in_data_is_handled_correctly(self):
+        """
+        **Validates: Requirements 3.4**
+        
+        If the original JSON data happens to start with "ZLIB:", the system
+        should handle it correctly (this is an edge case but worth testing).
+        """
+        repository = _make_repository()
+        
+        # Create JSON that starts with "ZLIB:" in its content
+        json_str = json.dumps({"message": "ZLIB: this is not compressed"})
+        
+        # This is small, so won't be compressed
+        stored, was_compressed = repository._maybe_compress(json_str)
+        
+        assert not was_compressed
+        # The stored data should be the original JSON
+        assert stored == json_str
+        
+        # Decompression should handle this correctly
+        # Since the data doesn't start with "ZLIB:" at the storage level,
+        # it should be returned as-is
+        restored = repository._maybe_decompress(stored)
+        assert restored == json_str

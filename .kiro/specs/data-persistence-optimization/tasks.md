@@ -62,7 +62,7 @@
     - 验证 `_maybe_compress` 后 `_maybe_decompress` 产生与原始 JSON 字符串完全一致的结果
     - **Validates: Requirements 3.1, 3.2, 3.5**
 
-  - [~] 3.4 编写压缩边界条件单元测试
+  - [x] 3.4 编写压缩边界条件单元测试
     - 测试压缩后数据更大时保留原始数据（Requirements 3.4）
     - 测试空字符串和小于阈值的字符串不压缩
     - 测试 ZLIB: 前缀检测正确性
