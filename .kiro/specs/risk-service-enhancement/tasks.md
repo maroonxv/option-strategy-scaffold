@@ -49,7 +49,7 @@
     - 测试边界情况：空持仓、全部盈利、亏损未达阈值
     - _Requirements: 1.1, 1.2, 1.3, 1.4, 1.5_
 
-  - [~] 2.3 编写 StopLossManager 属性测试
+  - [x] 2.3 编写 StopLossManager 属性测试
     - 创建 `tests/strategy/domain/domain_service/risk/test_stop_loss_properties.py`
     - **Property 1: 止损触发正确性**
     - **Validates: Requirements 1.1, 1.2, 1.4, 1.5, 1.6**
