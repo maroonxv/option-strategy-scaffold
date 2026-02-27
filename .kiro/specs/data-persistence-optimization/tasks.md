@@ -55,7 +55,7 @@
     - 添加 `compression_threshold` 构造参数
     - _Requirements: 3.1, 3.2_
 
-  - [~] 3.3 编写 Property 6 属性测试：压缩往返一致性
+  - [x] 3.3 编写 Property 6 属性测试：压缩往返一致性
     - **Property 6: 压缩往返一致性**
     - 在 `tests/strategy/infrastructure/persistence/test_persistence_compression_properties.py` 中实现
     - 使用 Hypothesis 生成随机长度 JSON 字符串（含超过/低于阈值的情况）
