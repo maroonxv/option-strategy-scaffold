@@ -31,9 +31,7 @@ from .domain.domain_service.signal.signal_service import SignalService
 # NOTE: IndicatorService 和 SignalService 是模板类，
 # 使用前请根据策略需求实现 calculate_bar() / check_open_signal() / check_close_signal()
 from .domain.domain_service.risk.position_sizing_service import PositionSizingService
-from .domain.value_object.config.position_sizing_config import PositionSizingConfig
 from .domain.domain_service.selection.option_selector_service import OptionSelectorService
-from .domain.value_object.option_selector_config import OptionSelectorConfig
 from .domain.domain_service.selection.future_selection_service import BaseFutureSelector
 from .domain.domain_service.pricing import GreeksCalculator
 from .domain.domain_service.risk.portfolio_risk_aggregator import PortfolioRiskAggregator
@@ -219,20 +217,26 @@ class StrategyEntry(StrategyTemplate):
         self.indicator_service = IndicatorService()
         self.signal_service = SignalService()
 
-        # ── 从 position_sizing 配置节读取动态仓位参数 ──
-        ps_cfg = full_config.get("position_sizing", {})
-        self.position_sizing_service = PositionSizingService(
-            config=PositionSizingConfig(
-                max_positions=self.max_positions,
-                margin_ratio=ps_cfg.get("margin_ratio", 0.12),
-                min_margin_ratio=ps_cfg.get("min_margin_ratio", 0.07),
-                margin_usage_limit=ps_cfg.get("margin_usage_limit", 0.6),
-                max_volume_per_order=ps_cfg.get("max_volume_per_order", 10),
-            )
+        # ── 从 TOML 配置 + YAML 覆盖加载领域服务配置 ──
+        from src.main.config.domain_service_config_loader import (
+            load_position_sizing_config,
+            load_pricing_engine_config,
+            load_future_selector_config,
+            load_option_selector_config,
         )
-        self.future_selection_service = BaseFutureSelector()
+
+        ps_cfg = full_config.get("position_sizing", {})
+        ps_overrides = {**ps_cfg, "max_positions": self.max_positions}
+        self.position_sizing_service = PositionSizingService(
+            config=load_position_sizing_config(overrides=ps_overrides)
+        )
+        self.future_selection_service = BaseFutureSelector(
+            config=load_future_selector_config()
+        )
         self.option_selector_service = OptionSelectorService(
-            config=OptionSelectorConfig(strike_level=self.strike_level)
+            config=load_option_selector_config(
+                overrides={"strike_level": self.strike_level}
+            )
         )
 
         # ── Greeks 风控 & 订单执行增强 ──

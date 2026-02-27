@@ -1,0 +1,15 @@
+# 仓位管理服务配置
+# 对应 PositionSizingConfig
+
+[position_limit]
+max_positions = 5               # 最大持仓数量
+global_daily_limit = 50         # 全局日开仓限制
+contract_daily_limit = 2        # 单合约日开仓限制
+
+[margin]
+ratio = 0.12                    # 保证金比例
+min_ratio = 0.07                # 最低保证金比例
+usage_limit = 0.6               # 保证金使用率上限
+
+[order]
+max_volume_per_order = 10       # 单笔最大手数

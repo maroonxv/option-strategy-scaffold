@@ -1,0 +1,29 @@
+# 期权选择服务配置
+# 对应 OptionSelectorConfig
+
+[filter]
+strike_level = 3                # 目标虚值档位
+min_bid_price = 10.0            # 最小买一价
+min_bid_volume = 10             # 最小买一量
+min_trading_days = 1            # 最小剩余交易日
+max_trading_days = 50           # 最大剩余交易日
+
+[liquidity]
+min_volume = 100                # 当日最小成交量
+min_bid_volume = 1              # 最小买一量
+max_spread_ticks = 3            # 最大买卖价差跳数
+
+[score_weight]
+liquidity_weight = 0.4          # 流动性评分权重
+otm_weight = 0.3                # 虚值程度评分权重
+expiry_weight = 0.3             # 到期日评分权重
+
+[score_weight.liquidity_detail]
+spread_weight = 0.6             # 价差权重
+volume_weight = 0.4             # 成交量权重
+
+[delta]
+tolerance = 0.05                # Delta 选择容差
+
+[spread]
+default_width = 1               # 默认垂直价差宽度

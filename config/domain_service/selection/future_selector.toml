@@ -1,0 +1,9 @@
+# 期货选择器配置
+# 对应 FutureSelectorConfig
+
+[dominant]
+volume_weight = 0.6             # 成交量权重
+oi_weight = 0.4                 # 持仓量权重
+
+[rollover]
+days = 5                        # 移仓阈值天数
