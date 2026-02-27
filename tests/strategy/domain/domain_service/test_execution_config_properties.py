@@ -450,3 +450,168 @@ class TestProperty4AdvancedOrderSchedulerFromYamlConfigConsistency:
         assert result_field_names == set(known_fields), (
             f"结果字段集合不符: {result_field_names}"
         )
+
+
+# ---------------------------------------------------------------------------
+# 导入 Property 8, 9 所需的额外模块
+# ---------------------------------------------------------------------------
+from datetime import datetime
+
+from src.strategy.domain.value_object.trading.order_execution import ManagedOrder  # noqa: E402
+from src.strategy.domain.event.event_types import OrderRetryExhaustedEvent  # noqa: E402
+from src.strategy.domain.value_object.trading.order_instruction import (  # noqa: E402
+    OrderInstruction,
+    Direction,
+    Offset,
+    OrderType,
+)
+
+# ---------------------------------------------------------------------------
+# Hypothesis 策略：OrderInstruction 生成器
+# ---------------------------------------------------------------------------
+
+_vt_symbols = st.sampled_from(["IO2506-C-4000.CFFEX", "rb2501.SHFE", "IF2506.CFFEX"])
+_directions = st.sampled_from([Direction.LONG, Direction.SHORT])
+_offsets = st.sampled_from([Offset.OPEN, Offset.CLOSE])
+_volumes = st.integers(min_value=1, max_value=1000)
+_prices = st.floats(min_value=0.1, max_value=100000.0, allow_nan=False, allow_infinity=False)
+
+_order_instructions = st.builds(
+    OrderInstruction,
+    vt_symbol=_vt_symbols,
+    direction=_directions,
+    offset=_offsets,
+    volume=_volumes,
+    price=_prices,
+    signal=st.just("test"),
+    order_type=st.just(OrderType.LIMIT),
+)
+
+
+# ===========================================================================
+# Feature: execution-service-enhancement, Property 8: 重试耗尽产生正确的 OrderRetryExhaustedEvent
+# ===========================================================================
+
+
+class TestProperty8RetryExhaustedProducesCorrectEvent:
+    """
+    Property 8: 重试耗尽产生正确的 OrderRetryExhaustedEvent
+
+    对于任意 retry_count >= max_retries 的 ManagedOrder，调用 prepare_retry 应返回
+    (None, [event])，其中 event 为 OrderRetryExhaustedEvent，且 event.vt_symbol 等于
+    原始指令的 vt_symbol，event.total_retries 等于 managed_order.retry_count，
+    event.original_price 和 event.final_price 等于原始指令价格。
+
+    **Validates: Requirements 6.1, 6.2**
+    """
+
+    @given(
+        instruction=_order_instructions,
+        max_retries=st.integers(min_value=0, max_value=10),
+        extra_retries=st.integers(min_value=0, max_value=10),
+        price_tick=st.floats(min_value=0.01, max_value=10.0, allow_nan=False, allow_infinity=False),
+    )
+    @settings(max_examples=100)
+    def test_retry_exhausted_produces_correct_event(
+        self, instruction, max_retries, extra_retries, price_tick
+    ):
+        """
+        # Feature: execution-service-enhancement, Property 8: 重试耗尽产生正确的 OrderRetryExhaustedEvent
+
+        **Validates: Requirements 6.1, 6.2**
+        """
+        # retry_count >= max_retries 保证重试耗尽
+        retry_count = max_retries + extra_retries
+
+        config = OrderExecutionConfig(max_retries=max_retries, price_tick=price_tick)
+        executor = SmartOrderExecutor(config)
+
+        managed_order = ManagedOrder(
+            vt_orderid="test_order",
+            instruction=instruction,
+            submit_time=datetime(2026, 1, 1, 10, 0, 0),
+            retry_count=retry_count,
+        )
+
+        result, events = executor.prepare_retry(managed_order, price_tick)
+
+        # 应返回 None（无新指令）
+        assert result is None, (
+            f"重试耗尽时应返回 None，实际返回 {result}. "
+            f"retry_count={retry_count}, max_retries={max_retries}"
+        )
+
+        # 应返回恰好一个事件
+        assert len(events) == 1, (
+            f"重试耗尽时应返回恰好 1 个事件，实际返回 {len(events)} 个"
+        )
+
+        event = events[0]
+
+        # 事件类型正确
+        assert isinstance(event, OrderRetryExhaustedEvent), (
+            f"事件类型应为 OrderRetryExhaustedEvent，实际为 {type(event)}"
+        )
+
+        # 字段验证
+        assert event.vt_symbol == instruction.vt_symbol, (
+            f"vt_symbol 不匹配: 期望 {instruction.vt_symbol}, 实际 {event.vt_symbol}"
+        )
+        assert event.total_retries == retry_count, (
+            f"total_retries 不匹配: 期望 {retry_count}, 实际 {event.total_retries}"
+        )
+        assert event.original_price == instruction.price, (
+            f"original_price 不匹配: 期望 {instruction.price}, 实际 {event.original_price}"
+        )
+        assert event.final_price == instruction.price, (
+            f"final_price 不匹配: 期望 {instruction.price}, 实际 {event.final_price}"
+        )
+
+
+# ===========================================================================
+# Feature: execution-service-enhancement, Property 9: 定时拆单子单总量守恒
+# ===========================================================================
+
+
+class TestProperty9TimedSplitVolumeConservation:
+    """
+    Property 9: 定时拆单子单总量守恒
+
+    对于任意有效的 OrderInstruction（volume > 0）、正整数 interval_seconds 和
+    per_order_volume，submit_timed_split 产生的所有子单 volume 之和应等于原始指令的 volume。
+
+    **Validates: Requirements 5.2**
+    """
+
+    @given(
+        instruction=_order_instructions,
+        interval_seconds=st.integers(min_value=1, max_value=3600),
+        per_order_volume=st.integers(min_value=1, max_value=500),
+    )
+    @settings(max_examples=100)
+    def test_timed_split_volume_conservation(
+        self, instruction, interval_seconds, per_order_volume
+    ):
+        """
+        # Feature: execution-service-enhancement, Property 9: 定时拆单子单总量守恒
+
+        **Validates: Requirements 5.2**
+        """
+        scheduler = AdvancedOrderScheduler()
+        start_time = datetime(2026, 1, 1, 10, 0, 0)
+
+        advanced_order = scheduler.submit_timed_split(
+            instruction=instruction,
+            interval_seconds=interval_seconds,
+            per_order_volume=per_order_volume,
+            start_time=start_time,
+        )
+
+        # 子单总量应等于原始指令的 volume
+        total_child_volume = sum(child.volume for child in advanced_order.child_orders)
+        assert total_child_volume == instruction.volume, (
+            f"子单总量不守恒: 期望 {instruction.volume}, 实际 {total_child_volume}. "
+            f"per_order_volume={per_order_volume}, "
+            f"子单数={len(advanced_order.child_orders)}, "
+            f"各子单量={[c.volume for c in advanced_order.child_orders]}"
+        )

@@ -62,14 +62,14 @@
     - 忽略未知字段
     - _Requirements: 2.2, 2.3, 2.4_
 
-  - [-] 4.4 在 `test_execution_config_properties.py` 中追加属性测试（属性 3, 4）
+  - [x] 4.4 在 `test_execution_config_properties.py` 中追加属性测试（属性 3, 4）
     - **Property 3: SmartOrderExecutor from_yaml_config 一致性**
     - **Validates: Requirements 2.1, 2.3, 2.4**
     - **Property 4: AdvancedOrderScheduler from_yaml_config 一致性**
     - **Validates: Requirements 2.2, 2.3, 2.4**
 
 
-  - [~] 4.5 在 `test_execution_config_properties.py` 中追加属性测试（属性 8, 9）
+  - [-] 4.5 在 `test_execution_config_properties.py` 中追加属性测试（属性 8, 9）
     - **Property 8: 重试耗尽产生正确的 OrderRetryExhaustedEvent**
     - **Validates: Requirements 6.1, 6.2**
     - **Property 9: 定时拆单子单总量守恒**
