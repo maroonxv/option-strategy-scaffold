@@ -10,8 +10,9 @@
 - 使用 digest 哈希检测状态变化，跳过重复保存
 - 使用 ThreadPoolExecutor(max_workers=1) 异步保存，避免阻塞 on_bars
 - 上一次异步保存未完成时跳过本次保存请求
+- 按可配置频率（默认 24 小时）自动触发旧快照清理
 
-Requirements: 1.1, 1.2, 1.3, 1.5, 2.1, 2.2, 2.3, 2.5, 5.1, 5.2, 5.3, 5.5
+Requirements: 1.1, 1.2, 1.3, 1.5, 2.1, 2.2, 2.3, 2.5, 4.1, 4.2, 4.5, 5.1, 5.2, 5.3, 5.5
 """
 
 import hashlib
@@ -33,6 +34,8 @@ class AutoSaveService:
         strategy_name: str,
         serializer: JsonSerializer,
         interval_seconds: float = 60.0,
+        cleanup_interval_hours: float = 24.0,
+        keep_days: int = 7,
         logger: Optional[Logger] = None,
     ) -> None:
         self._repository = state_repository
@@ -44,6 +47,9 @@ class AutoSaveService:
         self._last_digest: Optional[str] = None
         self._executor = ThreadPoolExecutor(max_workers=1)
         self._pending_future: Optional[Future] = None
+        self._last_cleanup_time: float = time.monotonic()
+        self._cleanup_interval_seconds = cleanup_interval_hours * 3600
+        self._keep_days = keep_days
 
     def maybe_save(self, snapshot_fn: Callable[[], Dict[str, Any]]) -> None:
         """检查是否到达保存间隔，若到达则保存快照。
@@ -147,12 +153,51 @@ class AutoSaveService:
         """后台线程执行保存操作。
         
         异常时记录错误日志，不影响主线程。
+        保存成功后触发自动清理检查。
         """
         try:
             self._repository.save_raw(self._strategy_name, json_str)
             self._logger.debug(f"异步保存完成 [{self._strategy_name}]")
+            # 保存成功后检查是否需要清理
+            self._maybe_cleanup()
         except Exception as e:
             self._logger.error(
                 f"异步保存失败 [{self._strategy_name}]: {e}",
                 exc_info=True,
             )
+
+    def _maybe_cleanup(self) -> None:
+        """检查是否需要触发清理操作。
+        
+        按可配置频率（默认 24 小时）触发 StateRepository.cleanup。
+        清理失败时记录错误日志，不影响策略运行。
+        
+        Requirements: 4.1, 4.2, 4.5
+        """
+        now = time.monotonic()
+        elapsed = now - self._last_cleanup_time
+        
+        if elapsed >= self._cleanup_interval_seconds:
+            try:
+                deleted_count = self._repository.cleanup(
+                    self._strategy_name, self._keep_days
+                )
+                self._last_cleanup_time = now
+                self._logger.info(
+                    f"自动清理完成，删除 {deleted_count} 条旧快照 [{self._strategy_name}]"
+                )
+            except Exception as e:
+                self._logger.error(
+                    f"清理旧快照失败 [{self._strategy_name}]: {e}",
+                    exc_info=True,
+                )
+
+    def shutdown(self) -> None:
+        """关闭线程池。
+        
+        等待所有后台任务完成后关闭线程池。
+        
+        Requirements: 5.4
+        """
+        self._executor.shutdown(wait=True)
+        self._logger.debug(f"AutoSaveService 已关闭 [{self._strategy_name}]")

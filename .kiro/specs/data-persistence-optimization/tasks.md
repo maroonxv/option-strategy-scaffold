@@ -105,7 +105,7 @@
     - 无条件执行同步保存，忽略 digest 比较
     - _Requirements: 2.4, 5.4_
 
-  - [~] 6.4 实现自动清理触发逻辑
+  - [x] 6.4 实现自动清理触发逻辑
     - 添加 `_last_cleanup_time`、`_cleanup_interval_seconds`、`_keep_days` 字段
     - 在 `_save_in_background` 中调用 `_maybe_cleanup`
     - 按可配置频率（默认 24 小时）触发 `StateRepository.cleanup`

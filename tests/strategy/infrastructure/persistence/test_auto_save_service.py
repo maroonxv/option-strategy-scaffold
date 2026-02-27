@@ -73,9 +73,16 @@ class TestAutoSaveServiceProperties:
         # Track the monotonic clock manually
         current_time = 1000.0  # arbitrary start
         call_counter = 0
+        
+        # 创建一个时间生成器，每次调用返回当前时间
+        def time_generator():
+            while True:
+                yield current_time
 
         with patch("src.strategy.infrastructure.persistence.auto_save_service.time") as mock_time:
-            mock_time.monotonic.return_value = current_time
+            time_gen = time_generator()
+            mock_time.monotonic.side_effect = lambda: next(time_gen)
+            
             mock_serializer = MagicMock()
             
             # 每次调用返回不同的序列化结果，避免 digest 去重
@@ -88,6 +95,7 @@ class TestAutoSaveServiceProperties:
                 strategy_name="test_strategy",
                 serializer=mock_serializer,
                 interval_seconds=interval,
+                cleanup_interval_hours=999999,  # 禁用清理以简化测试
             )
 
             # After construction, _last_save_time = current_time
@@ -95,7 +103,6 @@ class TestAutoSaveServiceProperties:
 
             for delta in deltas:
                 current_time += delta
-                mock_time.monotonic.return_value = current_time
                 
                 # 每次使用不同的快照数据
                 call_counter += 1
@@ -376,3 +383,90 @@ class TestAutoSaveServiceUnit:
             
             # 验证：save 被调用一次（force_save 不检查 digest）
             assert mock_repo.save.call_count == 1
+
+
+    def test_cleanup_triggered_after_interval(self):
+        """Requirement 4.2: cleanup 按可配置频率触发（默认 24 小时）"""
+        import time as real_time
+        
+        mock_repo = MagicMock()
+        mock_repo.cleanup.return_value = 5  # 删除 5 条记录
+        mock_serializer = MagicMock()
+        mock_serializer.serialize.return_value = '{"data": 1}'
+        
+        # 不使用 mock，使用真实时间和很短的清理间隔
+        service = AutoSaveService(
+            state_repository=mock_repo,
+            strategy_name="test",
+            serializer=mock_serializer,
+            interval_seconds=0.01,  # 10ms
+            cleanup_interval_hours=0.0001,  # 0.36 秒
+            keep_days=7,
+        )
+        
+        # 第一次保存
+        service.maybe_save(lambda: {"data": 1})
+        real_time.sleep(0.02)  # 等待保存完成
+        
+        # 验证：cleanup 未被调用（时间不足）
+        mock_repo.cleanup.assert_not_called()
+        
+        # 等待清理间隔
+        real_time.sleep(0.4)
+        
+        # 第二次保存，应触发清理
+        service.maybe_save(lambda: {"data": 2})
+        real_time.sleep(0.02)  # 等待保存和清理完成
+        
+        service._executor.shutdown(wait=True)
+        
+        # 验证：cleanup 被调用一次
+        mock_repo.cleanup.assert_called_once_with("test", 7)
+
+    def test_cleanup_failure_does_not_interrupt(self):
+        """Requirement 4.5: 清理失败不影响策略运行"""
+        mock_repo = MagicMock()
+        mock_repo.cleanup.side_effect = Exception("cleanup failed")
+        mock_serializer = MagicMock()
+        mock_serializer.serialize.return_value = '{"data": 1}'
+        
+        with patch("src.strategy.infrastructure.persistence.auto_save_service.time") as mock_time:
+            mock_time.monotonic.return_value = 100.0
+            service = AutoSaveService(
+                state_repository=mock_repo,
+                strategy_name="test",
+                serializer=mock_serializer,
+                interval_seconds=10.0,
+                cleanup_interval_hours=0.001,  # 很短的间隔，确保触发清理
+                keep_days=7,
+            )
+            
+            # 触发保存和清理
+            mock_time.monotonic.return_value = 200.0
+            service.maybe_save(lambda: {"data": 1})
+            
+            # 等待异步保存完成（即使清理失败也不应抛出异常）
+            service._executor.shutdown(wait=True)
+            
+            # 验证：save_raw 被调用（保存成功）
+            mock_repo.save_raw.assert_called_once()
+            # cleanup 被调用但失败
+            mock_repo.cleanup.assert_called_once()
+
+    def test_shutdown_closes_executor(self):
+        """Requirement 5.4: shutdown 关闭线程池"""
+        mock_repo = MagicMock()
+        mock_serializer = MagicMock()
+        
+        service = AutoSaveService(
+            state_repository=mock_repo,
+            strategy_name="test",
+            serializer=mock_serializer,
+        )
+        
+        # 调用 shutdown
+        service.shutdown()
+        
+        # 验证：executor 已关闭（尝试提交新任务会失败）
+        with pytest.raises(RuntimeError):
+            service._executor.submit(lambda: None)
