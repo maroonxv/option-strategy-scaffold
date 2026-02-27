@@ -59,7 +59,7 @@
     - **Validates: Requirements 1.2**
 
 - [~] 3. 实现 RiskBudgetAllocator（风险预算分配服务）
-  - [-] 3.1 创建 `src/strategy/domain/domain_service/risk/risk_budget_allocator.py`
+  - [x] 3.1 创建 `src/strategy/domain/domain_service/risk/risk_budget_allocator.py`
     - 实现 `__init__` 接受 `RiskBudgetConfig` 参数
     - 实现 `allocate_budget_by_underlying` 方法：按品种分配 Greeks 预算
     - 实现 `calculate_usage` 方法：计算当前 Greeks 使用量（支持按品种或策略维度）
@@ -67,7 +67,7 @@
     - 实现内部辅助方法 `_validate_allocation_ratios`、`_calculate_remaining_budget`
     - _Requirements: 2.1, 2.2, 2.3, 2.4, 2.5, 2.6, 2.7_
 
-  - [~] 3.2 编写 RiskBudgetAllocator 单元测试
+  - [x] 3.2 编写 RiskBudgetAllocator 单元测试
     - 创建 `tests/strategy/domain/domain_service/risk/test_risk_budget_allocator.py`
     - 测试按品种分配预算
     - 测试按策略分配预算
