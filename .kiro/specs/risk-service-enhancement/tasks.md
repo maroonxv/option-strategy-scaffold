@@ -28,7 +28,7 @@
     - 在 `risk.py` 中定义 `TimeDecayConfig`、`ThetaMetrics`、`ExpiringPosition`、`ExpiryGroup` 四个 dataclass
     - _Requirements: 5.1, 5.2, 5.3, 5.4, 5.5, 5.6, 5.7_
 
-  - [~] 1.6 创建风险监控领域事件
+  - [x] 1.6 创建风险监控领域事件
     - 在 `src/strategy/domain/event/` 下新建或扩展 `risk_events.py`
     - 定义 `StopLossTriggeredEvent`、`RiskBudgetExceededEvent`、`LiquidityDeterioratedEvent`、`ConcentrationExceededEvent`、`ExpiryWarningEvent` 五个领域事件
     - _Requirements: 1.6, 2.3, 3.5, 4.4, 5.3_
