@@ -112,11 +112,11 @@
     - 清理失败时记录错误日志，不影响策略运行
     - _Requirements: 4.1, 4.2, 4.5_
 
-  - [~] 6.5 实现 `shutdown` 方法
+  - [x] 6.5 实现 `shutdown` 方法
     - 调用 `self._executor.shutdown(wait=True)` 关闭线程池
     - _Requirements: 5.4_
 
-  - [~] 6.6 编写 Property 5 属性测试：Digest 去重正确性
+  - [-] 6.6 编写 Property 5 属性测试：Digest 去重正确性
     - **Property 5: Digest 去重正确性**
     - 在 `tests/strategy/infrastructure/persistence/test_persistence_autosave_properties.py` 中实现
     - 使用 Hypothesis 生成随机 Snapshot 字典对（相同/不同）
