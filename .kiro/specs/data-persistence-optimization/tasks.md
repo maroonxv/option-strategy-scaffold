@@ -93,7 +93,7 @@
     - AutoSaveService 需持有 JsonSerializer 引用
     - _Requirements: 2.1, 2.2, 2.3, 2.5_
 
-  - [~] 6.2 实现异步保存机制
+  - [x] 6.2 实现异步保存机制
     - 添加 `ThreadPoolExecutor(max_workers=1)` 和 `_pending_future: Optional[Future]`
     - 修改 `_do_save`：digest 变化时 submit 到后台线程执行
     - 上一次异步保存未完成时跳过本次并记录调试日志

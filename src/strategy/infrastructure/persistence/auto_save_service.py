@@ -8,12 +8,15 @@
 - 使用 time.monotonic() 计时，避免系统时钟调整的影响
 - 保存失败时捕获异常并记录日志，不中断策略执行
 - 使用 digest 哈希检测状态变化，跳过重复保存
+- 使用 ThreadPoolExecutor(max_workers=1) 异步保存，避免阻塞 on_bars
+- 上一次异步保存未完成时跳过本次保存请求
 
-Requirements: 1.1, 1.2, 1.3, 1.5, 2.1, 2.2, 2.3, 2.5
+Requirements: 1.1, 1.2, 1.3, 1.5, 2.1, 2.2, 2.3, 2.5, 5.1, 5.2, 5.3, 5.5
 """
 
 import hashlib
 import time
+from concurrent.futures import Future, ThreadPoolExecutor
 from logging import Logger, getLogger
 from typing import Any, Callable, Dict, Optional
 
@@ -39,6 +42,8 @@ class AutoSaveService:
         self._logger = logger or getLogger(__name__)
         self._last_save_time: float = time.monotonic()
         self._last_digest: Optional[str] = None
+        self._executor = ThreadPoolExecutor(max_workers=1)
+        self._pending_future: Optional[Future] = None
 
     def maybe_save(self, snapshot_fn: Callable[[], Dict[str, Any]]) -> None:
         """检查是否到达保存间隔，若到达则保存快照。
@@ -65,6 +70,7 @@ class AutoSaveService:
         """执行保存操作，失败时记录日志但不中断策略执行。
         
         使用 digest 检测状态变化，跳过重复保存。
+        异步保存：digest 变化时 submit 到后台线程执行。
         """
         try:
             data = snapshot_fn()
@@ -79,12 +85,21 @@ class AutoSaveService:
                 self._last_save_time = time.monotonic()
                 return
             
-            # 状态已变化，执行保存
-            self._repository.save(self._strategy_name, data)
+            # 检查上一次异步保存是否完成
+            if self._pending_future and not self._pending_future.done():
+                self._logger.debug(
+                    f"上一次异步保存尚未完成，跳过本次 [{self._strategy_name}]"
+                )
+                return
+            
+            # 状态已变化，提交到后台线程执行
+            self._pending_future = self._executor.submit(
+                self._save_in_background, json_str
+            )
             self._last_digest = digest
             self._last_save_time = time.monotonic()
             self._logger.debug(
-                f"保存成功 (digest={digest[:8]}...) [{self._strategy_name}]"
+                f"已提交异步保存 (digest={digest[:8]}...) [{self._strategy_name}]"
             )
         except Exception as e:
             self._logger.error(
@@ -99,3 +114,17 @@ class AutoSaveService:
         从而产生相同的 digest。
         """
         return hashlib.sha256(json_str.encode("utf-8")).hexdigest()
+
+    def _save_in_background(self, json_str: str) -> None:
+        """后台线程执行保存操作。
+        
+        异常时记录错误日志，不影响主线程。
+        """
+        try:
+            self._repository.save_raw(self._strategy_name, json_str)
+            self._logger.debug(f"异步保存完成 [{self._strategy_name}]")
+        except Exception as e:
+            self._logger.error(
+                f"异步保存失败 [{self._strategy_name}]: {e}",
+                exc_info=True,
+            )
