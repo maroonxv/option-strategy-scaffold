@@ -44,7 +44,7 @@
 - [x] 3. Checkpoint - 确保配置加载和缺陷修复测试通过
   - Ensure all tests pass, ask the user if questions arise.
 
-- [ ] 4. 添加工厂方法与修改构造函数
+- [x] 4. 添加工厂方法与修改构造函数
   - [x] 4.1 修改 `AdvancedOrderScheduler.__init__` 接受可选 `AdvancedSchedulerConfig` 参数
     - 默认创建 `AdvancedSchedulerConfig()` 实例
     - submit 方法未显式传入参数时使用 config 中的默认值
@@ -69,14 +69,14 @@
     - **Validates: Requirements 2.2, 2.3, 2.4**
 
 
-  - [-] 4.5 在 `test_execution_config_properties.py` 中追加属性测试（属性 8, 9）
+  - [x] 4.5 在 `test_execution_config_properties.py` 中追加属性测试（属性 8, 9）
     - **Property 8: 重试耗尽产生正确的 OrderRetryExhaustedEvent**
     - **Validates: Requirements 6.1, 6.2**
     - **Property 9: 定时拆单子单总量守恒**
     - **Validates: Requirements 5.2**
 
 - [ ] 5. 实现序列化与反序列化
-  - [~] 5.1 为 `SmartOrderExecutor` 添加 `to_dict()` 和 `from_dict(data, config)` 方法
+  - [-] 5.1 为 `SmartOrderExecutor` 添加 `to_dict()` 和 `from_dict(data, config)` 方法
     - 序列化 config 和 _orders 字典为 JSON 兼容字典
     - _orders 中每个 ManagedOrder 委托 ManagedOrder.to_dict()
     - from_dict 支持可选 config 参数，未提供时从字典恢复

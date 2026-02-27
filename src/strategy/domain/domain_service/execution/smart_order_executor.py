@@ -5,7 +5,7 @@ SmartOrderExecutor 领域服务
 不直接调用网关，返回执行指令。
 """
 from datetime import datetime
-from typing import Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 from ...value_object.trading.order_instruction import OrderInstruction, Direction, Offset
 from ...value_object.trading.order_execution import OrderExecutionConfig, ManagedOrder
@@ -38,6 +38,31 @@ class SmartOrderExecutor:
             price_tick=config_dict.get("price_tick", defaults.price_tick),
         )
         return cls(config)
+
+    def to_dict(self) -> Dict[str, Any]:
+        """序列化内部状态为 JSON 兼容字典"""
+        return {
+            "config": {
+                "timeout_seconds": self.config.timeout_seconds,
+                "max_retries": self.config.max_retries,
+                "slippage_ticks": self.config.slippage_ticks,
+                "price_tick": self.config.price_tick,
+            },
+            "orders": {
+                oid: order.to_dict() for oid, order in self._orders.items()
+            },
+        }
+
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any], config: Optional[OrderExecutionConfig] = None) -> "SmartOrderExecutor":
+        """从字典恢复内部状态"""
+        if config is None:
+            cfg_data = data.get("config", {})
+            config = OrderExecutionConfig(**cfg_data)
+        executor = cls(config)
+        for oid, order_data in data.get("orders", {}).items():
+            executor._orders[oid] = ManagedOrder.from_dict(order_data)
+        return executor
 
     def calculate_adaptive_price(
         self,
