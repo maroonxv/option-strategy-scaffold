@@ -69,7 +69,7 @@
     - _Requirements: 3.4_
 
 - [ ] 4. StateRepository 自动清理旧快照
-  - [~] 4.1 实现 `cleanup` 方法
+  - [x] 4.1 实现 `cleanup` 方法
     - 在 `state_repository.py` 中添加 `cleanup(strategy_name, keep_days=7) -> int` 方法
     - 查询最新记录 ID，删除 `saved_at` 早于保留天数的记录，但排除最新记录
     - 返回删除的记录数

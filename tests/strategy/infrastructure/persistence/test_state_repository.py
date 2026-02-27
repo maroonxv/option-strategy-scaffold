@@ -335,12 +335,18 @@ class TestStateRepositoryUnit:
 
         old_time = datetime.now() - timedelta(days=10)
 
-        # Insert old records for strategy_a
+        # Insert 2 old records for strategy_a (so one can be deleted while preserving latest)
         StrategyStateModel.create(
             strategy_name="strategy_a",
             snapshot_json=serializer.serialize({"a": 1}),
             schema_version=CURRENT_SCHEMA_VERSION,
             saved_at=old_time,
+        )
+        StrategyStateModel.create(
+            strategy_name="strategy_a",
+            snapshot_json=serializer.serialize({"a": 2}),
+            schema_version=CURRENT_SCHEMA_VERSION,
+            saved_at=old_time + timedelta(seconds=1),
         )
 
         # Insert old records for strategy_b
@@ -353,7 +359,13 @@ class TestStateRepositoryUnit:
 
         deleted = repo.cleanup("strategy_a", keep_days=7)
 
+        # Should delete 1 old record from strategy_a (preserving the latest)
         assert deleted == 1
+        # strategy_a should still have 1 record (the latest)
+        count_a = StrategyStateModel.select().where(
+            StrategyStateModel.strategy_name == "strategy_a"
+        ).count()
+        assert count_a == 1
         # strategy_b should still have its record
         count_b = StrategyStateModel.select().where(
             StrategyStateModel.strategy_name == "strategy_b"
@@ -368,6 +380,52 @@ class TestStateRepositoryUnit:
 
         deleted = repo.cleanup("nonexistent", keep_days=7)
         assert deleted == 0
+        db.close()
+
+    def test_cleanup_preserves_latest_record_even_if_old(self):
+        """cleanup() should preserve the latest record even if it's older than keep_days.
+        
+        This ensures the strategy can always load its last known state.
+        Requirements: 4.4
+        """
+        db = _setup_test_db()
+        repo = _make_repo(db)
+
+        serializer = JsonSerializer(MigrationChain())
+        StrategyStateModel._meta.database = db
+
+        strategy = "test_strategy"
+        old_time = datetime.now() - timedelta(days=30)
+
+        # Insert only old records (all older than keep_days=7)
+        for i in range(3):
+            StrategyStateModel.create(
+                strategy_name=strategy,
+                snapshot_json=serializer.serialize({"old": i}),
+                schema_version=CURRENT_SCHEMA_VERSION,
+                saved_at=old_time + timedelta(seconds=i),
+            )
+
+        # Cleanup with keep_days=7
+        deleted = repo.cleanup(strategy, keep_days=7)
+
+        # Should delete 2 records, but preserve the latest one
+        assert deleted == 2
+        remaining = StrategyStateModel.select().where(
+            StrategyStateModel.strategy_name == strategy
+        ).count()
+        assert remaining == 1
+        
+        # Verify the remaining record is the latest one
+        latest_record = (
+            StrategyStateModel.select()
+            .where(StrategyStateModel.strategy_name == strategy)
+            .order_by(StrategyStateModel.saved_at.desc())
+            .first()
+        )
+        assert latest_record is not None
+        data = serializer.deserialize(latest_record.snapshot_json)
+        assert data["old"] == 2  # The last inserted record
         db.close()
 
     def test_corruption_error_contains_strategy_name(self):

@@ -192,23 +192,48 @@ class StateRepository:
         return stored
 
     def cleanup(self, strategy_name: str, keep_days: int = 7) -> int:
-        """清理旧快照。删除 saved_at 早于 keep_days 天前的记录。返回删除的记录数。"""
+        """清理旧快照，保留至少一条最新记录。
+        
+        删除 saved_at 早于 keep_days 天前的记录，但始终保留最新的一条记录，
+        即使该记录已超过保留天数。这确保策略始终可以加载其最后已知状态。
+        
+        Args:
+            strategy_name: 策略名称
+            keep_days: 保留天数（默认 7 天）
+            
+        Returns:
+            int: 删除的记录数
+        """
         db = self._database_factory.get_peewee_db()
         StrategyStateModel._meta.database = db
 
+        # 先查询最新记录 ID
+        latest = (
+            StrategyStateModel.select(StrategyStateModel.id)
+            .where(StrategyStateModel.strategy_name == strategy_name)
+            .order_by(StrategyStateModel.saved_at.desc())
+            .first()
+        )
+        
+        # 如果没有记录，直接返回
+        if latest is None:
+            return 0
+
         cutoff = datetime.now() - timedelta(days=keep_days)
 
+        # 删除旧记录，但排除最新记录
         deleted = (
             StrategyStateModel.delete()
             .where(
                 (StrategyStateModel.strategy_name == strategy_name)
                 & (StrategyStateModel.saved_at < cutoff)
+                & (StrategyStateModel.id != latest.id)  # 保留最新记录
             )
             .execute()
         )
 
         if self._logger:
             self._logger.info(
-                f"清理旧快照: {strategy_name}, 删除 {deleted} 条记录"
+                f"清理旧快照: {strategy_name}, 删除 {deleted} 条记录 (保留最新记录 ID={latest.id})"
             )
         return deleted
